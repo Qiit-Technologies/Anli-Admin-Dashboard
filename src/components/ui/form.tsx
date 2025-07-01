@@ -1,27 +1,28 @@
 import * as React from "react";
-import { useFormContext, Controller } from "react-hook-form";
+import {
+  useFormContext,
+  Controller,
+  ControllerRenderProps,
+  FieldValues,
+  Path,
+} from "react-hook-form";
 import { cn } from "@/lib/utils";
 
-export function FormField({
+export function FormField<T extends FieldValues>({
   name,
   children,
 }: {
-  name: string;
-  children: (field: any) => React.ReactNode;
+  name: Path<T>;
+  children: (field: ControllerRenderProps<T, Path<T>>) => React.ReactElement;
 }) {
-  const { control } = useFormContext();
+  const { control } = useFormContext<T>();
+
   return (
     <Controller
       name={name}
       control={control}
       render={({ field }) => {
-        const element = children(field);
-        if (!React.isValidElement(element)) {
-          throw new Error(
-            `FormField "${name}" must return a valid React element.`
-          );
-        }
-        return element;
+        return children(field);
       }}
     />
   );
