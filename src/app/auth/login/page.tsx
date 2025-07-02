@@ -6,35 +6,41 @@ import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 
-export default function LoginForm() {
+export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center bg-[#FFE2CC] relative overflow-hidden">
-      {/*Background Shapes */}
-      {/* <div className="absolute inset-0 overflow-hidden z-1">
+    <div className="min-h-screen flex flex-col justify-between items-center bg-[#FFE2CC] relative overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
+      {/* Background Shapes */}
+      <div className="absolute inset-0 overflow-hidden z-10">
         <div
-          className="absolute bottom-0 radius-3xl left-0 w-[350px] h-[350px] bg-[#E4DBD6] rotate-[-60.7deg] translate-x-[-40%] translate-y-[20%]"
+          className="absolute bottom-0 left-0 w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] bg-[#E4DBD6] rotate-[-60.7deg] translate-x-[-40%] translate-y-[20%]"
           style={{
             clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
           }}
         />
         <div
-          className="absolute top-0 right-0 w-[350px] h-[350px] bg-[#F0D6C3] rotate-[38.67deg] translate-x-[30%] translate-y-[-30%]"
+          className="absolute top-0 right-0 w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] bg-[#F0D6C3] rotate-[38.67deg] translate-x-[30%] translate-y-[-30%]"
           style={{
             clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
           }}
         />
-      </div> */}
+      </div>
 
-      {/*Centered login container */}
-      <div className="flex-1 flex-col flex items-center justify-center w-full z-2">
-        {/* Top spacer & logo */}
-        <div className=" mb-10">
-          <Image src="/logo.svg" width={150} height={85} alt="Anli Logo" />
+      {/* Centered login container */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full z-20">
+        {/* Logo */}
+        <div className="mb-8">
+          <Image
+            src="/logo.svg"
+            width={140}
+            height={80}
+            alt="Anli Logo"
+            className="w-[120px] sm:w-[140px] h-auto mx-auto"
+          />
         </div>
 
-        <div className="bg-[#F9ECE1] p-8 rounded-2xl shadow-md border border-app-secondary w-[583px]">
+        <div className="bg-[#F9ECE1] p-6 sm:p-8 rounded-2xl shadow-md border border-app-secondary w-full max-w-md">
           {/* Email Field */}
           <div className="mb-4">
             <label
@@ -47,7 +53,7 @@ export default function LoginForm() {
               id="email"
               type="email"
               placeholder="Frank@Hotellagrand.com"
-              className="h-[53px]"
+              className="h-[50px] sm:h-[53px]"
             />
           </div>
 
@@ -64,7 +70,7 @@ export default function LoginForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                className="h-[53px]"
+                className="h-[50px] sm:h-[53px]"
               />
               <button
                 type="button"
@@ -87,10 +93,10 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/*Footer */}
-      <footer className="text-center py-4">
+      {/* Footer */}
+      <footer className="text-center py-4 z-10">
         <p className="text-[14px] text-[#070707] font-normal">
-          &copy; Anli 2025 All copyright reserved
+          &copy; Anli {new Date().getFullYear()} All copyright reserved
         </p>
       </footer>
     </div>
