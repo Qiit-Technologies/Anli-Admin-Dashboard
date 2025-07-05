@@ -74,7 +74,7 @@ export default function BusinessList({ data }: BusinessListProps) {
               height={70}
               className="mx-auto mb-3 object-contain"
             />
-            <h2 className="font-medium text-lg sm:text-[20px] text-black hover:text-[#F47411]">
+            <h2 className="font-medium text-lg sm:text-xl text-black hover:text-[#F47411]">
               {b.name}
             </h2>
             <p className="text-sm sm:text-md text-gray-500 font-normal">
