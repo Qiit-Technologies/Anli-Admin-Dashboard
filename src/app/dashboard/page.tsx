@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import Header from "./components/layout/header";
 import Sidebar from "./components/layout/sidebar";
 import Image from "next/image";
+import PaymentTable from "./components/paymentTable";
 
 export default function DashboardPage() {
   return (
@@ -9,7 +9,7 @@ export default function DashboardPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Header />
-        <main className="p-10 space-y-6 bg-[#FAFAFA]">
+        <main className="p-10 space-y-6 bg-white">
           {/* Top grid section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Profile Card */}
@@ -41,20 +41,26 @@ export default function DashboardPage() {
                   Assigned Modules
                 </h3>
                 <hr className="my-3 m-0 border-1 border-[#DFDFDF]"></hr>
-                <ul className="text-sm text-[#474747] font-medium space-y-2">
+                <ul className="text-sm space-y-4">
                   <li className="flex justify-between">
-                    <span>House Keeping</span>
-                    <span className="text-orange-500 font-normal">
+                    <span className="font-medium text-[#474747]">
+                      House Keeping
+                    </span>
+                    <span className="font-normal text-[#111111]">
                       0 updates (Inactive for 3 weeks)
                     </span>
                   </li>
                   <li className="flex justify-between font-normal">
-                    <span>Bookings</span>
-                    <span>120 bookings created this month</span>
+                    <span className="font-medium text-[#474747]">Bookings</span>
+                    <span className="font-normal text-[#111111]">
+                      120 bookings created this month
+                    </span>
                   </li>
                   <li className="flex justify-between font-normal">
-                    <span>Payments</span>
-                    <span>50 successful transactions</span>
+                    <span className="font-medium text-[#474747]">Payments</span>
+                    <span className="font-normal text-[#111111]">
+                      50 successful transactions
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -69,7 +75,7 @@ export default function DashboardPage() {
                   </h4>
 
                   <hr className="my-3 m-0 border-1 border-[#DFDFDF]"></hr>
-                  <ul className="space-y-1 text-orange-500">
+                  <ul className="space-y-4">
                     <li>⚠️ Housekeeping module not used in 3 weeks</li>
                     <li>⚠️ Only 1 report generated this month</li>
                   </ul>
@@ -81,13 +87,19 @@ export default function DashboardPage() {
           {/* General Activity + Plan Info */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Graph placeholder */}
-            <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
+            <div className="lg:col-span-2 p-6 rounded-xl">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-medium">General Actives Growth</h3>
-                <div className="space-x-2 text-sm text-gray-500">
-                  <button className="hover:text-black">12 months</button>
-                  <button className="hover:text-black">30 days</button>
-                  <button className="hover:text-black">7 days</button>
+                <div className="space-x-2 text-sm text-gray-500 border-1 border-gray-300 rounded-md">
+                  <button className="hover:text-black bg-gray-50 border-r-1 rounded-tl-md rounded-bl-md border-[#D0D5DD] py-[10px] px-[16px]">
+                    12 months
+                  </button>
+                  <button className="hover:text-black border-r-1 border-[#D0D5DD] py-[10px] px-[16px]">
+                    30 days
+                  </button>
+                  <button className="hover:text-black py-[10px] px-[16px]">
+                    7 days
+                  </button>
                 </div>
               </div>
               <div className="h-48 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
@@ -97,97 +109,56 @@ export default function DashboardPage() {
             </div>
 
             {/* Current Plan */}
-            <div className="bg-white p-6 rounded-xl shadow-sm space-y-3">
-              <h3 className="text-sm font-medium text-gray-800">
+            <div className="bg-white p-6 rounded-xl border-1 space-y-3">
+              <h4 className="font-medium text-md mb-2 text-gray-900">
                 Current Plan
-              </h3>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>
-                  Plan Name: <strong>Free</strong>
-                </p>
-                <p>
-                  Renewal Date: <strong>July 15, 2025</strong>{" "}
-                  <span className="text-orange-500">(3 days left)</span>
-                </p>
-                <p>
-                  Billing Cycle: <strong>Monthly</strong>
-                </p>
-                <p>Modules Allowed: Front office, Restaurant, Bar</p>
+              </h4>
+
+              <hr className="my-3 m-0 border-1 border-[#DFDFDF]"></hr>
+              <div className="text-sm text-gray-600 pb-8 border-b-2 border-[#dfdfdf]">
+                <ul className="text-sm space-y-4">
+                  <li className="flex justify-between">
+                    <span className="font-medium text-[#474747]">
+                      Plan Name
+                    </span>
+                    <span className="font-normal text-[#111111]">Free</span>
+                  </li>
+                  <li className="flex justify-between font-normal">
+                    <span className="font-medium text-[#474747]">
+                      Renewal Date:
+                    </span>
+                    <span className="font-normal text-[#111111]">
+                      July 15, 2025. 3 days left
+                    </span>
+                  </li>
+                  <li className="flex justify-between font-normal">
+                    <span className="font-medium text-[#474747]">
+                      Billing Cycle
+                    </span>
+                    <span className="font-normal text-[#111111]">Monthly</span>
+                  </li>
+                  <li className="flex justify-between font-normal">
+                    <span className="font-medium text-[#474747]">
+                      Modules Allowed
+                    </span>
+                    <span className="font-normal text-[#111111]">
+                      Front office, Restaurant, Bar
+                    </span>
+                  </li>
+                </ul>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline">Upgrade Plan</Button>
-                <Button>Send Payment Reminder</Button>
+
+              <div className="flex gap-2 justify-between">
+                <button className="rounded-[10px] bg-[#007BFF] hover:bg-blue-700 text-white py-[16px] px-[37px] text-md">
+                  Upgrade Plan
+                </button>
+                <button className="rounded-[10px] font-semibold text-[#007BFF] border-1 border-[#007BFF] px-[37px] text-md">
+                  Send Payment Reminder
+                </button>
               </div>
             </div>
           </div>
-
-          {/* Current Transactions */}
-          <div className="bg-white p-6 rounded-xl shadow-sm overflow-x-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-medium text-gray-800">
-                Current Payment Transaction
-              </h3>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Select dates
-                </Button>
-                <Button variant="outline" size="sm">
-                  Filters
-                </Button>
-              </div>
-            </div>
-
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="text-gray-500 border-b">
-                  <th className="py-2 px-3">Date</th>
-                  <th className="py-2 px-3">Amount</th>
-                  <th className="py-2 px-3">Payment Method</th>
-                  <th className="py-2 px-3">Status</th>
-                  <th className="py-2 px-3">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    date: "23rd March 2024",
-                    amount: "₦240,000,000.00",
-                    method: "Transfer",
-                    status: "Paid",
-                    color: "green",
-                  },
-                  {
-                    date: "01 January 2024",
-                    amount: "₦240,000,000.00",
-                    method: "POS",
-                    status: "Transaction Filed",
-                    color: "red",
-                  },
-                  {
-                    date: "31st June 2025",
-                    amount: "₦240,000,000.00",
-                    method: "Cash",
-                    status: "Paid",
-                    color: "green",
-                  },
-                ].map((row, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="py-2 px-3">{row.date}</td>
-                    <td className="py-2 px-3">{row.amount}</td>
-                    <td className="py-2 px-3">{row.method}</td>
-                    <td className="py-2 px-3">
-                      <span className={`text-${row.color}-500 font-medium`}>
-                        {row.status}
-                      </span>
-                    </td>
-                    <td className="py-2 px-3 text-blue-500 cursor-pointer">
-                      View
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PaymentTable />
         </main>
       </div>
     </div>
