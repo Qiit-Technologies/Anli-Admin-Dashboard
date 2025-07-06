@@ -1,15 +1,15 @@
 import Header from "./components/layout/header";
 import Sidebar from "./components/layout/sidebar";
 import Image from "next/image";
-import PaymentTable from "./components/paymentTable";
+import PaymentTable from "./components/general/paymentTable";
 
 export default function DashboardPage() {
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="p-10 space-y-6 bg-white">
+        <Header title="General Info" />
+        <main className="px-12 py-10 space-y-6 bg-white">
           {/* Top grid section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Profile Card */}

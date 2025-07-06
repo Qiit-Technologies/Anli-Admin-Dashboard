@@ -1,10 +1,10 @@
 import { Bell, Search } from "lucide-react";
 
-const Header = () => {
+const Header = ({ title }: { title: string }) => {
   return (
     <header className="flex justify-between p-10 items-center border-b-1 border-[#B5B5B5] bg-white top-0 z-10">
       <div>
-        <h2 className="font-bold text-[24px]">General Info</h2>
+        <h2 className="font-bold text-[24px]">{title}</h2>
       </div>
 
       <div className="flex justify-end gap-6 items-center">

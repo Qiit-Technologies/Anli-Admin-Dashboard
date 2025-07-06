@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { BusinessListProps } from "./types";
-import { SearchIcon } from "lucide-react";
+import SearchWithIcon from "@/components/common/searchWithIcon";
 
 export default function BusinessList({ data }: BusinessListProps) {
   const [query, setQuery] = useState("");
@@ -45,16 +44,11 @@ export default function BusinessList({ data }: BusinessListProps) {
       </div>
 
       {/* Search */}
-      <div className="max-w-md mx-auto mb-10 z-20 relative px-4">
-        <div className="flex items-center gap-2 border border-gray-300 rounded-md py-2 px-3 h-12 shadow-sm">
-          <SearchIcon className="text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="border-0 focus:ring-0 focus-visible:ring-0 px-0 font-normal w-full"
-          />
-        </div>
+      <div className="max-w-md mx-auto mb-10 z-20 relative">
+        <SearchWithIcon
+          onChange={(e) => setQuery(e.target.value)}
+          value={query}
+        />
       </div>
 
       {/* Business Grid */}
