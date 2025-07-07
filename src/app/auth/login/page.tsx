@@ -11,18 +11,40 @@ export default function Page() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between items-center bg-[#FFE2CC] relative overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
-      {/* Background Shapes */}
-      <div className="absolute inset-0 overflow-hidden z-10">
+      {/* Background shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* bottom-left grey polygon */}
         <div
-          className="absolute bottom-0 left-0 w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] bg-[#E4DBD6] rotate-[-60.7deg] translate-x-[-40%] translate-y-[20%]"
+          className="
+            absolute
+            -left-32     /* pushes it partly outside the canvas */
+            -bottom-28   /* idem, so only the upper part is visible */
+            w-[520px]    /* big enough to survive every breakpoint */
+            h-[420px]
+            bg-[#E4DBD6] /* light-grey fill */
+            rounded-[22px]
+            -rotate-[9deg] /* gentle tilt, matches screenshot */
+          "
           style={{
-            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+            /* top edge almost horizontal, right edge goes straight down  */
+            clipPath: "polygon(0 12%, 100% 25%, 68% 100%, 0 100%)",
           }}
         />
+
+        {/* top-right peach polygon */}
         <div
-          className="absolute top-0 right-0 w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] bg-[#F0D6C3] rotate-[38.67deg] translate-x-[30%] translate-y-[-30%]"
+          className="
+            absolute
+            -top-32
+            -right-32
+            w-[540px]
+            h-[540px]
+            bg-[#F0D6C3]
+            opacity-90  /* a tad of transparency */
+          "
           style={{
-            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+            /* vertical right edge, diagonal to the left-bottom corner    */
+            clipPath: "polygon(100% 0, 100% 100%, 0 70%)",
           }}
         />
       </div>
