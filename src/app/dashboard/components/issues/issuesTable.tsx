@@ -61,11 +61,11 @@ export default function IssuesTable() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
-      <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:px-6 py-4 gap-3">
         <h2 className="text-lg font-normal text-[#101828]">
           Current Reported Issues
         </h2>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto flex-wrap">
           <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
             <Calendar size={16} />
             Select dates
@@ -80,10 +80,13 @@ export default function IssuesTable() {
           </button>
         </div>
       </div>
+
       <Divider />
-      <div className="flex justify-between items-start sm:items-center gap-3 px-4 py-5">
+
+      {/* Search + Filters */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 sm:px-6 py-5">
         <SearchWithIcon
-          className="w-[478px]"
+          className="w-full sm:w-[478px]"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -93,6 +96,7 @@ export default function IssuesTable() {
           More filters
         </button>
       </div>
+
       {/* Table */}
       <div className="overflow-x-auto">
         <Table>
@@ -104,7 +108,7 @@ export default function IssuesTable() {
               <Th>Issues ID</Th>
               <Th withIcon>Issues Report</Th>
               <Th withIcon>Module</Th>
-              <Th withIcon>priority</Th>
+              <Th withIcon>Priority</Th>
               <Th withIcon>Date Logged</Th>
               <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
                 Status

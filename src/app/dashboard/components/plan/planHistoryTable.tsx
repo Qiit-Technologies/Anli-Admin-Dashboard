@@ -59,9 +59,10 @@ export default function PlanHistoryTable() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
-      <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-normal text-[#101828]">Plan History</h2>
-        <div className="flex gap-2 w-full sm:w-auto">
+
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
           <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
             <Calendar size={16} />
             Select dates
@@ -76,14 +77,18 @@ export default function PlanHistoryTable() {
           </button>
         </div>
       </div>
+
       <Divider />
-      <div className="px-4 py-5">
+
+      {/* Search Input */}
+      <div className="px-4 sm:px-6 py-5">
         <SearchWithIcon
-          className="w-[478px]"
+          className="w-full max-w-md"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
+
       {/* Table */}
       <div className="overflow-x-auto">
         <Table>

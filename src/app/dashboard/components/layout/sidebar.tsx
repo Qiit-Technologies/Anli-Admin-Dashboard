@@ -3,19 +3,22 @@ import {
   Layers,
   CreditCard,
   Users,
-  Menu,
   X,
   ChartNoAxesColumn,
   SquareCheckBig,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-const Sidebar = () => {
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+const Sidebar = ({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (val: boolean) => void;
+}) => {
+  const pathname = usePathname(); // make sure this is imported
 
   const navItems = [
     { name: "General Info", icon: ChartNoAxesColumn, href: "/dashboard" },
@@ -27,17 +30,6 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile menu button */}
-      <div className="sm:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-white bg-black p-2 rounded-md"
-        >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-
-      {/* Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
@@ -45,16 +37,14 @@ const Sidebar = () => {
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed sm:static top-0 left-0 h-screen sm:h-screen bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } w-full sm:w-60 px-4 py-6`}
+        className={`fixed sm:static inset-y-0 left-0 bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0
+    ${isOpen ? "translate-x-0" : "-translate-x-full"} w-full sm:w-60 px-4 py-6`}
       >
         <div className="mb-12 flex items-center justify-center relative">
           <Image
             src="/logo-white.svg"
-            alt="Anli Logo"
+            alt="Logo"
             width={100}
             height={24}
             className="h-6"
@@ -81,7 +71,8 @@ const Sidebar = () => {
                     : "hover:bg-[#FDEFE5] hover:text-[#FF6F00]"
                 }`}
               >
-                <Icon size={24} /> {name}
+                <Icon size={24} />
+                {name}
               </Link>
             );
           })}

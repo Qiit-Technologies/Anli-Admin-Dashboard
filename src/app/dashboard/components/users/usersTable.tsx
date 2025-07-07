@@ -62,7 +62,7 @@ export default function UsersTable() {
       {/* Header */}
       <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
         <h2 className="text-lg font-normal text-[#101828]">Users</h2>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <SearchWithIcon
             className="w-[478px]"
             value={query}

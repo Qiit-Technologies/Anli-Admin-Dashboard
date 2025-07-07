@@ -24,7 +24,7 @@ const transactions = [
     date: "01 January 2024",
     amount: "₦240,000,000.00",
     method: "POS",
-    status: "Transaction Failed",
+    status: "Failed",
     color: "red",
   },
   {

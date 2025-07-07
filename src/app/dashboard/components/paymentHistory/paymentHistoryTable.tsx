@@ -60,7 +60,7 @@ export default function PaymentHistoryTable() {
         <h2 className="text-lg font-normal text-[#101828]">
           Current Payment Transaction
         </h2>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <SearchWithIcon
             className="w-[478px]"
             value={query}
