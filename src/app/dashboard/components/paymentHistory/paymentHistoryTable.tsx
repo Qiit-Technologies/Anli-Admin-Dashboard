@@ -11,32 +11,48 @@ import {
   Thead,
   Tr,
 } from "@/components/common/customTable";
-
-const transactions = [
+import SearchWithIcon from "@/components/common/searchWithIcon";
+import { useState } from "react";
+const payments = [
   {
     date: "23rd March 2024",
-    amount: "₦240,000,000.00",
-    method: "Transfer",
+    amount: "₦240,000,00.00",
+    paymentMethod: "Transfer",
     status: "Paid",
     color: "green",
   },
   {
-    date: "01 January 2024",
-    amount: "₦240,000,000.00",
-    method: "POS",
-    status: "Transaction Failed",
-    color: "red",
+    date: "23rd March 2024",
+    amount: "₦240,000,00.00",
+    paymentMethod: "Transfer",
+    status: "Paid",
+    color: "green",
   },
   {
-    date: "31st June 2025",
-    amount: "₦240,000,000.00",
-    method: "Cash",
+    date: "23rd March 2024",
+    amount: "₦240,000,00.00",
+    paymentMethod: "Transfer",
+    status: "Paid",
+    color: "green",
+  },
+  {
+    date: "23rd March 2024",
+    amount: "₦240,000,00.00",
+    paymentMethod: "Transfer",
+    status: "Paid",
+    color: "green",
+  },
+  {
+    date: "23rd March 2024",
+    amount: "₦240,000,00.00",
+    paymentMethod: "Transfer",
     status: "Paid",
     color: "green",
   },
 ];
 
-export default function PaymentTable() {
+export default function PaymentHistoryTable() {
+  const [query, setQuery] = useState("");
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
@@ -45,6 +61,12 @@ export default function PaymentTable() {
           Current Payment Transaction
         </h2>
         <div className="flex gap-2 w-full sm:w-auto">
+          <SearchWithIcon
+            className="w-[478px]"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+
           <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
             <Calendar size={16} />
             Select dates
@@ -71,11 +93,11 @@ export default function PaymentTable() {
             </Tr>
           </Thead>
           <Tbody>
-            {transactions.map((row, i) => (
+            {payments.map((row, i) => (
               <Tr key={i}>
                 <Td>{row.date}</Td>
                 <Td>{row.amount}</Td>
-                <Td>{row.method}</Td>
+                <Td>{row.paymentMethod}</Td>
                 <Td>
                   <StatusBadge color={row.color} status={row.status} />
                 </Td>

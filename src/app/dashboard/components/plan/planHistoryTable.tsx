@@ -60,7 +60,7 @@ export default function PlanHistoryTable() {
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
       <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
-        <h2 className="text-md font-normal text-[#101828]">Plan History</h2>
+        <h2 className="text-lg font-normal text-[#101828]">Plan History</h2>
         <div className="flex gap-2 w-full sm:w-auto">
           <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
             <Calendar size={16} />

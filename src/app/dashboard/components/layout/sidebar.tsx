@@ -11,8 +11,10 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const Sidebar = () => {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
@@ -29,13 +31,13 @@ const Sidebar = () => {
       <div className="sm:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="text-white bg-black p-2 rounded-md focus:outline-none"
+          className="text-white bg-black p-2 rounded-md"
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Overlay when open on mobile */}
+      {/* Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
@@ -66,16 +68,23 @@ const Sidebar = () => {
         </div>
 
         <nav className="space-y-4">
-          {navItems.map(({ name, icon: Icon, href }) => (
-            <Link
-              href={href}
-              key={name}
-              className="flex items-center gap-3 text-sm transition-all duration-200 ease-in-out py-[13px] px-2 rounded-md hover:bg-[#FDEFE5] hover:text-[#FF6F00]"
-              onClick={() => setIsOpen(false)} // close on click
-            >
-              <Icon size={24} /> {name}
-            </Link>
-          ))}
+          {navItems.map(({ name, icon: Icon, href }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={name}
+                href={href}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 text-base font-medium transition-all duration-200 ease-in-out py-[13px] px-3 rounded-md ${
+                  isActive
+                    ? "bg-[#FDEFE5] text-[#FF6F00]"
+                    : "hover:bg-[#FDEFE5] hover:text-[#FF6F00]"
+                }`}
+              >
+                <Icon size={24} /> {name}
+              </Link>
+            );
+          })}
         </nav>
       </aside>
     </>

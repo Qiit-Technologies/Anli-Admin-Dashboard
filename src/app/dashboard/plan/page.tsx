@@ -1,5 +1,5 @@
-import { PlanCard } from "../components/currentPlan/planCard";
-import PlanHistoryTable from "../components/currentPlan/planHistoryTable";
+import { PlanCard } from "../components/plan/planCard";
+import PlanHistoryTable from "../components/plan/planHistoryTable";
 import Header from "../components/layout/header";
 import Sidebar from "../components/layout/sidebar";
 
