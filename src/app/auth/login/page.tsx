@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 
-export default function Page() {
+export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
