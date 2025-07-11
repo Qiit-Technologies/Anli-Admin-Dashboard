@@ -9,7 +9,14 @@ const Input = React.forwardRef<
     <input
       type={type}
       className={cn(
-        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        //Base styles
+        "flex h-10 w-full rounded-md bg-white border border-[#474747]",
+        "px-4 py-2 text-[16px] font-medium text-[#0B0B0B] tracking-tight",
+        //Focus/active states (modified to match your requirements)
+        "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring",
+        "active:border-transparent",
+        //Disabled state
+        "disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       ref={ref}
