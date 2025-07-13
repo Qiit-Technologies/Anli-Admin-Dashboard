@@ -5,9 +5,45 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Image from "next/image";
+import { useMutation } from "@tanstack/react-query";
+import { useAxios } from "@/hooks/useAxios";
+import { FormDataProps } from "./types";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const { axiosPost } = useAxios();
+  const [formData, setFormData] = useState<FormDataProps>({
+    email: undefined,
+    password: undefined,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const { email, password } = formData;
+
+      if (email?.trim() === "" || password?.trim() === "") {
+        toast.warning("Email and password must not be empty");
+      }
+
+      return await axiosPost("auth/super-admin/login", {
+        email,
+        password,
+      });
+    },
+    onSuccess: (response) => {
+      console.log(response);
+    },
+    onError: (error) => {
+      console.error("ERROR", error);
+      toast.error("An Error has occured");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutate();
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-between items-center bg-[#FFE2CC] relative overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
@@ -63,55 +99,76 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-[#F9ECE1] p-6 sm:p-8 rounded-2xl shadow-md border border-app-secondary w-full max-w-md">
-          {/* Email Field */}
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block mb-1 text-[14px] font-medium text-[#070707]"
-            >
-              Email address
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Frank@Hotellagrand.com"
-              className="h-[50px] sm:h-[53px]"
-            />
-          </div>
-
-          {/* Password Field */}
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block mb-1 text-[14px] font-medium text-[#070707]"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="h-[50px] sm:h-[53px]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+          <form onSubmit={handleSubmit}>
+            {/* Email Field */}
+            <div className="mb-4">
+              <label
+                htmlFor="email"
+                className="block mb-1 text-[14px] font-medium text-[#070707]"
               >
-                {showPassword ? (
-                  <EyeOffIcon size={18} />
-                ) : (
-                  <EyeIcon size={18} />
-                )}
-              </button>
+                Email address
+              </label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="Frank@Hotellagrand.com"
+                className="h-[50px] sm:h-[53px]"
+                onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }))
+                }
+              />
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <Button className="w-full bg-app-primary hover:bg-app-primary text-white text-base font-medium rounded-md h-11">
-            Continue
-          </Button>
+            {/* Password Field */}
+            <div className="mb-6">
+              <label
+                htmlFor="password"
+                className="block mb-1 text-[14px] font-medium text-[#070707]"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  required
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="h-[50px] sm:h-[53px]"
+                  onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? (
+                    <EyeOffIcon size={18} />
+                  ) : (
+                    <EyeIcon size={18} />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              disabled={isPending}
+              className="w-full bg-app-primary hover:bg-app-primary text-white text-base font-medium rounded-md h-11"
+            >
+              {isPending ? "Please wait" : "Continue"}
+            </Button>
+          </form>
         </div>
       </div>
 
