@@ -31,13 +31,12 @@ export default function LoginPage() {
         toast.warning("Email and password must not be empty");
       }
 
-      return await axiosPost<LoginResponse>("auth/super-admin/login", {
+      return await axiosPost<LoginResponse>("/auth/super-admin/login", {
         email,
         password,
       });
     },
     onSuccess: (response) => {
-      console.log(response, "success");
       toast.success(response?.message);
 
       if (response?.data) {

@@ -4,7 +4,7 @@ export type FormDataProps = {
   email?: string;
   password?: string;
 };
-interface UserData {
+interface UserDTO {
   id: number;
   email: string;
   fullName: string;
@@ -13,4 +13,4 @@ interface UserData {
   roleId: number;
 }
 
-export type LoginResponse = ApiResponse<UserData>;
+export type LoginResponse = ApiResponse<UserDTO>;

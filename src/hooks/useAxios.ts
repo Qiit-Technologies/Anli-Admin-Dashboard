@@ -2,6 +2,8 @@ import { useCallback } from "react";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { usePathname, useRouter } from "next/navigation";
 
+axios.defaults.withCredentials = true;
+
 const baseURL = process?.env?.NEXT_PUBLIC_API_BASE_URL;
 
 const instance = axios.create({
@@ -29,9 +31,16 @@ export function useAxios() {
   );
 
   const axiosGet = useCallback(
-    async <T = unknown>(url: string, config?: AxiosRequestConfig) => {
+    async <T = unknown>(
+      url: string,
+      params?: Record<string, string | number>,
+      config?: AxiosRequestConfig
+    ) => {
       try {
-        const response = await instance.get<T>(url, config);
+        const response = await instance.get<T>(url, {
+          ...config,
+          params,
+        });
         return response.data;
       } catch (error) {
         handleError(error as AxiosError);
