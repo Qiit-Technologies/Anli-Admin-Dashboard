@@ -7,12 +7,17 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 import { useAxios } from "@/hooks/useAxios";
-import { FormDataProps } from "./types";
+import { FormDataProps, LoginResponse } from "./types";
 import { toast } from "sonner";
+import { useRouter } from "next13-progressbar";
+import { AxiosError } from "axios";
+import { ErrorResponseData } from "@/hooks/types";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { axiosPost } = useAxios();
+  const router = useRouter();
+
   const [formData, setFormData] = useState<FormDataProps>({
     email: undefined,
     password: undefined,
@@ -26,17 +31,30 @@ export default function LoginPage() {
         toast.warning("Email and password must not be empty");
       }
 
-      return await axiosPost("auth/super-admin/login", {
+      return await axiosPost<LoginResponse>("auth/super-admin/login", {
         email,
         password,
       });
     },
     onSuccess: (response) => {
-      console.log(response);
+      console.log(response, "success");
+      toast.success(response?.message);
+
+      if (response?.data) {
+        localStorage.setItem("userId", response.data.id?.toString());
+        localStorage.setItem("email", response.data.email);
+        localStorage.setItem("fullName", response.data.fullName);
+        localStorage.setItem("profileImage", response.data?.profileImage || "");
+        localStorage.setItem("status", response.data.status);
+        localStorage.setItem("roleId", response.data.roleId?.toString());
+      }
+      router.push("/business-list");
     },
-    onError: (error) => {
-      console.error("ERROR", error);
-      toast.error("An Error has occured");
+    onError: (error: AxiosError) => {
+      const message =
+        (error.response?.data as ErrorResponseData)?.message ||
+        "An unexpected error occurred";
+      toast.error(message);
     },
   });
 

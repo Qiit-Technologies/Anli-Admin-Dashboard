@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { toast } from "sonner";
-import { ErrorResponseData } from "./types";
+import { usePathname, useRouter } from "next/navigation";
 
 const baseURL = process?.env?.NEXT_PUBLIC_API_BASE_URL;
 
@@ -14,19 +13,20 @@ const instance = axios.create({
 });
 
 export function useAxios() {
-  const handleError = (error: AxiosError) => {
-    const status = error.response?.status;
-    const message =
-      (error.response?.data as ErrorResponseData)?.message ||
-      error.message ||
-      "An error occurred";
+  const pathname = usePathname();
+  const router = useRouter();
 
-    if (status === 400 || status === 401) {
-      toast.error(message);
-    } else {
-      throw error;
-    }
-  };
+  const handleError = useCallback(
+    (error: AxiosError) => {
+      const status = error.response?.status;
+      if (status === 401 && pathname !== "/login") {
+        router.push("/login");
+      } else {
+        throw error;
+      }
+    },
+    [pathname, router]
+  );
 
   const axiosGet = useCallback(
     async <T = unknown>(url: string, config?: AxiosRequestConfig) => {
@@ -37,7 +37,7 @@ export function useAxios() {
         handleError(error as AxiosError);
       }
     },
-    []
+    [handleError]
   );
 
   const axiosPost = useCallback(
@@ -53,7 +53,7 @@ export function useAxios() {
         handleError(error as AxiosError);
       }
     },
-    []
+    [handleError]
   );
 
   return { axiosGet, axiosPost };
