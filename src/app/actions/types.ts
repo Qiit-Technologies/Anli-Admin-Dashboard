@@ -1,8 +1,4 @@
-import { ApiResponse } from "@/hooks/types";
 import { BusinessDTO } from "@/types/business";
-
-export type BusinessListProps = {
-  data: BusinessDTO[];
-};
+import { ApiResponse } from "../lib/types";
 
 export type businessListResponse = ApiResponse<{ hotels: BusinessDTO[] }>;

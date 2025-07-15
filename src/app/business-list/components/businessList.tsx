@@ -1,16 +1,27 @@
 "use client";
 
+import useSWR from "swr";
 import { useState } from "react";
 import Image from "next/image";
-import { BusinessListProps } from "./types";
+import { Pagination } from "@/components/common/pagination";
+import { useDebounce } from "@/hooks/useDebounce";
+import getBusinessList from "@/app/actions/businessList";
 import SearchWithIcon from "@/components/common/searchWithIcon";
+import { Spinner } from "@/components/ui/spinner";
 
-export default function BusinessList({ data }: BusinessListProps) {
+export default function BusinessList() {
+  const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query);
+  const limit = 10;
 
-  const filtered = data.filter((b) =>
-    b.name.toLowerCase().includes(query.toLowerCase())
+  const { data: response, isLoading } = useSWR(
+    [`/super-admin/hotels`, page, limit, debouncedQuery],
+    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
   );
+
+  const businesses = response?.data?.hotels ?? [];
+  const totalPages = response?.total ?? 1;
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden px-4 py-6">
@@ -52,31 +63,51 @@ export default function BusinessList({ data }: BusinessListProps) {
       </div>
 
       {/* Business Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto z-20 relative px-4">
-        {filtered.map((b, idx) => (
-          <div
-            key={idx}
-            className="bg-white border rounded-2xl py-4 px-5 text-center transition-all border-gray-200 hover:border-[#F47411]"
-            style={{
-              boxShadow: "0px 1px 3px 0px #F4E7DD0F, 0px 3px 2px 0px #0000001A",
-            }}
-          >
-            <Image
-              src={b.icon}
-              alt={b.name}
-              width={70}
-              height={70}
-              className="mx-auto mb-3 object-contain"
-            />
-            <h2 className="font-medium text-lg sm:text-xl text-black hover:text-[#F47411]">
-              {b.name}
-            </h2>
-            <p className="text-sm sm:text-md text-gray-500 font-normal">
-              {b.subtext}
-            </p>
-          </div>
-        ))}
-      </div>
+      {businesses.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto z-20 relative px-4">
+          {businesses.map((b, idx) => (
+            <div
+              key={idx}
+              className="bg-white border rounded-2xl py-4 px-5 text-center transition-all border-gray-200 hover:border-[#F47411] cursor-pointer"
+              style={{
+                boxShadow:
+                  "0px 1px 3px 0px #F4E7DD0F, 0px 3px 2px 0px #0000001A",
+              }}
+            >
+              <Image
+                src={b?.coverImage || "/sample-company.png"}
+                alt={b.name}
+                width={70}
+                height={70}
+                className="mx-auto mb-3 object-contain"
+              />
+              <h2 className="font-medium text-lg sm:text-xl text-black hover:text-[#F47411]">
+                {b.name}
+              </h2>
+              <p className="text-sm sm:text-md text-gray-500 font-normal">
+                {b.address}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-500 z-20 relative">
+          {isLoading ? (
+            <Spinner>Loading businesses...</Spinner>
+          ) : (
+            "No businesses found"
+          )}
+        </p>
+      )}
+
+      {/* Pagination */}
+      {businesses.length > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }
