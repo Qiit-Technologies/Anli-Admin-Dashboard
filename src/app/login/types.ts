@@ -1,16 +1,9 @@
 import { ApiResponse } from "@/hooks/types";
+import { UserDTO } from "@/types/user";
 
 export type FormDataProps = {
   email?: string;
   password?: string;
 };
-interface UserDTO {
-  id: number;
-  email: string;
-  fullName: string;
-  profileImage: string | null;
-  status: "pending" | "active" | "suspended" | "inactive";
-  roleId: number;
-}
 
 export type LoginResponse = ApiResponse<UserDTO>;

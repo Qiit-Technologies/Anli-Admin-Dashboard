@@ -102,7 +102,10 @@ export default function UsersTable() {
                 <Td>
                   <div className="flex items-center gap-2">
                     <Image
-                      src={`https://ui-avatars.com/api/?name=${row.employeeName?.replaceAll(' ', '-')}`}
+                      src={`https://ui-avatars.com/api/?name=${row.employeeName?.replaceAll(
+                        " ",
+                        "-"
+                      )}`}
                       alt={row.employeeName}
                       className="w-6 h-6 rounded-full"
                       width={24}

@@ -1,112 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import useSWR from "swr";
+import { useState } from "react";
 import Image from "next/image";
-import { BusinessDTO, businessListResponse } from "./types";
-import SearchWithIcon from "@/components/common/searchWithIcon";
-import { useMutation } from "@tanstack/react-query";
-import { useAxios } from "@/hooks/useAxios";
-import { Spinner } from "@/components/ui/spinner";
 import { Pagination } from "@/components/common/pagination";
-import { AxiosError } from "axios";
-import { ErrorResponseData } from "@/hooks/types";
-import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
+import getBusinessList from "@/app/actions/businessList";
+import SearchWithIcon from "@/components/common/searchWithIcon";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function BusinessList() {
-  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  const [data, setData] = useState<BusinessDTO[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const { axiosGet } = useAxios();
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query);
+  const limit = 10;
 
-  const filtered = data.filter((b) =>
-    b.name.toLowerCase().includes(query.toLowerCase())
+  const { data: response, isLoading } = useSWR(
+    [`/super-admin/hotels`, page, limit, debouncedQuery],
+    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
   );
 
-  const { mutate: getBusinesses, isPending } = useMutation({
-    mutationFn: async () => {
-      return await axiosGet<businessListResponse>("/super-admin/hotels", {
-        page,
-        limit,
-      });
-    },
-
-    //   return {
-    //     success: true,
-    //     data: {
-    //       hotels: [
-    //         {
-    //           id: 2,
-    //           name: "Prudent Crypto",
-    //           isActive: true,
-    //           address: "Plot 233, day",
-    //           businessType: "HOTEL",
-    //           registrationNumber: null,
-    //           country: "Nigeria",
-    //           state: "Lagos",
-    //           coverImage: null,
-    //           cacImage: null,
-    //           isCacVerified: false,
-    //           isEmailVerified: false,
-    //           createdAt: "2025-07-08T16:52:40.162Z",
-    //           taxId: null,
-    //           incorporationCert: null,
-    //           boardingToken:
-    //             "$2b$10$MNmz3DJwm.Zvjb0lCJB3xeLUwSGgOxGY16Wa24eS8NH/VFn2MpB7a",
-    //           services: null,
-    //           disbursementType: "IN_APP_DISBURSEMENT",
-    //         },
-    //         {
-    //           id: 1,
-    //           name: "Sip and Kings",
-    //           isActive: true,
-    //           address: "Lagos Island",
-    //           businessType: "HOTEL",
-    //           registrationNumber: "12345",
-    //           country: "Nigeria",
-    //           state: "Lagos",
-    //           coverImage: null,
-    //           cacImage: null,
-    //           isCacVerified: true,
-    //           isEmailVerified: true,
-    //           createdAt: "2025-07-07T16:36:33.890Z",
-    //           taxId: "1234",
-    //           incorporationCert: null,
-    //           boardingToken: null,
-    //           services: null,
-    //           disbursementType: "IN_APP_DISBURSEMENT",
-    //         },
-    //       ],
-    //     },
-    //     total: 2,
-    //     page: 1,
-    //     limit: 9,
-    //     totalPages: 1,
-    //     message: "All hotels retrieved successfully",
-    //   };
-    // },
-    onSuccess: (response) => {
-      if (response?.data) {
-        setData(response.data.hotels);
-        setTotalPages(response?.totalPages || 1);
-      }
-    },
-    onError: (error: AxiosError) => {
-      const message =
-        (error.response?.data as ErrorResponseData)?.message ||
-        "An unexpected error occurred";
-      toast.error(message);
-    },
-  });
-
-  useEffect(() => {
-    getBusinesses();
-  }, []);
-
-  // const handleSearch = () => {
-  //   return null;
-  // }
+  const businesses = response?.data?.hotels ?? [];
+  const totalPages = response?.total ?? 1;
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden px-4 py-6">
@@ -146,13 +61,11 @@ export default function BusinessList() {
           value={query}
         />
       </div>
-      {isPending ? (
-        <div className="flex items-center gap-3">
-          <Spinner>Loading...</Spinner>
-        </div>
-      ) : data?.length > 0 ? (
+
+      {/* Business Grid */}
+      {businesses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto z-20 relative px-4">
-          {filtered.map((b, idx) => (
+          {businesses.map((b, idx) => (
             <div
               key={idx}
               className="bg-white border rounded-2xl py-4 px-5 text-center transition-all border-gray-200 hover:border-[#F47411] cursor-pointer"
@@ -178,12 +91,17 @@ export default function BusinessList() {
           ))}
         </div>
       ) : (
-        <p className="text-center">
-          Please check back later, no Hotels were found
+        <p className="text-center text-gray-500 z-20 relative">
+          {isLoading ? (
+            <Spinner>Loading businesses...</Spinner>
+          ) : (
+            "No businesses found"
+          )}
         </p>
       )}
 
-      {data?.length > 0 && (
+      {/* Pagination */}
+      {businesses.length > 0 && (
         <Pagination
           page={page}
           totalPages={totalPages}

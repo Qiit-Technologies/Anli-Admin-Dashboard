@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
-import { useAxios } from "@/hooks/useAxios";
 import { FormDataProps, LoginResponse } from "./types";
 import { toast } from "sonner";
 import { useRouter } from "next13-progressbar";
 import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
+import { axiosPost } from "../lib/api";
+import { useUser } from "@/context/userContext";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const { axiosPost } = useAxios();
+  const { setUser } = useUser();
+
   const router = useRouter();
 
   const [formData, setFormData] = useState<FormDataProps>({
@@ -38,14 +40,15 @@ export default function LoginPage() {
     },
     onSuccess: (response) => {
       toast.success(response?.message);
-
       if (response?.data) {
-        localStorage.setItem("userId", response.data.id?.toString());
-        localStorage.setItem("email", response.data.email);
-        localStorage.setItem("fullName", response.data.fullName);
-        localStorage.setItem("profileImage", response.data?.profileImage || "");
-        localStorage.setItem("status", response.data.status);
-        localStorage.setItem("roleId", response.data.roleId?.toString());
+        setUser({
+          id: response.data.id,
+          email: response.data.email,
+          fullName: response.data.fullName,
+          profileImage: response.data.profileImage,
+          status: response.data.status,
+          roleId: response.data.roleId,
+        });
       }
       router.push("/business-list");
     },
