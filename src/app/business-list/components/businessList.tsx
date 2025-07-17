@@ -33,7 +33,7 @@ export default function BusinessList() {
   );
 
   const businesses = response?.data?.hotels ?? [];
-  const totalPages = response?.total ?? 1;
+  const totalPages = response?.totalPages ?? 1;
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden px-4 py-6">
