@@ -99,7 +99,13 @@ export default function PaymentHistoryTable() {
                 <Td>{row.amount}</Td>
                 <Td>{row.paymentMethod}</Td>
                 <Td>
-                  <StatusBadge color={row.color} status={row.status} />
+                  <StatusBadge
+                    status={row.status}
+                    statusColorMap={{
+                      unpaid: "yellow",
+                      paid: "green",
+                    }}
+                  />
                 </Td>
                 <Td className="text-blue-600 hover:underline cursor-pointer">
                   View

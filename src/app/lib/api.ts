@@ -12,18 +12,14 @@ const instance: AxiosInstance = axios.create({
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status >= 500) {
-      return Promise.reject(error);
-    }
-    return Promise.resolve(error.response);
+    return Promise.reject(error); // 🔥 always reject on error
   }
 );
 
 function handleError(error: AxiosError, currentPath?: string) {
   const status = error.response?.status;
-
+  console.log(status, error);
   if (status === 401 && currentPath !== "/login") {
-    // Only works in server components (not route handlers)
     redirect("/login");
   }
   console.log(error, "why not throwing");
@@ -71,4 +67,14 @@ export async function axiosPost<T = unknown>(
     handleError(error as AxiosError, currentPath);
     return undefined;
   }
+}
+
+export function isRedirectError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest?: string }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
 }
