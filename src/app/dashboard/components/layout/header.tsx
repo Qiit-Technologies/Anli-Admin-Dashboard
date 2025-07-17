@@ -1,4 +1,10 @@
+"use client";
+
+import { useUser } from "@/context/userContext";
+import { getInitials } from "@/utils/utils";
 import { Bell, Menu, Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Header = ({
   title,
@@ -9,6 +15,15 @@ const Header = ({
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
 }) => {
+  const { user, loading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) router.push("/login");
+    }
+  }, [loading, user, router]);
+
   return (
     <header className="flex sm:flex-row justify-between items-center p-4 sm:p-6 md:p-10 gap-4 sm:gap-0 border-b border-[#B5B5B5] bg-white top-0 z-10 relative">
       {/* Page title */}
@@ -34,15 +49,15 @@ const Header = ({
         <div className="flex items-center gap-2">
           <div className="relative">
             <div className="w-10 h-10 bg-orange-100 text-orange-500 font-bold rounded-full flex items-center justify-center">
-              CS
+              {getInitials(user?.fullName || "")}
             </div>
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-[#344054]">Corner Stone</p>
-            <p className="text-xs text-[#667085] break-words">
-              cornerstone1@gmail.com
+            <p className="text-sm font-medium text-[#344054]">
+              {user?.fullName}
             </p>
+            <p className="text-xs text-[#667085] break-words">{user?.email}</p>
           </div>
         </div>
       </div>
