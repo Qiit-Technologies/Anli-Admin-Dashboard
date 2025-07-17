@@ -3,14 +3,8 @@
 import { AxiosError } from "axios";
 import { axiosGet } from "../lib/api";
 import { getAuthToken } from "../lib/auth";
-import { businessListResponse } from "./types";
+import { businessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
-
-interface GetBusinessListOptions {
-  page?: number;
-  limit?: number;
-  searchTerm?: string;
-}
 
 export default async function getBusinessList(
   options: GetBusinessListOptions = {}

@@ -5,15 +5,27 @@ import { useState } from "react";
 import Image from "next/image";
 import { Pagination } from "@/components/common/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
-import getBusinessList from "@/app/actions/businessList";
+import getBusinessList from "@/app/actions/business";
 import SearchWithIcon from "@/components/common/searchWithIcon";
 import { Spinner } from "@/components/ui/spinner";
+import { useBusiness } from "@/context/businessContext";
+import { BusinessDTO } from "@/types/business";
+import { useRouter } from "next13-progressbar";
 
 export default function BusinessList() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
   const limit = 10;
+  const { setBusiness, loading } = useBusiness();
+  const router = useRouter();
+
+  const handleBusinessClick = (item: BusinessDTO) => {
+    setBusiness(item);
+    if (!loading) {
+      router.push("/dashboard");
+    }
+  };
 
   const { data: response, isLoading } = useSWR(
     [`/super-admin/hotels`, page, limit, debouncedQuery],
@@ -73,6 +85,7 @@ export default function BusinessList() {
                 boxShadow:
                   "0px 1px 3px 0px #F4E7DD0F, 0px 3px 2px 0px #0000001A",
               }}
+              onClick={() => handleBusinessClick(b)}
             >
               <Image
                 src={b?.coverImage || "/sample-company.png"}

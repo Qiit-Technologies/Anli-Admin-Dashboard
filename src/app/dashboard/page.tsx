@@ -4,10 +4,23 @@ import Header from "./components/layout/header";
 import Sidebar from "./components/layout/sidebar";
 import Image from "next/image";
 import PaymentTable from "./components/general/paymentTable";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useBusiness } from "@/context/businessContext";
+import { useRouter } from "next/navigation";
+import CurrentPlan from "./components/general/currentPlan";
 
 export default function DashboardPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { business, loading } = useBusiness();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && (!business || Object.keys(business).length < 1)) {
+      router.replace("/business-list");
+    }
+  }, [business, loading, router]);
+
+  if (loading || !business) return null;
 
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
@@ -32,10 +45,10 @@ export default function DashboardPage() {
                 />
               </div>
               <h2 className="text-xl font-semibold text-[#0B0B0B]">
-                Corner Stone
+                {business?.name}
               </h2>
               <p className="text-md font-medium text-[#0B0B0B]">
-                cornerstone1@gmail.com
+                {business?.address}
               </p>
               <p className="text-sm text-[#0B0B0B]">+234 8070 234 000</p>
               <button className="rounded-[10px] mt-4 bg-[#007BFF] hover:bg-blue-700 text-white w-full py-4 px-6">
@@ -113,39 +126,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Current Plan */}
-            <div className="bg-white p-6 rounded-xl border border-[#E0E0E0] space-y-4">
-              <h4 className="font-medium text-md text-gray-900">
-                Current Plan
-              </h4>
-              <hr className="my-3 border border-[#DFDFDF]" />
-              <ul className="text-sm space-y-4 text-gray-700 pb-6 border-b border-[#DFDFDF]">
-                <li className="flex justify-between">
-                  <span className="font-medium">Plan Name</span>
-                  <span>Free</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="font-medium">Renewal Date</span>
-                  <span>July 15, 2025. 3 days left</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="font-medium">Billing Cycle</span>
-                  <span>Monthly</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="font-medium">Modules Allowed</span>
-                  <span>Front office, Restaurant, Bar</span>
-                </li>
-              </ul>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="rounded-[10px] bg-[#007BFF] hover:bg-blue-700 text-white py-3 px-6 text-sm w-full">
-                  Upgrade Plan
-                </button>
-                <button className="rounded-[10px] text-[#007BFF] border border-[#007BFF] py-3 px-6 text-sm w-full">
-                  Send Payment Reminder
-                </button>
-              </div>
-            </div>
+            <CurrentPlan businessId={business.id.toString()} />
           </div>
 
           <PaymentTable />

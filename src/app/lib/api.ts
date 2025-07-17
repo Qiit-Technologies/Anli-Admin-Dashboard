@@ -26,7 +26,7 @@ function handleError(error: AxiosError, currentPath?: string) {
     // Only works in server components (not route handlers)
     redirect("/login");
   }
-
+  console.log(error, "why not throwing");
   throw error;
 }
 
