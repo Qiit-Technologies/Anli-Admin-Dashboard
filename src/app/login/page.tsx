@@ -39,8 +39,8 @@ export default function LoginPage() {
       });
     },
     onSuccess: (response) => {
-      toast.success(response?.message);
       if (response?.data) {
+        toast.success(response?.message || "Login successful");
         setUser({
           id: response.data.id,
           email: response.data.email,
@@ -49,8 +49,12 @@ export default function LoginPage() {
           status: response.data.status,
           roleId: response.data.roleId,
         });
+        router.push("/business-list");
+      } else {
+        toast.error(
+          response?.message || "Login failed. Please check your credentials."
+        );
       }
-      router.push("/business-list");
     },
     onError: (error: AxiosError) => {
       const message =
