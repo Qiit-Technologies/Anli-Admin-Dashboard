@@ -19,9 +19,8 @@ interface TrProps extends React.HTMLAttributes<HTMLTableRowElement> {
 interface TdProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
   children: React.ReactNode;
 }
-
 interface StatusBadgeProps {
-  color: string;
+  statusColorMap: Record<string, "green" | "yellow" | "red" | "gray">;
   status: string;
 }
 
@@ -77,20 +76,28 @@ const Td = ({ children, ...props }: TdProps) => {
   );
 };
 
-const StatusBadge = ({ color, status }: StatusBadgeProps) => {
+const StatusBadge = ({ status, statusColorMap }: StatusBadgeProps) => {
+  const color = statusColorMap[status] || "gray";
+
+  const badgeColorClasses = {
+    green: "bg-green-100 text-green-600",
+    yellow: "bg-yellow-100 text-yellow-800",
+    red: "bg-red-100 text-red-700",
+    gray: "bg-gray-100 text-gray-600",
+  };
+
+  const dotColorClasses = {
+    green: "bg-green-500",
+    yellow: "bg-yellow-500",
+    red: "bg-red-500",
+    gray: "bg-gray-400",
+  };
+
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        color === "green"
-          ? "bg-green-100 text-green-600"
-          : "bg-red-100 text-red-700"
-      }`}
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColorClasses[color]}`}
     >
-      <span
-        className={`w-2 h-2 rounded-full ${
-          color === "green" ? "bg-green-500" : "bg-red-500"
-        }`}
-      ></span>
+      <span className={`w-2 h-2 rounded-full ${dotColorClasses[color]}`}></span>
       {status}
     </span>
   );

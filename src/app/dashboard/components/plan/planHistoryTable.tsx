@@ -112,7 +112,13 @@ export default function PlanHistoryTable() {
                 <Td>{row.newPlan}</Td>
                 <Td>{row.changedBy}</Td>
                 <Td>
-                  <StatusBadge color={row.color} status={row.billingCycle} />
+                  <StatusBadge
+                    status={row.billingCycle}
+                    statusColorMap={{
+                      unresolved: "yellow",
+                      resolved: "green",
+                    }}
+                  />
                 </Td>
                 <Td>{row.notes}</Td>
               </Tr>

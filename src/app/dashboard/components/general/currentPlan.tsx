@@ -3,12 +3,17 @@ import { Spinner } from "@/components/ui/spinner";
 import useSWR from "swr";
 
 export default function CurrentPlan({ businessId }: { businessId: string }) {
-  const {
-    isLoading,
-    data: response,
-  } = useSWR(businessId ? businessId : null, () => getPlan({ id: businessId }));
-  
-  const billingInfo = response?.data?.billingInfo;
+  const { isLoading, data: response } = useSWR(
+    businessId ? businessId : null,
+    () => getPlan({ businessId })
+  );
+
+  const billingInfo = response?.data?.billingInfo || {
+    plan_name: "",
+    renewal_date: "",
+    billing_cycle: "",
+    modules: [],
+  };
 
   return (
     <div className="bg-white p-6 rounded-xl border border-[#E0E0E0] space-y-4">
