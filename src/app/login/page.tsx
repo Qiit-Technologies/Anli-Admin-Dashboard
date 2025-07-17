@@ -33,14 +33,20 @@ export default function LoginPage() {
         toast.warning("Email and password must not be empty");
       }
 
-      return await axiosPost<LoginResponse>("/auth/super-admin/login", {
-        email,
-        password,
-      });
+      return await axiosPost<LoginResponse>(
+        "/auth/super-admin/login",
+        {
+          email,
+          password,
+        },
+        {
+          currentPath: "/login",
+        }
+      );
     },
     onSuccess: (response) => {
-      toast.success(response?.message);
       if (response?.data) {
+        toast.success(response?.message || "Login successful");
         setUser({
           id: response.data.id,
           email: response.data.email,
@@ -49,8 +55,12 @@ export default function LoginPage() {
           status: response.data.status,
           roleId: response.data.roleId,
         });
+        router.push("/business-list");
+      } else {
+        toast.error(
+          response?.message || "Login failed. Please check your credentials."
+        );
       }
-      router.push("/business-list");
     },
     onError: (error: AxiosError) => {
       const message =
