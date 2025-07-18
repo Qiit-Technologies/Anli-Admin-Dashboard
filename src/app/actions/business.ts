@@ -1,15 +1,16 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet } from "../lib/api";
+import { axiosGet, isRedirectError } from "../lib/api";
 import { getAuthToken } from "../lib/auth";
-import { businessListResponse, GetBusinessListOptions } from "./types";
+import { getBusinessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
 
 export default async function getBusinessList(
   options: GetBusinessListOptions = {}
-): Promise<businessListResponse> {
-  const { page = 1, limit = 9, searchTerm } = options;
+): Promise<getBusinessListResponse> {
+  const { page = 1, limit = 10, searchTerm } = options;
+
   try {
     const authToken = await getAuthToken();
 
@@ -19,7 +20,7 @@ export default async function getBusinessList(
 
     const url = `${baseUrl}?page=${page}&limit=${limit}`;
 
-    const response = await axiosGet<businessListResponse>(url, {
+    const response = await axiosGet<getBusinessListResponse>(url, {
       config: {
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -42,6 +43,8 @@ export default async function getBusinessList(
 
     return response;
   } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
     const axiosError = error as AxiosError;
     const message =
       (axiosError.response?.data as ErrorResponseData)?.message ||

@@ -1,20 +1,22 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet } from "../lib/api";
+import { axiosGet, isRedirectError } from "../lib/api";
 import { getAuthToken } from "../lib/auth";
-import { GetPlanOptions, getPlanResponse } from "./types";
+import { GetReportsOptions, getReportsResponse } from "./types";
 import { ErrorResponseData } from "../lib/types";
 
 export default async function getReports(
-  options: GetPlanOptions
-): Promise<getPlanResponse> {
-  const { id } = options;
+  options: GetReportsOptions
+): Promise<getReportsResponse> {
   try {
-    const authToken = await getAuthToken();
-    const url = `/super-admin/${id}/pricing/current-plan`;
+    const { page = 1, limit = 10, businessId } = options;
 
-    const response = await axiosGet<getPlanResponse>(url, {
+    const authToken = await getAuthToken();
+
+    const url = `/super-admin/${Number(businessId)}/reports?page=${page}&limit=${limit}`;
+  
+    const response = await axiosGet<getReportsResponse>(url, {
       config: {
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -27,19 +29,15 @@ export default async function getReports(
       return {
         message: "No data received",
         data: {
-          billingInfo: {
-            plan_name: "",
-            renewal_date: "",
-            billing_cycle: "",
-            modules: [],
-          },
+          reports: [],
         },
       };
     }
 
     return response;
   } catch (error: unknown) {
-    console.log(error, "it has happed o")
+    if (isRedirectError(error)) throw error;
+  
     const axiosError = error as AxiosError;
     const message =
       (axiosError.response?.data as ErrorResponseData)?.message ||
@@ -48,12 +46,7 @@ export default async function getReports(
     return {
       message,
       data: {
-        billingInfo: {
-          plan_name: "",
-          renewal_date: "",
-          billing_cycle: "",
-          modules: [],
-        },
+        reports: [],
       },
     };
   }
