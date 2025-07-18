@@ -11,6 +11,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { useBusiness } from "@/context/businessContext";
 import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
+import { Button } from "@/components/ui/button";
+import { Shield, Layers } from "lucide-react";
 
 export default function BusinessList() {
   const [page, setPage] = useState(1);
@@ -51,6 +53,25 @@ export default function BusinessList() {
 
       {/* Header */}
       <div className="text-center mb-8 z-20 relative px-4">
+        <div className="flex justify-between items-start mb-6">
+          <div></div> {/* Left spacer */}
+          <div className="flex gap-3">
+            <Button
+              onClick={() => router.push("/modules")}
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Layers size={16} />
+              Manage Modules
+            </Button>
+            <Button
+              onClick={() => router.push("/permissions")}
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Shield size={16} />
+              Manage Permissions
+            </Button>
+          </div>
+        </div>
         <Image
           src="/logo.svg"
           alt="Anli logo"

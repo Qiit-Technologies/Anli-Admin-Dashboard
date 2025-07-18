@@ -26,7 +26,6 @@ const Sidebar = ({
     { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
     { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
     { name: "Users", icon: Users, href: "/dashboard/users" },
-    { name: "Permission", icon: X, href: "/dashboard/permission" },
   ];
 
   return (

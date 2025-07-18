@@ -10,7 +10,6 @@ export default async function getBusinessList(
   options: GetBusinessListOptions = {}
 ): Promise<businessListResponse> {
   const { page = 1, limit = 9, searchTerm } = options;
-
   try {
     const authToken = await getAuthToken();
 
