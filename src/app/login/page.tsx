@@ -7,7 +7,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 import { FormDataProps, LoginResponse } from "./types";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 import { useRouter } from "next13-progressbar";
 import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
