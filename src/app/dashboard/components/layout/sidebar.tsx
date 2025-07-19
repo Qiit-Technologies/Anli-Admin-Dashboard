@@ -1,14 +1,14 @@
 "use client";
 import {
-  Layers,
+  ChartNoAxesColumn,
   CreditCard,
+  Layers,
+  SquareCheckBig,
   Users,
   X,
-  ChartNoAxesColumn,
-  SquareCheckBig,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const Sidebar = ({
@@ -32,7 +32,7 @@ const Sidebar = ({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden"
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 sm:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -41,7 +41,7 @@ const Sidebar = ({
         className={`fixed sm:static inset-y-0 left-0 bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0
     ${isOpen ? "translate-x-0" : "-translate-x-full"} w-full sm:w-60 px-4 py-6`}
       >
-        <div className="mb-12 flex items-center justify-center relative">
+        <div className="flex relative justify-center items-center mb-12">
           <Image
             src="/logo-white.svg"
             alt="Logo"
@@ -51,7 +51,7 @@ const Sidebar = ({
           />
           <button
             onClick={() => setIsOpen(false)}
-            className="text-white sm:hidden absolute right-0"
+            className="absolute right-0 text-white sm:hidden"
           >
             <X size={20} />
           </button>

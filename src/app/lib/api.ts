@@ -69,6 +69,45 @@ export async function axiosPost<T = unknown>(
   }
 }
 
+export async function axiosPatch<T = unknown>(
+  url: string,
+  data?: unknown,
+  {
+    config,
+    currentPath,
+  }: {
+    config?: AxiosRequestConfig;
+    currentPath?: string;
+  } = {}
+): Promise<T | undefined> {
+  try {
+    const response = await instance.patch<T>(url, data, config);
+    return response.data;
+  } catch (error) {
+    handleError(error as AxiosError, currentPath);
+    return undefined;
+  }
+}
+
+export async function axiosDelete<T = unknown>(
+  url: string,
+  {
+    config,
+    currentPath,
+  }: {
+    config?: AxiosRequestConfig;
+    currentPath?: string;
+  } = {}
+): Promise<T | undefined> {
+  try {
+    const response = await instance.delete<T>(url, config);
+    return response.data;
+  } catch (error) {
+    handleError(error as AxiosError, currentPath);
+    return undefined;
+  }
+}
+
 export function isRedirectError(error: unknown): boolean {
   return (
     typeof error === "object" &&
