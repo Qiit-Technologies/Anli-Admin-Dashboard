@@ -223,7 +223,7 @@ export default function ModulePage() {
     };
     fetchModules();
   }, []);
-
+  console.log(modules);
   const handleAddModule = async (moduleData: {
     name: string;
     description?: string;

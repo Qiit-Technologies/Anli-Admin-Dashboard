@@ -251,7 +251,8 @@ export default function PermissionPage() {
   const debouncedQuery = useDebounce(query);
   const [page, setPage] = useState(1);
   const limit = 10;
-
+  console.log(permissions);
+  console.log(modules);
   // Simulate search and pagination client-side
   const filteredPermissions = permissions.permissions.filter((p) =>
     p.name.toLowerCase().includes(debouncedQuery.toLowerCase())

@@ -44,7 +44,7 @@ export default function BusinessList() {
       router.push("/dashboard");
     }
   };
-
+  console.log(response);
   const businesses = response?.data?.hotels ?? [];
   const totalPages = response?.totalPages ?? 1;
 
