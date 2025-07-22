@@ -61,7 +61,11 @@ export async function axiosPost<T = unknown>(
   } = {}
 ): Promise<T | undefined> {
   try {
-    const response = await instance.post<T>(url, data, config);
+    const response = await instance.post<T>(
+      url,
+      data,
+      { ...config, withCredentials: true } // Always include withCredentials
+    );
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
@@ -81,7 +85,11 @@ export async function axiosPatch<T = unknown>(
   } = {}
 ): Promise<T | undefined> {
   try {
-    const response = await instance.patch<T>(url, data, config);
+    const response = await instance.patch<T>(
+      url,
+      data,
+      { ...config, withCredentials: true } // Always include withCredentials
+    );
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
