@@ -20,6 +20,7 @@ export default async function getBusinessList(
 
     const url = `${baseUrl}?page=${page}&limit=${limit}`;
 
+    console.log(authToken);
     const response = await axiosGet<getBusinessListResponse>(url, {
       config: {
         headers: {
