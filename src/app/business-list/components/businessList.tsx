@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Pagination } from "@/components/common/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -13,8 +13,10 @@ import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
 import { Shield, Layers } from "lucide-react";
+import { useUser } from "@/context/userContext";
 
 export default function BusinessList() {
+  const { user, loading: userLoading } = useUser();
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
@@ -22,17 +24,26 @@ export default function BusinessList() {
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
 
+  // Always call hooks first
+  const { data: response, isLoading } = useSWR(
+    [`/super-admin/hotels`, page, limit, debouncedQuery],
+    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
+  );
+
+  // Auth guard
+  useEffect(() => {
+    if (!userLoading && (!user || Object.keys(user).length < 1)) {
+      router.replace("/login");
+    }
+  }, [user, userLoading, router]);
+  if (userLoading) return null;
+
   const handleBusinessClick = (item: BusinessDTO) => {
     setBusiness(item);
     if (!loading) {
       router.push("/dashboard");
     }
   };
-
-  const { data: response, isLoading } = useSWR(
-    [`/super-admin/hotels`, page, limit, debouncedQuery],
-    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
-  );
 
   const businesses = response?.data?.hotels ?? [];
   const totalPages = response?.totalPages ?? 1;

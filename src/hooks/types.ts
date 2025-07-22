@@ -6,6 +6,7 @@ export interface ErrorResponseData {
 export type ApiResponse<T> = {
   message: string;
   data: T;
+  access_token: string;
 } & Partial<PaginationMeta>;
 
 type PaginationMeta = {
