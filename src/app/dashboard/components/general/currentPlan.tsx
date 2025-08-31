@@ -16,7 +16,7 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-[#E0E0E0] space-y-4">
+    <div className="w-2/5 bg-white p-6 rounded-xl border border-[#E0E0E0] h-fit space-y-4">
       <h4 className="font-medium text-md text-gray-900">Current Plan</h4>
       <hr className="my-3 border border-[#DFDFDF]" />
       {isLoading ? (
@@ -45,13 +45,13 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               disabled={isLoading}
-              className="rounded-[10px] bg-[#007BFF] hover:bg-blue-700 text-white py-3 px-6 text-sm w-full"
+              className="rounded-[10px] bg-[#007BFF] hover:bg-blue-700 text-white py-3 px-6 text-sm w-full font-semibold"
             >
               Upgrade Plan
             </button>
             <button
               disabled={isLoading}
-              className="rounded-[10px] text-[#007BFF] border border-[#007BFF] py-3 px-6 text-sm w-full"
+              className="rounded-[10px] text-[#007BFF] border border-[#007BFF] py-3 px-6 text-sm w-full font-semibold"
             >
               Send Payment Reminder
             </button>

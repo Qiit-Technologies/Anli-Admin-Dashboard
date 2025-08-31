@@ -60,6 +60,7 @@ export async function axiosGet<T = unknown>(
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
+    throw error;
   }
 }
 

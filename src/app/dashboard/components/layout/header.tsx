@@ -25,7 +25,7 @@ const Header = ({
   }, [loading, user, router]);
 
   return (
-    <header className="flex sm:flex-row justify-between items-center p-4 sm:p-6 md:p-10 gap-4 sm:gap-0 border-b border-[#B5B5B5] bg-white top-0 z-10 relative">
+    <header className="flex sm:flex-row justify-between items-center p-4 gap-4 sm:gap-0 border-b border-[#B5B5B5] bg-white top-0 z-10 relative">
       {/* Page title */}
       <h2 className="text-xl font-bold sm:text-2xl">{title}</h2>
 

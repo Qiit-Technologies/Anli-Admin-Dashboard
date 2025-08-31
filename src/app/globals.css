@@ -9,9 +9,9 @@ body {
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-app-primary: #007BFF;
-  --color-app-secondary: #FF9F55;
-  --color-app-tertiary: #F9ECE1;
+  --color-app-primary: #007bff;
+  --color-app-secondary: #ff9f55;
+  --color-app-tertiary: #f9ece1;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -119,6 +119,10 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+button {
+  cursor: pointer;
 }
 
 @layer base {

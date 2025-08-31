@@ -59,7 +59,9 @@ const Sidebar = ({
 
         <nav className="space-y-4">
           {navItems.map(({ name, icon: Icon, href }) => {
-            const isActive = pathname === href;
+            const isActive =
+              pathname === href ||
+              (name === "General Info" && pathname === "/dashboard/details");
             return (
               <Link
                 key={name}
