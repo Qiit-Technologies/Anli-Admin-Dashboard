@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Calendar, ListFilterIcon } from "lucide-react";
+import { ArrowDown, Calendar, ListFilterIcon, View } from "lucide-react";
 import { Divider } from "../divider";
 import SearchWithIcon from "@/components/common/searchWithIcon";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import useSWR from "swr";
 import getStaff from "@/app/actions/staff";
 import { Spinner } from "@/components/ui/spinner";
+import { ViewStaffDetailsBtn } from "./viewStaffDetailsBtn";
 
 export default function UsersTable({ businessId }: { businessId: string }) {
   const [page, setPage] = useState(1);
@@ -34,7 +35,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
         limit,
         searchTerm: debouncedQuery,
         businessId: businessId,
-      })
+      }),
   );
 
   const staff = response?.data?.staffs ?? [];
@@ -76,8 +77,8 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                 <Tr>
                   <Th withIcon>Employee Name</Th>
                   <Th withIcon>Email Address</Th>
-                  <Th withIcon>Work Mode</Th>
-                  <Th withIcon>Employee Type</Th>
+                  <Th withIcon>Phone Number</Th>
+                  <Th withIcon>Department</Th>
                   <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
                     Employee Status
                   </Th>
@@ -94,7 +95,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                             row?.profileImage ||
                             `https://ui-avatars.com/api/?name=${row.fullName?.replaceAll(
                               " ",
-                              "-"
+                              "-",
                             )}`
                           }
                           alt={row.fullName}
@@ -107,8 +108,8 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                       </div>
                     </Td>
                     <Td>{row.email}</Td>
-                    <Td>{row.workMode}</Td>
-                    <Td>{row.type}</Td>
+                    <Td>{row.phoneNumber || "N/A"}</Td>
+                    <Td>{row.department?.name || "N/A"}</Td>
                     <Td>
                       <StatusBadge
                         status={row.status}
@@ -118,9 +119,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                         }}
                       />
                     </Td>
-                    <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4">
-                      View
-                    </Td>
+                    <ViewStaffDetailsBtn staffInfo={row} />
                   </Tr>
                 ))}
               </Tbody>

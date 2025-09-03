@@ -53,8 +53,11 @@ export default function DashboardPage() {
                 {business?.address}
               </p>
               <p className="text-sm text-[#0B0B0B]">+234 8070 234 000</p>
-              <button className="rounded-[10px] mt-2 bg-[#007BFF] hover:bg-blue-700 text-white w-full py-3 px-6 font-semibold cursor-pointer">
-                Add more modules
+              <button
+                onClick={() => router.push("/dashboard/details")}
+                className="rounded-[10px] mt-2 bg-[#007BFF] hover:bg-blue-700 text-white w-full py-3 px-6 font-semibold cursor-pointer"
+              >
+                View details
               </button>
             </div>
 

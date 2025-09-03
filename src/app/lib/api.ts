@@ -20,14 +20,14 @@ instance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     return Promise.reject(error); // 🔥 always reject on error
-  }
+  },
 );
 
 function handleError(error: AxiosError, currentPath?: string) {
@@ -50,7 +50,7 @@ export async function axiosGet<T = unknown>(
     params?: Record<string, string | number>;
     config?: AxiosRequestConfig;
     currentPath?: string; //pass manually for redirect check
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     const response = await instance.get<T>(url, {
@@ -73,7 +73,7 @@ export async function axiosPost<T = unknown>(
   }: {
     config?: AxiosRequestConfig;
     currentPath?: string;
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     const response = await instance.post<T>(url, data, { ...config });
@@ -93,7 +93,7 @@ export async function axiosPatch<T = unknown>(
   }: {
     config?: AxiosRequestConfig;
     currentPath?: string;
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     const response = await instance.patch<T>(url, data, { ...config });
@@ -112,7 +112,7 @@ export async function axiosDelete<T = unknown>(
   }: {
     config?: AxiosRequestConfig;
     currentPath?: string;
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     const response = await instance.delete<T>(url, config);

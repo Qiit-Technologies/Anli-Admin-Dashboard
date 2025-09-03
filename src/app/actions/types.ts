@@ -1,8 +1,8 @@
 import { BusinessDTO } from "@/types/business";
-import { ApiResponse } from "../lib/types";
+import { ApiResponse, PaginationMeta } from "../lib/types";
 import { BillingInfoDTO } from "@/types/plan";
 import { ReportDTO } from "@/types/report";
-import { StaffDTO } from "@/types/staff";
+import { Role, StaffDTO } from "@/types/staff";
 
 export interface Permission {
   id: string;
@@ -78,6 +78,12 @@ export interface GetStaffOptions {
   page?: number;
   limit?: number;
 }
+
+export type GetPermissionsResponse = {
+  permissions: Permission[];
+} & Partial<PaginationMeta>;
+
+export type GetRolesResponse = Role[];
 
 export type getStaffResponse = ApiResponse<{ staffs: StaffDTO[] }>;
 
