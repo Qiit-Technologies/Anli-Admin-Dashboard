@@ -33,6 +33,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
       }
 
       const payload = {
+        email: staffInfo.email,
         password: formData.password,
       };
 

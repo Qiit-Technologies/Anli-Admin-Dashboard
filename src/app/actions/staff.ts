@@ -90,7 +90,7 @@ export async function updateStaff(
 export async function resetStaffPassword(
   businessId: number,
   staffId: number,
-  payload: { password: string },
+  payload: { password: string; email: string },
 ) {
   const authToken = await getAuthToken();
 
