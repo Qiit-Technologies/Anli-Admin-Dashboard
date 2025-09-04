@@ -1,12 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { StaffDetails } from "./staffDetails";
 import { useState } from "react";
 import { useBusiness } from "@/context/businessContext";
@@ -33,11 +24,13 @@ export interface StaffInfoInterface {
 }
 
 export const StaffDetailsDrawer = ({
+  refetch,
   staffInfo,
   isSheetOpen,
   openSheetMenu,
   closeSheetMenu,
 }: {
+  refetch: () => void;
   staffInfo: StaffInfoInterface;
   isSheetOpen: boolean;
   openSheetMenu: () => void;
@@ -46,6 +39,7 @@ export const StaffDetailsDrawer = ({
   const router = useRouter();
   const { business } = useBusiness();
   const [loading, setLoading] = useState(false);
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [formData, setFormData] = useState<Partial<StaffInfoInterface>>({
     fullName: staffInfo.fullName,
@@ -54,6 +48,7 @@ export const StaffDetailsDrawer = ({
     phoneNumber: staffInfo.phoneNumber,
     roleId: staffInfo?.roles.id,
     permissions: staffInfo.permissions,
+    modules: staffInfo.modules,
   });
 
   const handleFormChange = (name: string, value: any) => {
@@ -71,6 +66,7 @@ export const StaffDetailsDrawer = ({
         phoneNumber: formData.phoneNumber,
         roleId: formData.roleId,
         permissions: selectedPermissions.map(Number),
+        modules: selectedModules.map(Number),
       };
 
       if (!business) {
@@ -82,8 +78,10 @@ export const StaffDetailsDrawer = ({
       await updateStaff(business?.id, payload, staffInfo.id);
 
       toast.success("Staff member updated successfully");
+      refetch();
       closeSheetMenu();
     } catch (error) {
+      console.log(error);
       if (error instanceof AxiosError) {
         const message =
           (error.response?.data as ErrorResponseData)?.message ||
@@ -106,13 +104,14 @@ export const StaffDetailsDrawer = ({
       subTitle="Update staff member details"
       open={isSheetOpen}
       setOpen={(open) => (open ? openSheetMenu() : closeSheetMenu())}
-      trigger={<span style={{ display: "none" }}></span>}
       loading={loading}
       onComplete={updateStaffDetails}
     >
       <StaffDetails
         formData={formData}
         onFormChange={handleFormChange}
+        selectedModules={selectedModules}
+        setSelectedModules={setSelectedModules}
         selectedPermissions={selectedPermissions}
         setSelectedPermissions={setSelectedPermissions}
       />

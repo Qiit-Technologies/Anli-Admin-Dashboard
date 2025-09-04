@@ -13,7 +13,7 @@ import { useState } from "react";
 import { CustomSheet } from "@/components/common/CustomSheet";
 import { StaffPasswordModal } from "./StaffPasswordModal";
 
-export const ViewStaffDetailsBtn = ({ staffInfo }: any) => {
+export const ViewStaffDetailsBtn = ({ staffInfo, refetch }: any) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
@@ -47,9 +47,10 @@ export const ViewStaffDetailsBtn = ({ staffInfo }: any) => {
       {isSheetOpen && (
         <StaffDetailsDrawer
           staffInfo={staffInfo}
-          closeSheetMenu={closeSheetMenu}
           isSheetOpen={isSheetOpen}
+          refetch={refetch}
           openSheetMenu={openSheetMenu}
+          closeSheetMenu={closeSheetMenu}
         />
       )}
     </>

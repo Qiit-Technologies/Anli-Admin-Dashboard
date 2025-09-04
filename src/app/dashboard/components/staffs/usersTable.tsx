@@ -27,7 +27,11 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const debouncedQuery = useDebounce(query);
   const limit = 10;
 
-  const { data: response, isLoading } = useSWR(
+  const {
+    data: response,
+    isLoading,
+    mutate,
+  } = useSWR(
     [`/super-admin/get-staff`, page, limit, debouncedQuery, businessId],
     () =>
       getStaff({
@@ -119,7 +123,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                         }}
                       />
                     </Td>
-                    <ViewStaffDetailsBtn staffInfo={row} />
+                    <ViewStaffDetailsBtn refetch={mutate} staffInfo={row} />
                   </Tr>
                 ))}
               </Tbody>
