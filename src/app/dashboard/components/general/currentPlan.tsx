@@ -1,11 +1,11 @@
 import getPlan from "@/app/actions/plan";
-import { Spinner } from "@/components/ui/spinner";
+import { FaSpinner } from "react-icons/fa";
 import useSWR from "swr";
 
 export default function CurrentPlan({ businessId }: { businessId: string }) {
   const { isLoading, data: response } = useSWR(
     businessId ? businessId : null,
-    () => getPlan({ businessId }),
+    () => getPlan({ businessId })
   );
 
   const billingInfo = response?.data?.billingInfo || {
@@ -16,11 +16,11 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
   };
 
   return (
-    <div className="w-full sm:w-2/5 bg-white p-6 rounded-xl border border-[#E0E0E0] h-fit space-y-4">
+    <div className="w-full lg:w-2/5 bg-white p-4 sm:p-6 rounded-xl border border-[#E0E0E0] h-fit space-y-4">
       <h4 className="font-medium text-md text-gray-900">Current Plan</h4>
       <hr className="my-3 border border-[#DFDFDF]" />
       {isLoading ? (
-        <Spinner>Loading component</Spinner>
+        <FaSpinner className="animate-spin" />
       ) : (
         <>
           <ul className="text-sm space-y-4 text-gray-700 pb-6 border-b border-[#DFDFDF]">

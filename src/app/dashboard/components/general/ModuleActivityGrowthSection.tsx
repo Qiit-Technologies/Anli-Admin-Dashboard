@@ -10,25 +10,31 @@ export const ModuleActivityGrowthSection = (): React.ReactNode => {
   };
 
   return (
-    <div className="w-full sm:w-3/5 sm:p-6 rounded-xl border hidden sm:flex">
+    <div className="w-full lg:w-3/5 p-4 sm:p-6 rounded-xl border">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
         <h3 className="text-sm font-medium">General Actives Growth</h3>
         <div className="flex  text-sm text-gray-500 border border-gray-300 rounded-md overflow-hidden">
           <button
             onClick={() => handlePeriodChange("year")}
-            className={`hover:text-black border-r px-4 py-2 ${selectedPeriod === "year" && "bg-gray-50 font-semibold"}`}
+            className={`hover:text-black border-r px-4 py-2 ${
+              selectedPeriod === "year" && "bg-gray-50 font-semibold"
+            }`}
           >
             12 months
           </button>
           <button
             onClick={() => handlePeriodChange("30d")}
-            className={`hover:text-black border-r px-4 py-2 ${selectedPeriod === "30d" && "bg-gray-50 font-semibold"}`}
+            className={`hover:text-black border-r px-4 py-2 ${
+              selectedPeriod === "30d" && "bg-gray-50 font-semibold"
+            }`}
           >
             30 days
           </button>
           <button
             onClick={() => handlePeriodChange("7d")}
-            className={`hover:text-black  px-4 py-2 ${selectedPeriod === "7d" && "bg-gray-50 font-semibold"}`}
+            className={`hover:text-black  px-4 py-2 ${
+              selectedPeriod === "7d" && "bg-gray-50 font-semibold"
+            }`}
           >
             7 days
           </button>

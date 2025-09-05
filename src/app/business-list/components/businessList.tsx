@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Pagination } from "@/components/common/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -29,14 +29,6 @@ export default function BusinessList() {
     [`/super-admin/hotels`, page, limit, debouncedQuery],
     () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
   );
-
-  // Auth guard
-  useEffect(() => {
-    if (!userLoading && (!user || Object.keys(user).length < 1)) {
-      router.replace("/login");
-    }
-  }, [user, userLoading, router]);
-  if (userLoading) return null;
 
   const handleBusinessClick = (item: BusinessDTO) => {
     setBusiness(item);
@@ -136,13 +128,16 @@ export default function BusinessList() {
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-500 z-20 relative">
+        <div className="text-center text-gray-500 z-20 relative">
           {isLoading ? (
-            <Spinner>Loading businesses...</Spinner>
+            <div className="flex items-center justify-center gap-2">
+              <Spinner size="md" />
+              <span>Loading businesses...</span>
+            </div>
           ) : (
-            "No businesses found"
+            <p>No businesses found</p>
           )}
-        </p>
+        </div>
       )}
 
       {/* Pagination */}

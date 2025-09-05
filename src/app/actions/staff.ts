@@ -1,13 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, axiosPatch, axiosPost, isRedirectError } from "../lib/api";
+import {
+  axiosGet,
+  axiosPatch,
+  axiosPost,
+  axiosDelete,
+  isRedirectError,
+} from "../lib/api";
 import { getAuthToken } from "../lib/auth";
 import { GetStaffOptions, getStaffResponse } from "./types";
 import { ApiResponse, ErrorResponseData } from "../lib/types";
 
 export default async function getStaff(
-  options: GetStaffOptions,
+  options: GetStaffOptions
 ): Promise<getStaffResponse> {
   const { page = 1, limit = 10, searchTerm, businessId } = options;
 
@@ -16,7 +23,7 @@ export default async function getStaff(
 
     const baseUrl = searchTerm
       ? `/super-admin/${businessId}/staff/search/${encodeURIComponent(
-          searchTerm,
+          searchTerm
         )}`
       : `/super-admin/${businessId}/staff`;
 
@@ -67,7 +74,7 @@ export default async function getStaff(
 export async function updateStaff(
   businessId: number,
   staffPayload: any,
-  staffId: number,
+  staffId: number
 ) {
   const authToken = await getAuthToken();
 
@@ -81,7 +88,7 @@ export async function updateStaff(
           Authorization: `Bearer ${authToken}`,
         },
       },
-    },
+    }
   );
 
   console.log(response);
@@ -90,7 +97,7 @@ export async function updateStaff(
 export async function resetStaffPassword(
   businessId: number,
   staffId: number,
-  payload: { password: string },
+  payload: { password: string }
 ) {
   const authToken = await getAuthToken();
 
@@ -104,9 +111,49 @@ export async function resetStaffPassword(
           Authorization: `Bearer ${authToken}`,
         },
       },
-    },
+    }
   );
 
   return response;
-  console.log(response);
+}
+
+export async function deleteStaff(businessId: number, staffId: number) {
+  const authToken = await getAuthToken();
+
+  const response = await axiosDelete<ApiResponse<any>>(
+    `/super-admin/${businessId}/staff/${staffId}`,
+    {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    }
+  );
+
+  return response;
+}
+
+export async function undeleteStaff(businessId: number, staffId: number) {
+  const authToken = await getAuthToken();
+
+  console.log("undeleteStaff called with:", { businessId, staffId });
+  const url = `/super-admin/${businessId}/staff/${staffId}/undelete`;
+  console.log("Request URL:", url);
+
+  const response = await axiosPost<ApiResponse<any>>(
+    url,
+    {},
+    {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    }
+  );
+
+  return response;
 }

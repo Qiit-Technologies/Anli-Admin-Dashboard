@@ -27,7 +27,8 @@ interface StatusBadgeProps {
 const Table = ({ children, minWidth = "600px", ...props }: TableProps) => {
   return (
     <table
-      className={`w-full text-sm text-left min-w-[${minWidth}]`}
+      className={`w-full text-sm text-left`}
+      style={{ minWidth }}
       {...props}
     >
       {children}

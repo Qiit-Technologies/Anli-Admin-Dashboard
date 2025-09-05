@@ -33,7 +33,7 @@ export default function DashboardPage() {
           setIsOpen={setMenuOpen}
           title="General Info"
         />
-        <main className="px-4 sm:px-6 py-10 space-y-6 bg-white">
+        <main className="px-4 sm:px-6 py-10 space-y-6 bg-white overflow-x-hidden">
           {/* Top grid section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Profile Card */}
@@ -70,7 +70,7 @@ export default function DashboardPage() {
           </div>
 
           {/* General Activity + Plan Info */}
-          <div className="w-full flex flex-col sm:flex-row gap-4 ">
+          <div className="w-full flex flex-col lg:flex-row gap-4">
             <ModuleActivityGrowthSection />
             {/* Current Plan */}
             {/* This business id should be within a context */}

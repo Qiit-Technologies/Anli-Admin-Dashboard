@@ -28,6 +28,7 @@ export default async function getBusinessList(
           "Content-Type": "application/json",
         },
       },
+      currentPath: "/business-list",
     });
 
     if (!response) {
