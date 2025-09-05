@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaCheckCircle, FaInfoCircle, FaTimes } from "react-icons/fa";
 
 interface ToastProps {
@@ -22,14 +22,14 @@ const Toast: React.FC<ToastProps> = ({ title, description, type, onClose }) => {
     info: <FaInfoCircle className="h-5 w-5 text-orion-blue" />,
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
       if (onClose) {
         onClose();
       }
     }, 300);
-  };
+  }, [onClose]);
 
   useEffect(() => {
     // Automatically close the toast after 5 seconds
@@ -38,7 +38,7 @@ const Toast: React.FC<ToastProps> = ({ title, description, type, onClose }) => {
     }, 4000); // 5 seconds auto-dismiss
 
     return () => clearTimeout(timeout); // Clear timeout if component unmounts
-  }, []);
+  }, [handleClose]);
 
   return (
     <div

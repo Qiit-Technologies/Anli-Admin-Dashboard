@@ -4,7 +4,7 @@ import { InputField } from "@/components/common/form";
 import { useBusiness } from "@/context/businessContext";
 import { ErrorResponseData } from "@/hooks/types";
 import { AxiosError } from "axios";
-import { use, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -23,7 +23,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
     password: "",
     confirmPassword: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   const resetPassword = async () => {
     try {
@@ -33,6 +33,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
       }
 
       const payload = {
+        email: staffInfo.email,
         password: formData.password,
       };
 
@@ -44,7 +45,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
       const response = await resetStaffPassword(
         business?.id,
         staffInfo.id,
-        payload,
+        payload
       );
 
       if (!response) {
@@ -56,16 +57,14 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
       setIsOpen(false);
     } catch (error) {
       if (error instanceof AxiosError) {
-        const message =
+        const errorMessage =
           (error.response?.data as ErrorResponseData)?.message ||
           "An unexpected error occurred";
-        toast.error(message);
-        setError(message);
+        toast.error(errorMessage);
+        setError(errorMessage);
         return;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Unexpected error occurred";
       toast.error("Failed to reset password");
     } finally {
       setError(null);
@@ -73,7 +72,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
     }
   };
 
-  const handleFormChange = (name: string, value: any) => {
+  const handleFormChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,

@@ -1,13 +1,5 @@
 "use client";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
@@ -27,7 +19,7 @@ export function GrowthActivityChart({ period }: { period: string }) {
     business?.id
       ? `/super-admin/hotels/module-activity-chart/${business?.id}?period=${period}`
       : null,
-    (url: string) => fetcher<GeneralModuleActivityResponse>(url),
+    (url: string) => fetcher<GeneralModuleActivityResponse>(url)
   );
 
   if (loading || isLoading) {

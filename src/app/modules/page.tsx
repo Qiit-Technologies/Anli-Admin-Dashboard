@@ -311,7 +311,7 @@ export default function ModulePage() {
           <div className="p-6">
             {loading ? (
               <div className="p-5">
-                <Spinner>Loading modules...</Spinner>
+                <Spinner size="lg" />
               </div>
             ) : (
               <div className="overflow-x-auto">

@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  ArrowDown,
-  Calendar,
-  ListFilterIcon,
-  Eye,
-  EyeOff,
-  Key,
-  RefreshCw,
-} from "lucide-react";
+import { ArrowDown, Calendar, ListFilterIcon } from "lucide-react";
 import { Divider } from "../divider";
 import SearchWithIcon from "@/components/common/searchWithIcon";
 import { useState } from "react";
@@ -25,15 +17,9 @@ import Image from "next/image";
 import { Pagination } from "@/components/common/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import useSWR from "swr";
-import getStaff, {
-  resetStaffPassword,
-  deleteStaff,
-  undeleteStaff,
-} from "@/app/actions/staff";
-import { generateRandomPassword } from "@/utils/password";
+import getStaff, { deleteStaff, undeleteStaff } from "@/app/actions/staff";
 import { Spinner } from "@/components/ui/spinner";
 import { ViewStaffDetailsBtn } from "./viewStaffDetailsBtn";
-import { ConfirmationModal } from "@/components/common/ConfirmationModal";
 import { toast } from "react-toastify";
 
 export default function UsersTable({ businessId }: { businessId: string }) {
@@ -41,24 +27,19 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
   const limit = 10;
-  const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>(
-    {}
-  );
-  const [resettingPasswords, setResettingPasswords] = useState<
-    Record<number, boolean>
-  >({});
-  const [plainTextPasswords, setPlainTextPasswords] = useState<
-    Record<number, string>
-  >({});
+
+  // const [plainTextPasswords, setPlainTextPasswords] = useState<
+  //   Record<number, string>
+  // >({});
   const [deletingStaff, setDeletingStaff] = useState<Record<number, boolean>>(
     {}
   );
   const [undeletingStaff, setUndeleteStaff] = useState<Record<number, boolean>>(
     {}
   );
-  const [showResetPasswordConfirm, setShowResetPasswordConfirm] = useState<
-    Record<number, boolean>
-  >({});
+  // const [showResetPasswordConfirm, setShowResetPasswordConfirm] = useState<
+  //   Record<number, boolean>
+  // >({});
 
   const {
     data: response,
@@ -83,54 +64,54 @@ export default function UsersTable({ businessId }: { businessId: string }) {
     console.log("First staff member data:", staff[0]);
   }
 
-  const handleResetPassword = async (staffId: number) => {
-    setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
-    try {
-      const newPassword = generateRandomPassword();
-      const response = await resetStaffPassword(Number(businessId), staffId, {
-        password: newPassword,
-      });
+  // const handleResetPassword = async (staffId: number) => {
+  //   setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
+  //   try {
+  //     const newPassword = generateRandomPassword();
+  //     const response = await resetStaffPassword(Number(businessId), staffId, {
+  //       password: newPassword,
+  //     });
 
-      // Store the plain text password from the response
-      if (response?.data?.plainTextPassword) {
-        setPlainTextPasswords((prev) => ({
-          ...prev,
-          [staffId]: response.data.plainTextPassword,
-        }));
-      }
+  //     // Store the plain text password from the response
+  //     if (response?.data?.plainTextPassword) {
+  //       setPlainTextPasswords((prev) => ({
+  //         ...prev,
+  //         [staffId]: response.data.plainTextPassword,
+  //       }));
+  //     }
 
-      // Show the new password temporarily
-      setShowPasswords((prev) => ({ ...prev, [staffId]: true }));
+  //     // Show the new password temporarily
+  //     setShowPasswords((prev) => ({ ...prev, [staffId]: true }));
 
-      // Hide the password after 10 seconds
-      setTimeout(() => {
-        setShowPasswords((prev) => ({ ...prev, [staffId]: false }));
-        setPlainTextPasswords((prev) => {
-          const newState = { ...prev };
-          delete newState[staffId];
-          return newState;
-        });
-      }, 10000);
+  //     // Hide the password after 10 seconds
+  //     setTimeout(() => {
+  //       setShowPasswords((prev) => ({ ...prev, [staffId]: false }));
+  //       setPlainTextPasswords((prev) => {
+  //         const newState = { ...prev };
+  //         delete newState[staffId];
+  //         return newState;
+  //       });
+  //     }, 10000);
 
-      toast.success(
-        `Password reset successfully! New password: ${newPassword}`
-      );
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      toast.error("Failed to reset password. Please try again.");
-    } finally {
-      setResettingPasswords((prev) => ({ ...prev, [staffId]: false }));
-    }
-  };
+  //     toast.success(
+  //       `Password reset successfully! New password: ${newPassword}`
+  //     );
+  //   } catch (error) {
+  //     console.error("Failed to reset password:", error);
+  //     toast.error("Failed to reset password. Please try again.");
+  //   } finally {
+  //     setResettingPasswords((prev) => ({ ...prev, [staffId]: false }));
+  //   }
+  // };
 
-  const handleResetPasswordClick = (staffId: number) => {
-    setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: true }));
-  };
+  // const handleResetPasswordClick = (staffId: number) => {
+  //   setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: true }));
+  // };
 
-  const handleResetPasswordConfirm = async (staffId: number) => {
-    setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: false }));
-    await handleResetPassword(staffId);
-  };
+  // const handleResetPasswordConfirm = async (staffId: number) => {
+  //   setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: false }));
+  //   await handleResetPassword(staffId);
+  // };
 
   const handleDeleteStaff = async (staffId: number) => {
     setDeletingStaff((prev) => ({ ...prev, [staffId]: true }));
@@ -153,10 +134,9 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   };
 
   const handleUndeleteStaff = async (staffId: number) => {
-    console.log("handleUndeleteStaff called with:", { businessId, staffId });
     setUndeleteStaff((prev) => ({ ...prev, [staffId]: true }));
     try {
-      const response = await undeleteStaff(Number(businessId), staffId);
+      const response = await undeleteStaff(Number(businessId), Number(staffId));
       if (response) {
         toast.success("Staff restored successfully!");
         mutate(); // Refresh the data
@@ -211,7 +191,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                   <Th withIcon>Email Address</Th>
                   <Th withIcon>Phone Number</Th>
                   <Th withIcon>Department</Th>
-                  <Th withIcon>Password</Th>
+                  {/* <Th withIcon>Password</Th> */}
                   <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
                     Employee Status
                   </Th>
@@ -243,7 +223,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                     <Td>{row.email}</Td>
                     <Td>{row.phoneNumber || "N/A"}</Td>
                     <Td>{row.department?.name || "N/A"}</Td>
-                    <Td>
+                    {/* <Td>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
                           <Key size={14} className="text-gray-500" />
@@ -303,7 +283,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                           </div>
                         )}
                       </div>
-                    </Td>
+                    </Td> */}
                     <Td>
                       {row.deletedAt ? (
                         <StatusBadge
@@ -344,7 +324,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       )}
 
       {/* Reset Password Confirmation Modals */}
-      {staff.map((row) => (
+      {/* {staff.map((row) => (
         <ConfirmationModal
           key={`reset-${row.id}`}
           isOpen={showResetPasswordConfirm[row.id] || false}
@@ -362,7 +342,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
           confirmVariant="default"
           isLoading={resettingPasswords[row.id]}
         />
-      ))}
+      ))} */}
     </div>
   );
 }

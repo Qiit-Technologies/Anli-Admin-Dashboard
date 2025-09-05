@@ -14,7 +14,7 @@ import { useState, type ReactNode } from "react";
 import { Button } from "../ui/button";
 
 interface CustomSheetProps {
-  trigger: ReactNode;
+  trigger?: ReactNode;
   children: ReactNode;
   title: string;
   subTitle?: string;
@@ -52,12 +52,12 @@ export function CustomSheet({
   };
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent
         side="right"
-        className="overflow-y-auto  h-full flex flex-col justify-between"
+        className="overflow-y-auto h-full flex flex-col justify-between"
       >
-        <SheetHeader className="text-left pb-4">
+        <SheetHeader className="text-left pb-2">
           <button
             onClick={() => {
               handleOpenChange(false);
@@ -68,14 +68,16 @@ export function CustomSheet({
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </button>
+          <SheetTitle
+            className={cn(noTitle && "sr-only", "flex flex-col gap-1")}
+          >
+            <span>{title}</span>
+            {subTitle && (
+              <span className="text-sm text-muted-foreground">{subTitle}</span>
+            )}
+          </SheetTitle>
         </SheetHeader>
-        <SheetTitle className={cn(noTitle && "sr-only", "flex flex-col gap-1")}>
-          <span>{title}</span>
-          {subTitle && (
-            <span className="text-sm text-muted-foreground">{subTitle}</span>
-          )}
-        </SheetTitle>
-        <div className="h-full mt-6">{children}</div>
+        <div className="h-full overflow-y-auto">{children}</div>
         <div className="w-full flex gap-4">
           <SheetClose asChild>
             <Button variant="outline" className="w-1/2 h-10 rounded-lg">

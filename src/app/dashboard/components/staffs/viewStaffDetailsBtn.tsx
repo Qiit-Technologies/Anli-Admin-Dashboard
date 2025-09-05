@@ -17,12 +17,15 @@ export const ViewStaffDetailsBtn = ({
   onUndelete,
   isDeleting,
   isUndeleting,
+  refetch,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   staffInfo: any;
   onDelete?: (staffId: number) => void;
   onUndelete?: (staffId: number) => void;
   isDeleting?: boolean;
   isUndeleting?: boolean;
+  refetch?: () => void;
 }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
@@ -122,9 +125,10 @@ export const ViewStaffDetailsBtn = ({
       {isSheetOpen && (
         <StaffDetailsDrawer
           staffInfo={staffInfo}
-          closeSheetMenu={closeSheetMenu}
           isSheetOpen={isSheetOpen}
+          refetch={refetch || (() => {})}
           openSheetMenu={openSheetMenu}
+          closeSheetMenu={closeSheetMenu}
         />
       )}
 

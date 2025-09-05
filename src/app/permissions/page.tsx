@@ -382,7 +382,7 @@ export default function PermissionPage() {
           <div className="p-6">
             {loading ? (
               <div className="p-5">
-                <Spinner>Loading permissions...</Spinner>
+                <Spinner size="lg" />
               </div>
             ) : (
               <div className="overflow-x-auto">

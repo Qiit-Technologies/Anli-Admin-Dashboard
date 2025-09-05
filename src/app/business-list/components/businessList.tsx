@@ -13,10 +13,8 @@ import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
 import { Shield, Layers } from "lucide-react";
-import { useUser } from "@/context/userContext";
 
 export default function BusinessList() {
-  const { user, loading: userLoading } = useUser();
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);

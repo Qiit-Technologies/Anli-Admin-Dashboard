@@ -25,7 +25,7 @@ export type permissionResponse = {
 
 // Get all permissions
 export default async function getPermissionsList(
-  options: GetPermissionsListOptions = {},
+  options: GetPermissionsListOptions = {}
 ): Promise<{ permissions: Permission[] }> {
   const { page = 1, limit = 10, searchTerm } = options;
 
@@ -61,7 +61,7 @@ export default async function getPermissionsList(
 
 // Create a new permission
 export async function createPermission(
-  permissionData: CreatePermissionDto,
+  permissionData: CreatePermissionDto
 ): Promise<permissionResponse> {
   try {
     const authToken = await getAuthToken();
@@ -99,7 +99,7 @@ export async function createPermission(
 // Update a permission
 export async function updatePermission(
   id: string,
-  permissionData: UpdatePermissionDto,
+  permissionData: UpdatePermissionDto
 ): Promise<permissionResponse> {
   try {
     const authToken = await getAuthToken();
@@ -175,7 +175,10 @@ export async function getPermissions() {
     }
 
     return response;
-  } catch (error: any) {
-    return { error: error.message || "Failed to fetch permissions." };
+  } catch (error: unknown) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Failed to fetch permissions.",
+    };
   }
 }

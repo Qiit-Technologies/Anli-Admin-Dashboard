@@ -34,8 +34,8 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {isLoading ? (
-        <div className="p-5">
-          <Spinner>Loading component</Spinner>
+        <div className="p-5 flex items-center justify-center">
+          <Spinner size="lg" />
         </div>
       ) : (
         <>

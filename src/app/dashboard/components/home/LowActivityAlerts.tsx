@@ -6,11 +6,7 @@ import useSWR from "swr";
 
 export const LowActivityAlerts = () => {
   const { business, loading } = useBusiness();
-  const {
-    data: res,
-    error,
-    isLoading,
-  } = useSWR(
+  const { data: res, isLoading } = useSWR(
     `/super-admin/hotels/low-module-activity/${business?.id}`,
     (url: string) => fetcher<getLowModuleActivityResponse>(url)
   );

@@ -97,7 +97,7 @@ export async function updateStaff(
 export async function resetStaffPassword(
   businessId: number,
   staffId: number,
-  payload: { password: string }
+  payload: { password: string; email: string }
 ) {
   const authToken = await getAuthToken();
 
@@ -138,13 +138,20 @@ export async function deleteStaff(businessId: number, staffId: number) {
 export async function undeleteStaff(businessId: number, staffId: number) {
   const authToken = await getAuthToken();
 
-  console.log("undeleteStaff called with:", { businessId, staffId });
-  const url = `/super-admin/${businessId}/staff/${staffId}/undelete`;
-  console.log("Request URL:", url);
+  if (!businessId) {
+    throw new Error("businessId is required");
+  }
 
-  const response = await axiosPost<ApiResponse<any>>(
+  const url = `/super-admin/${businessId}/staff/${staffId}/undelete`;
+
+  const response = await axiosPatch<ApiResponse<any>>(
     url,
-    {},
+    {
+      success: true,
+      data: {
+        message: "Staff restored successfully",
+      },
+    },
     {
       config: {
         headers: {
@@ -152,6 +159,7 @@ export async function undeleteStaff(businessId: number, staffId: number) {
           Authorization: `Bearer ${authToken}`,
         },
       },
+      currentPath: "/dashboard/staffs",
     }
   );
 
