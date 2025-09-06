@@ -18,9 +18,13 @@ export default function BusinessList() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
-  const limit = 10;
+  const limit = 6;
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   // Always call hooks first
   const { data: response, isLoading } = useSWR(
@@ -34,7 +38,6 @@ export default function BusinessList() {
       router.push("/dashboard");
     }
   };
-  console.log(response);
   const businesses = response?.data?.hotels ?? [];
   const totalPages = response?.totalPages ?? 1;
 
@@ -140,11 +143,13 @@ export default function BusinessList() {
 
       {/* Pagination */}
       {businesses.length > 0 && (
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+        <>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </div>
   );

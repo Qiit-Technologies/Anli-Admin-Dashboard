@@ -27,6 +27,14 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
   const limit = 10;
+  const [showFilters, setShowFilters] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: "",
+    end: "",
+  });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
 
   // const [plainTextPasswords, setPlainTextPasswords] = useState<
   //   Record<number, string>
@@ -46,23 +54,31 @@ export default function UsersTable({ businessId }: { businessId: string }) {
     isLoading,
     mutate,
   } = useSWR(
-    [`/super-admin/get-staff`, page, limit, debouncedQuery, businessId],
+    [
+      `/super-admin/get-staff`,
+      page,
+      limit,
+      debouncedQuery,
+      businessId,
+      statusFilter,
+      departmentFilter,
+      dateRange,
+    ],
     () =>
       getStaff({
         page,
         limit,
         searchTerm: debouncedQuery,
         businessId: businessId,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        department: departmentFilter !== "all" ? departmentFilter : undefined,
+        startDate: dateRange.start || undefined,
+        endDate: dateRange.end || undefined,
       })
   );
 
   const staff = response?.data?.staffs ?? [];
-  const totalPages = response?.totalPages ?? 1;
-
-  // Debug: Log the first staff member to see the structure
-  if (staff.length > 0) {
-    console.log("First staff member data:", staff[0]);
-  }
+  const totalPages = response?.data?.totalPages ?? 1;
 
   // const handleResetPassword = async (staffId: number) => {
   //   setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
@@ -171,16 +187,146 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                 onChange={(e) => setQuery(e.target.value)}
               />
 
-              <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
+              <button
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className={`flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm w-full sm:w-auto ${
+                  showDatePicker
+                    ? "bg-blue-50 border-blue-300 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
                 <Calendar size={16} />
                 Select dates
               </button>
-              <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm w-full sm:w-auto ${
+                  showFilters
+                    ? "bg-blue-50 border-blue-300 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
                 <ListFilterIcon size={16} />
                 Filters
               </button>
             </div>
           </div>
+
+          {/* Date Picker Panel */}
+          {showDatePicker && (
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={dateRange.start}
+                      onChange={(e) =>
+                        setDateRange((prev) => ({
+                          ...prev,
+                          start: e.target.value,
+                        }))
+                      }
+                      className="border rounded-md px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={dateRange.end}
+                      onChange={(e) =>
+                        setDateRange((prev) => ({
+                          ...prev,
+                          end: e.target.value,
+                        }))
+                      }
+                      className="border rounded-md px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setDateRange({ start: "", end: "" })}
+                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    onClick={() => setShowDatePicker(false)}
+                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Status
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="border rounded-md px-3 py-2 text-sm"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="online">Online</option>
+                      <option value="offline">Offline</option>
+                      <option value="deleted">Deleted</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                      Department
+                    </label>
+                    <select
+                      value={departmentFilter}
+                      onChange={(e) => setDepartmentFilter(e.target.value)}
+                      className="border rounded-md px-3 py-2 text-sm"
+                    >
+                      <option value="all">All Departments</option>
+                      <option value="management">Management</option>
+                      <option value="front-desk">Front Desk</option>
+                      <option value="housekeeping">Housekeeping</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="food-service">Food Service</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setStatusFilter("all");
+                      setDepartmentFilter("all");
+                    }}
+                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    Clear All
+                  </button>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Divider className="mb-4" />
           {/* Table */}
           <div className="overflow-x-auto">
@@ -199,31 +345,87 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                 </Tr>
               </Thead>
               <Tbody>
-                {staff.map((row, i) => (
-                  <Tr key={i} className={row.deletedAt ? "opacity-60" : ""}>
-                    <Td>
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src={
-                            row?.profileImage ||
-                            `https://ui-avatars.com/api/?name=${row.fullName?.replaceAll(
-                              " ",
-                              "-"
-                            )}`
-                          }
-                          alt={row.fullName}
-                          className="w-6 h-6 rounded-full"
-                          width={24}
-                          height={24}
-                          unoptimized
-                        />
-                        <span>{row.fullName}</span>
+                {staff.length === 0 ? (
+                  <Tr>
+                    <Td colSpan={6} className="text-center py-12">
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-8 h-8 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                            />
+                          </svg>
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            No staff members found
+                          </h3>
+                          <p className="text-gray-500 mb-4">
+                            {query ||
+                            statusFilter !== "all" ||
+                            departmentFilter !== "all" ||
+                            dateRange.start ||
+                            dateRange.end
+                              ? "Try adjusting your search criteria or filters"
+                              : "No staff members have been added to this business yet"}
+                          </p>
+                          {(query ||
+                            statusFilter !== "all" ||
+                            departmentFilter !== "all" ||
+                            dateRange.start ||
+                            dateRange.end) && (
+                            <button
+                              onClick={() => {
+                                setQuery("");
+                                setStatusFilter("all");
+                                setDepartmentFilter("all");
+                                setDateRange({ start: "", end: "" });
+                                setShowFilters(false);
+                                setShowDatePicker(false);
+                              }}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                              Clear all filters
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </Td>
-                    <Td>{row.email}</Td>
-                    <Td>{row.phoneNumber || "N/A"}</Td>
-                    <Td>{row.department?.name || "N/A"}</Td>
-                    {/* <Td>
+                  </Tr>
+                ) : (
+                  staff.map((row, i) => (
+                    <Tr key={i} className={row.deletedAt ? "opacity-60" : ""}>
+                      <Td>
+                        <div className="flex items-center gap-2">
+                          <Image
+                            src={
+                              row?.profileImage ||
+                              `https://ui-avatars.com/api/?name=${row.fullName?.replaceAll(
+                                " ",
+                                "-"
+                              )}`
+                            }
+                            alt={row.fullName}
+                            className="w-6 h-6 rounded-full"
+                            width={24}
+                            height={24}
+                            unoptimized
+                          />
+                          <span>{row.fullName}</span>
+                        </div>
+                      </Td>
+                      <Td>{row.email}</Td>
+                      <Td>{row.phoneNumber || "N/A"}</Td>
+                      <Td>{row.department?.name || "N/A"}</Td>
+                      {/* <Td>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
                           <Key size={14} className="text-gray-500" />
@@ -284,33 +486,35 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                         )}
                       </div>
                     </Td> */}
-                    <Td>
-                      {row.deletedAt ? (
-                        <StatusBadge
-                          status="deleted"
-                          statusColorMap={{
-                            deleted: "gray",
-                          }}
-                        />
-                      ) : (
-                        <StatusBadge
-                          status={row.status}
-                          statusColorMap={{
-                            online: "green",
-                            offline: "red",
-                          }}
-                        />
-                      )}
-                    </Td>
-                    <ViewStaffDetailsBtn
-                      staffInfo={row}
-                      onDelete={handleDeleteStaff}
-                      onUndelete={handleUndeleteStaff}
-                      isDeleting={deletingStaff[row.id]}
-                      isUndeleting={undeletingStaff[row.id]}
-                    />
-                  </Tr>
-                ))}
+                      <Td>
+                        {row.deletedAt ? (
+                          <StatusBadge
+                            status="deleted"
+                            statusColorMap={{
+                              deleted: "gray",
+                            }}
+                          />
+                        ) : (
+                          <StatusBadge
+                            status={row.status}
+                            statusColorMap={{
+                              online: "green",
+                              offline: "red",
+                            }}
+                          />
+                        )}
+                      </Td>
+                      <ViewStaffDetailsBtn
+                        staffInfo={row}
+                        onDelete={handleDeleteStaff}
+                        onUndelete={handleUndeleteStaff}
+                        isDeleting={deletingStaff[row.id]}
+                        isUndeleting={undeletingStaff[row.id]}
+                        businessId={businessId}
+                      />
+                    </Tr>
+                  ))
+                )}
               </Tbody>
             </Table>
 

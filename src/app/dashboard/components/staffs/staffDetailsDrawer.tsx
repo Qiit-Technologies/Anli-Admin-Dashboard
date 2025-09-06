@@ -1,10 +1,8 @@
 import { StaffDetails } from "./staffDetails";
 import { useState } from "react";
-import { useBusiness } from "@/context/businessContext";
 import { updateStaff } from "@/app/actions/staff";
 import { CustomSheet } from "@/components/common/CustomSheet";
 import { toast } from "react-toastify";
-import { useRouter } from "next13-progressbar";
 import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
 
@@ -29,15 +27,15 @@ export const StaffDetailsDrawer = ({
   isSheetOpen,
   openSheetMenu,
   closeSheetMenu,
+  businessId,
 }: {
   refetch: () => void;
   staffInfo: StaffInfoInterface;
   isSheetOpen: boolean;
   openSheetMenu: () => void;
   closeSheetMenu: () => void;
+  businessId: string;
 }) => {
-  const router = useRouter();
-  const { business } = useBusiness();
   const [loading, setLoading] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
@@ -46,9 +44,9 @@ export const StaffDetailsDrawer = ({
     username: staffInfo.username,
     email: staffInfo.email,
     phoneNumber: staffInfo.phoneNumber,
-    roleId: staffInfo?.roles.id,
-    permissions: staffInfo.permissions,
-    modules: staffInfo.modules,
+    roleId: staffInfo?.roles?.id,
+    permissions: staffInfo.permissions || [],
+    modules: staffInfo.modules || [],
   });
 
   const handleFormChange = (name: string, value: string) => {
@@ -69,13 +67,7 @@ export const StaffDetailsDrawer = ({
         modules: selectedModules.map(Number),
       };
 
-      if (!business) {
-        toast.error("An error occured ");
-        router.push("/dashboard/business-list");
-        return;
-      }
-
-      await updateStaff(business?.id, payload, staffInfo.id);
+      await updateStaff(Number(businessId), payload, staffInfo.id);
 
       toast.success("Staff member updated successfully");
       refetch();

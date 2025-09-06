@@ -55,7 +55,7 @@ export function CustomSheet({
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent
         side="right"
-        className="overflow-y-auto h-full flex flex-col justify-between"
+        className="overflow-y-auto h-full flex flex-col justify-between w-11/12 sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2"
       >
         <SheetHeader className="text-left pb-2">
           <button
@@ -86,7 +86,11 @@ export function CustomSheet({
           </SheetClose>
           <Button
             onClick={onComplete}
-            className={`w-1/2  h-10 rounded-lg ${loading ? "cursor-not-allowed bg-[#007bff60] hover:bg-[#007bff60]" : "bg-[#007bff] hover:bg-[#007bff]"}`}
+            className={`w-1/2  h-10 rounded-lg ${
+              loading
+                ? "cursor-not-allowed bg-[#007bff60] hover:bg-[#007bff60]"
+                : "bg-[#007bff] hover:bg-[#007bff]"
+            }`}
           >
             {loading ? "...Loading" : "Update"}
           </Button>

@@ -16,7 +16,16 @@ import { ApiResponse, ErrorResponseData } from "../lib/types";
 export default async function getStaff(
   options: GetStaffOptions
 ): Promise<getStaffResponse> {
-  const { page = 1, limit = 10, searchTerm, businessId } = options;
+  const {
+    page = 1,
+    limit = 10,
+    searchTerm,
+    businessId,
+    status,
+    department,
+    startDate,
+    endDate,
+  } = options;
 
   try {
     const authToken = await getAuthToken();
@@ -27,7 +36,18 @@ export default async function getStaff(
         )}`
       : `/super-admin/${businessId}/staff`;
 
-    const url = `${baseUrl}?page=${page}&limit=${limit}`;
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (status) params.append("status", status);
+    if (department) params.append("department", department);
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    const url = `${baseUrl}?${params.toString()}`;
 
     const response = await axiosGet<getStaffResponse>(url, {
       config: {
@@ -43,10 +63,11 @@ export default async function getStaff(
         message: "No data received",
         data: {
           staffs: [],
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
         },
-        page,
-        limit,
-        total: 0,
       };
     }
 
@@ -63,10 +84,11 @@ export default async function getStaff(
       message,
       data: {
         staffs: [],
+        page,
+        limit,
+        total: 0,
+        totalPages: 0,
       },
-      page,
-      limit,
-      total: 0,
     };
   }
 }

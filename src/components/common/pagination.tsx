@@ -9,17 +9,33 @@ export const Pagination: FC<PaginationProps> = ({
   totalPages,
   onPageChange,
 }) => {
-  if (totalPages <= 1) return null;
+  console.log("Pagination props:", { page, totalPages });
+  if (totalPages <= 1) {
+    console.log("Pagination hidden: totalPages <= 1");
+    return null;
+  }
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="flex items-center justify-center space-x-2 mt-6 relative">
+    <div
+      className="flex items-center justify-center space-x-2 mt-6 relative"
+      style={{ zIndex: 9999 }}
+    >
       {/* Prev Button */}
       <button
-        className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50"
-        onClick={() => onPageChange(page - 1)}
+        className={`px-4 py-2 border-2 rounded-lg font-medium ${
+          page <= 1
+            ? "opacity-50 cursor-not-allowed bg-gray-100 border-gray-300"
+            : "cursor-pointer hover:bg-blue-100 bg-blue-50 border-blue-300 text-blue-700"
+        }`}
+        onClick={() => {
+          if (page > 1) {
+            onPageChange(page - 1);
+          }
+        }}
         disabled={page <= 1}
+        style={{ zIndex: 10000, position: "relative" }}
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -36,6 +52,7 @@ export const Pagination: FC<PaginationProps> = ({
           onClick={() => {
             if (p !== page) onPageChange(p);
           }}
+          style={{ zIndex: 10000, position: "relative" }}
         >
           {p}
         </button>
@@ -43,9 +60,18 @@ export const Pagination: FC<PaginationProps> = ({
 
       {/* Next Button */}
       <button
-        className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50"
-        onClick={() => onPageChange(page + 1)}
+        className={`px-4 py-2 border-2 rounded-lg font-medium ${
+          page >= totalPages
+            ? "opacity-50 cursor-not-allowed bg-gray-100 border-gray-300"
+            : "cursor-pointer hover:bg-blue-100 bg-blue-50 border-blue-300 text-blue-700"
+        }`}
+        onClick={() => {
+          if (page < totalPages) {
+            onPageChange(page + 1);
+          }
+        }}
         disabled={page >= totalPages}
+        style={{ zIndex: 10000, position: "relative" }}
       >
         <ChevronRight className="w-4 h-4" />
       </button>

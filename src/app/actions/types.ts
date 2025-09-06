@@ -77,6 +77,10 @@ export interface GetStaffOptions {
   searchTerm?: string;
   page?: number;
   limit?: number;
+  status?: string;
+  department?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export type GetPermissionsResponse = {
@@ -85,7 +89,9 @@ export type GetPermissionsResponse = {
 
 export type GetRolesResponse = Role[];
 
-export type getStaffResponse = ApiResponse<{ staffs: StaffDTO[] }>;
+export type getStaffResponse = ApiResponse<
+  { staffs: StaffDTO[] } & PaginationMeta
+>;
 
 // PLAN PAGE REQUESTS -> RESPONSE TYPES
 export interface GetPlanOptions {
