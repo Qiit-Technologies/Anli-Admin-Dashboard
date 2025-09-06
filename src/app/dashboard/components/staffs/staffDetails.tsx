@@ -11,6 +11,7 @@ import { Role } from "@/types/staff";
 import { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { Module } from "@/types/module";
+import { NewMultiSelect } from "@/components/common/NewMultiSelect";
 
 interface FormData {
   fullName?: string;
@@ -18,7 +19,7 @@ interface FormData {
   email?: string;
   phoneNumber?: string;
   roleId?: number;
-  permissions?: Permission[];
+  permissions: Permission[];
   modules?: Module[];
 }
 
@@ -41,23 +42,23 @@ export const StaffDetails = ({
 }: StaffDetailsTestProps) => {
   const { data: permissionsData } = useSWR(
     "/permissions/public-permissions",
-    (url: string) => fetcher<GetPermissionsResponse>(url)
+    (url: string) => fetcher<GetPermissionsResponse>(url),
   );
 
-  const permissions = useMemo(
+  const permissions: Permission[] = useMemo(
     () => permissionsData?.permissions ?? [],
-    [permissionsData]
+    [permissionsData],
   );
 
   const { data: rolesData, isLoading: loadingRoles } = useSWR(
     "/roles",
-    (url: string) => fetcher<GetRolesResponse>(url)
+    (url: string) => fetcher<GetRolesResponse>(url),
   );
   const predefinedRoles = useMemo(() => rolesData || [], [rolesData]);
 
   const { data: modulesData } = useSWR(
     "/modules/public-modules",
-    (url: string) => fetcher<Module[]>(url)
+    (url: string) => fetcher<Module[]>(url),
   );
 
   const modules = useMemo(() => modulesData ?? [], [modulesData]);
@@ -67,7 +68,7 @@ export const StaffDetails = ({
       const selected = formData.permissions
         .map((p: Permission) => String(p.id))
         .filter((id: string) =>
-          permissions.some((perm: Permission) => String(perm.id) === id)
+          permissions.some((perm: Permission) => String(perm.id) === id),
         );
 
       setSelectedPermissions(selected);
@@ -79,7 +80,7 @@ export const StaffDetails = ({
       const selected = formData.modules
         .map((m: Module) => String(m.id))
         .filter((id: string) =>
-          modules.some((mod: Module) => String(mod.id) === id)
+          modules.some((mod: Module) => String(mod.id) === id),
         );
 
       setSelectedModules(selected);
@@ -89,7 +90,7 @@ export const StaffDetails = ({
   useEffect(() => {
     if (selectedModules.length > 1 && predefinedRoles) {
       const managerRole = predefinedRoles.find(
-        (role: Role) => role.name?.toLowerCase() === "manager"
+        (role: Role) => role.name?.toLowerCase() === "manager",
       );
 
       if (managerRole && formData.roleId !== managerRole.id) {
@@ -142,35 +143,40 @@ export const StaffDetails = ({
           to manager
         </div>
       )}
-
-      <MultiSelect
-        options={(modules ?? []).map((module: Module) => ({
-          label: module.name,
-          value: module.id.toString(),
-        }))}
-        value={selectedModules}
-        onValueChange={setSelectedModules}
+      <NewMultiSelect
+        items={modules}
+        value={selectedModules
+          .map((id) => modules.find((m: Module) => m.id.toString() === id))
+          .filter((m): m is Module => Boolean(m))}
+        onChange={(items: Module[]) =>
+          setSelectedModules(items.map((item) => item.id.toString()))
+        }
         placeholder="Select modules"
-        variant="inverted"
-        animation={0}
-        maxCount={3}
-        className="shadow-content1 w-full"
         label="Modules Access"
+        id="modules-multiselect"
+        disabled={false}
+        displayValue={(module: Module) => module.name}
+        searchPlaceholder="Search modules..."
+        maxSelectedDisplay={3}
       />
 
-      <MultiSelect
-        options={(permissions ?? []).map((permission: Permission) => ({
-          label: permission.name,
-          value: permission.id.toString(),
-        }))}
-        value={selectedPermissions}
-        onValueChange={setSelectedPermissions}
+      <NewMultiSelect
+        items={permissions}
+        value={selectedPermissions
+          .map((id) =>
+            permissions.find((p: Permission) => p.id.toString() === id),
+          )
+          .filter((p): p is Permission => Boolean(p))}
+        onChange={(items: Permission[]) =>
+          setSelectedPermissions(items.map((item) => item.id.toString()))
+        }
         placeholder="Select permissions"
-        variant="inverted"
-        animation={0}
-        maxCount={4}
-        className="shadow-content1 w-full"
-        label="Permissions"
+        label="Assign Permissions"
+        id="permissions-multiselect"
+        disabled={false}
+        displayValue={(permission: Permission) => permission.name}
+        searchPlaceholder="Search permissions..."
+        maxSelectedDisplay={3}
       />
 
       {!loadingRoles && predefinedRoles && (
@@ -182,9 +188,9 @@ export const StaffDetails = ({
           disabled={false}
           value={
             formData.roleId
-              ? predefinedRoles?.find(
-                  (role: Role) => role.id === formData.roleId
-                )
+              ? (predefinedRoles?.find(
+                  (role: Role) => role.id === formData.roleId,
+                ) ?? null)
               : null
           }
           className="w-full min-w-0 h-10"
