@@ -1,4 +1,3 @@
-
 type BusinessType = "HOTEL" | string; // Add other possible business types if known
 type DisbursementType = "IN_APP_DISBURSEMENT" | string; // Add other possible disbursement types
 
@@ -19,6 +18,6 @@ export interface BusinessDTO {
   taxId: string | null;
   incorporationCert: string | null;
   boardingToken: string | null;
-  services: unknown | null; // Replace 'any' with proper type if services structure is known
+  services: string | null; // Replace 'any' with proper type if services structure is known
   disbursementType: DisbursementType;
 }

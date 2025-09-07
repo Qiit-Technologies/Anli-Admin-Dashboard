@@ -2,12 +2,26 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { redirect } from "next/navigation";
 
 const instance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
-  withCredentials: true,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+// Add a request interceptor to inject the Authorization header
+instance.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        config.headers = config.headers || {};
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 instance.interceptors.response.use(
   (response) => response,
@@ -46,6 +60,7 @@ export async function axiosGet<T = unknown>(
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
+    throw error;
   }
 }
 
@@ -61,7 +76,7 @@ export async function axiosPost<T = unknown>(
   } = {}
 ): Promise<T | undefined> {
   try {
-    const response = await instance.post<T>(url, data, config);
+    const response = await instance.post<T>(url, data, { ...config });
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
@@ -81,7 +96,7 @@ export async function axiosPatch<T = unknown>(
   } = {}
 ): Promise<T | undefined> {
   try {
-    const response = await instance.patch<T>(url, data, config);
+    const response = await instance.patch<T>(url, data, { ...config });
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);

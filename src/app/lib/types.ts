@@ -8,7 +8,7 @@ export type ApiResponse<T> = {
   data: T;
 } & Partial<PaginationMeta>;
 
-type PaginationMeta = {
+export type PaginationMeta = {
   total: number;
   page: number;
   limit: number;

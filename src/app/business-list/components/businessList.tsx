@@ -18,9 +18,19 @@ export default function BusinessList() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
-  const limit = 10;
+  const limit = 6;
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Always call hooks first
+  const { data: response, isLoading } = useSWR(
+    [`/super-admin/hotels`, page, limit, debouncedQuery],
+    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
+  );
 
   const handleBusinessClick = (item: BusinessDTO) => {
     setBusiness(item);
@@ -28,12 +38,6 @@ export default function BusinessList() {
       router.push("/dashboard");
     }
   };
-
-  const { data: response, isLoading } = useSWR(
-    [`/super-admin/hotels`, page, limit, debouncedQuery],
-    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
-  );
-
   const businesses = response?.data?.hotels ?? [];
   const totalPages = response?.totalPages ?? 1;
 
@@ -125,22 +129,27 @@ export default function BusinessList() {
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-500 z-20 relative">
+        <div className="text-center text-gray-500 z-20 relative">
           {isLoading ? (
-            <Spinner>Loading businesses...</Spinner>
+            <div className="flex items-center justify-center gap-2">
+              <Spinner size="md" />
+              <span>Loading businesses...</span>
+            </div>
           ) : (
-            "No businesses found"
+            <p>No businesses found</p>
           )}
-        </p>
+        </div>
       )}
 
       {/* Pagination */}
       {businesses.length > 0 && (
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+        <>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </div>
   );

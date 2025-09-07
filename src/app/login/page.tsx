@@ -45,8 +45,13 @@ export default function LoginPage() {
       );
     },
     onSuccess: (response) => {
-      if (response?.data) {
+      console.log(response);
+      if (response?.data && response?.access_token) {
         toast.success(response?.message || "Login successful");
+        // Store token in localStorage
+        localStorage.setItem("access_token", response.access_token);
+        // Store token in cookie for SSR
+        document.cookie = `access_token=${response.access_token}; path=/; secure; samesite=lax`;
         setUser({
           id: response.data.id,
           email: response.data.email,

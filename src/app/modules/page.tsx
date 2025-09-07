@@ -10,14 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -28,54 +20,18 @@ import getModulesList, {
   deleteModule,
   type Module,
 } from "../actions/modules";
-
-const ModuleTable = ({
-  modules,
-  onDelete,
-  onEditClick,
-}: {
-  modules: Module[];
-  onDelete: (id: number) => void;
-  onEditClick: (module: Module) => void;
-}) => {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {modules.map((module) => (
-          <TableRow key={module.id}>
-            <TableCell className="font-medium">{module.name}</TableCell>
-            <TableCell>{module.description || "-"}</TableCell>
-            <TableCell className="text-right">
-              <Button
-                variant="outline"
-                size="sm"
-                className="mr-2"
-                onClick={() => onEditClick(module)}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="ghost"
-                className="text-red-500"
-                size="sm"
-                onClick={() => onDelete(module.id)}
-              >
-                Delete
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-};
+import SearchWithIcon from "@/components/common/searchWithIcon";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Pagination } from "@/components/common/pagination";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  Tbody,
+  Thead,
+  Th,
+  Td,
+  Tr,
+} from "@/components/common/customTable";
 
 const AddModuleDialog = ({
   onAddModule,
@@ -233,12 +189,29 @@ export default function ModulePage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  // Simulate search and pagination client-side
+  const filteredModules = modules.filter((m) =>
+    m.name.toLowerCase().includes(debouncedQuery.toLowerCase())
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredModules.length / limit));
+  const paginatedModules = filteredModules.slice(
+    (page - 1) * limit,
+    page * limit
+  );
+
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedQuery]);
 
   useEffect(() => {
     const fetchModules = async () => {
       try {
         const response = await getModulesList();
-        console.log(response);
         if (response) {
           setModules(response);
         }
@@ -248,10 +221,9 @@ export default function ModulePage() {
         setLoading(false);
       }
     };
-
     fetchModules();
   }, []);
-
+  console.log(modules);
   const handleAddModule = async (moduleData: {
     name: string;
     description?: string;
@@ -297,23 +269,20 @@ export default function ModulePage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/business-list")}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-            >
-              <ArrowLeft size={20} />
-              Back to Business List
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/business-list")}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft size={20} />
+            Back to Business List
+          </Button>
           <div className="flex items-center gap-3">
             <Layers size={24} className="text-[#F47411]" />
             <h1 className="text-2xl font-bold text-gray-900">Modules</h1>
           </div>
           <div className="w-24"></div> {/* Spacer for centering */}
         </div>
-
         {/* Logo */}
         <div className="text-center mb-8">
           <Image
@@ -324,38 +293,68 @@ export default function ModulePage() {
             className="mx-auto"
           />
         </div>
-
         {/* Content */}
         <div className="bg-white rounded-lg shadow-sm border">
-          <div className="p-6 border-b">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  System Modules
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Manage modules across all businesses
-                </p>
-              </div>
+          <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3 border-b">
+            <h2 className="text-lg font-normal text-[#101828]">
+              System Modules
+            </h2>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              <SearchWithIcon
+                className="w-[478px]"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
               <AddModuleDialog onAddModule={handleAddModule} />
             </div>
           </div>
           <div className="p-6">
             {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#F47411]"></div>
-                <p className="mt-2 text-gray-500">Loading modules...</p>
+              <div className="p-5">
+                <Spinner size="lg" />
               </div>
             ) : (
-              <ModuleTable
-                modules={modules}
-                onDelete={handleDeleteModule}
-                onEditClick={handleEditClick}
-              />
+              <div className="overflow-x-auto">
+                <Table>
+                  <Thead>
+                    <Tr>
+                      <Th withIcon>Name</Th>
+                      <Th withIcon>Description</Th>
+                      <Th>Action</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {paginatedModules.map((module) => (
+                      <Tr key={module.id}>
+                        <Td>{module.name}</Td>
+                        <Td>{module.description || "-"}</Td>
+                        <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4">
+                          <span
+                            className="mr-4 cursor-pointer text-blue-600 hover:underline"
+                            onClick={() => handleEditClick(module)}
+                          >
+                            Edit
+                          </span>
+                          <span
+                            className="cursor-pointer text-red-600 hover:underline"
+                            onClick={() => handleDeleteModule(module.id)}
+                          >
+                            Delete
+                          </span>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+                <Pagination
+                  totalPages={totalPages}
+                  page={page}
+                  onPageChange={setPage}
+                />
+              </div>
             )}
           </div>
         </div>
-
         {editingModule && (
           <EditModuleDialog
             module={editingModule}

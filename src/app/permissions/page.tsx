@@ -10,14 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,69 +22,23 @@ import getPermissionsList, {
   type CreatePermissionDto,
 } from "../actions/permissions";
 import { Permission } from "../actions/types";
+import SearchWithIcon from "@/components/common/searchWithIcon";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Pagination } from "@/components/common/pagination";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  Tbody,
+  Thead,
+  Th,
+  Td,
+  Tr,
+} from "@/components/common/customTable";
 
 type Module = {
   id: number;
   name: string;
   description?: string;
-};
-
-const PermissionTable = ({
-  permissions,
-  modules,
-  onDelete,
-  onEditClick,
-}: {
-  permissions: { permissions: Permission[] };
-  modules: Module[];
-  onDelete: (id: string) => void;
-  onEditClick: (permission: Permission) => void;
-}) => {
-  const getModuleName = (permission: Permission) => {
-    if (!permission.module?.id) return "-";
-    const foundModule = modules.find((m) => m.id === permission?.module?.id);
-    return foundModule ? foundModule.name : "-";
-  };
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Module</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {permissions.permissions.map((permission) => (
-          <TableRow key={permission.id}>
-            <TableCell className="font-medium">{permission.name}</TableCell>
-            <TableCell>{permission.description}</TableCell>
-            <TableCell>{getModuleName(permission)}</TableCell>
-            <TableCell className="text-right">
-              <Button
-                variant="outline"
-                size="sm"
-                className="mr-2"
-                onClick={() => onEditClick(permission)}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="ghost"
-                className="text-red-500"
-                size="sm"
-                onClick={() => onDelete(permission.id)}
-              >
-                Delete
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
 };
 
 const AddPermissionDialog = ({
@@ -301,6 +247,25 @@ export default function PermissionPage() {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  console.log(permissions);
+  console.log(modules);
+  // Simulate search and pagination client-side
+  const filteredPermissions = permissions.permissions.filter((p) =>
+    p.name.toLowerCase().includes(debouncedQuery.toLowerCase())
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredPermissions.length / limit));
+  const paginatedPermissions = filteredPermissions.slice(
+    (page - 1) * limit,
+    page * limit
+  );
+
+  useEffect(() => {
+    setPage(1); // Reset to first page on new search
+  }, [debouncedQuery]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -309,7 +274,6 @@ export default function PermissionPage() {
           getPermissionsList(),
           getModulesList(),
         ]);
-        console.log(permissionsResponse);
         setPermissions(permissionsResponse);
         setModules(modulesResponse);
       } catch (error) {
@@ -318,7 +282,6 @@ export default function PermissionPage() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -370,28 +333,27 @@ export default function PermissionPage() {
     }
   };
 
+  const getModuleName = (permission: Permission) => {
+    if (!permission.module?.id) return "-";
+    const foundModule = modules.find((m) => m.id === permission?.module?.id);
+    return foundModule ? foundModule.name : "-";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/business-list")}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-            >
-              <ArrowLeft size={20} />
-              Back to Business List
-            </Button>
-          </div>
-          {/* <div className="flex items-center gap-3">
-            <Shield size={24} className="text-[#F47411]" />
-            <h1 className="text-2xl font-bold text-gray-900">Permissions</h1>
-          </div> */}
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/business-list")}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft size={20} />
+            Back to Business List
+          </Button>
           <div className="w-24"></div> {/* Spacer for centering */}
         </div>
-
         {/* Logo */}
         <div className="text-center mb-8">
           <Image
@@ -402,39 +364,72 @@ export default function PermissionPage() {
             className="mx-auto"
           />
         </div>
-
         {/* Content */}
         <div className="bg-white rounded-lg shadow-sm border">
-          <div className="p-6 border-b">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  System Permissions
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Manage general permissions across all businesses
-                </p>
-              </div>
+          <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3 border-b">
+            <h2 className="text-lg font-normal text-[#101828]">
+              System Permissions
+            </h2>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              <SearchWithIcon
+                className="w-[478px]"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
               <AddPermissionDialog onAddPermission={handleAddPermission} />
             </div>
           </div>
           <div className="p-6">
             {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#F47411]"></div>
-                <p className="mt-2 text-gray-500">Loading permissions...</p>
+              <div className="p-5">
+                <Spinner size="lg" />
               </div>
             ) : (
-              <PermissionTable
-                permissions={permissions}
-                modules={modules}
-                onDelete={handleDeletePermission}
-                onEditClick={handleEditClick}
-              />
+              <div className="overflow-x-auto">
+                <Table>
+                  <Thead>
+                    <Tr>
+                      <Th withIcon>Name</Th>
+                      <Th withIcon>Description</Th>
+                      <Th withIcon>Module</Th>
+                      <Th>Action</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {paginatedPermissions.map((permission) => (
+                      <Tr key={permission.id}>
+                        <Td>{permission.name}</Td>
+                        <Td>{permission.description}</Td>
+                        <Td>{getModuleName(permission)}</Td>
+                        <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4">
+                          <span
+                            className="mr-4 cursor-pointer text-blue-600 hover:underline"
+                            onClick={() => handleEditClick(permission)}
+                          >
+                            Edit
+                          </span>
+                          <span
+                            className="cursor-pointer text-red-600 hover:underline"
+                            onClick={() =>
+                              handleDeletePermission(permission.id)
+                            }
+                          >
+                            Delete
+                          </span>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+                <Pagination
+                  totalPages={totalPages}
+                  page={page}
+                  onPageChange={setPage}
+                />
+              </div>
             )}
           </div>
         </div>
-
         {editingPermission && (
           <EditPermissionDialog
             permission={editingPermission}

@@ -154,3 +154,31 @@ export async function deletePermission(id: string): Promise<void> {
     throw new Error(message);
   }
 }
+
+export async function getPermissions() {
+  try {
+    const authToken = await getAuthToken();
+    if (!authToken) {
+      return { error: "Authentication token not found." };
+    }
+    const response = await axiosGet("/permissions/public-permissions", {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    });
+
+    if (!response) {
+      return { permissions: [] };
+    }
+
+    return response;
+  } catch (error: unknown) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Failed to fetch permissions.",
+    };
+  }
+}

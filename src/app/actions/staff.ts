@@ -1,15 +1,31 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, isRedirectError } from "../lib/api";
+import {
+  axiosGet,
+  axiosPatch,
+  axiosPost,
+  axiosDelete,
+  isRedirectError,
+} from "../lib/api";
 import { getAuthToken } from "../lib/auth";
 import { GetStaffOptions, getStaffResponse } from "./types";
-import { ErrorResponseData } from "../lib/types";
+import { ApiResponse, ErrorResponseData } from "../lib/types";
 
 export default async function getStaff(
   options: GetStaffOptions
 ): Promise<getStaffResponse> {
-  const { page = 1, limit = 10, searchTerm, businessId } = options;
+  const {
+    page = 1,
+    limit = 10,
+    searchTerm,
+    businessId,
+    status,
+    department,
+    startDate,
+    endDate,
+  } = options;
 
   try {
     const authToken = await getAuthToken();
@@ -20,7 +36,18 @@ export default async function getStaff(
         )}`
       : `/super-admin/${businessId}/staff`;
 
-    const url = `${baseUrl}?page=${page}&limit=${limit}`;
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (status) params.append("status", status);
+    if (department) params.append("department", department);
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    const url = `${baseUrl}?${params.toString()}`;
 
     const response = await axiosGet<getStaffResponse>(url, {
       config: {
@@ -36,10 +63,11 @@ export default async function getStaff(
         message: "No data received",
         data: {
           staffs: [],
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
         },
-        page,
-        limit,
-        total: 0,
       };
     }
 
@@ -56,10 +84,106 @@ export default async function getStaff(
       message,
       data: {
         staffs: [],
+        page,
+        limit,
+        total: 0,
+        totalPages: 0,
       },
-      page,
-      limit,
-      total: 0,
     };
   }
+}
+
+export async function updateStaff(
+  businessId: number,
+  staffPayload: any,
+  staffId: number
+) {
+  const authToken = await getAuthToken();
+
+  const response = await axiosPatch<ApiResponse<any>>(
+    `/super-admin/${businessId}/staff/${staffId}`,
+    staffPayload,
+    {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    }
+  );
+
+  console.log(response);
+}
+
+export async function resetStaffPassword(
+  businessId: number,
+  staffId: number,
+  payload: { password: string; email: string }
+) {
+  const authToken = await getAuthToken();
+
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/${businessId}/staff/${staffId}/reset-password`,
+    payload,
+    {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    }
+  );
+
+  return response;
+}
+
+export async function deleteStaff(businessId: number, staffId: number) {
+  const authToken = await getAuthToken();
+
+  const response = await axiosDelete<ApiResponse<any>>(
+    `/super-admin/${businessId}/staff/${staffId}`,
+    {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    }
+  );
+
+  return response;
+}
+
+export async function undeleteStaff(businessId: number, staffId: number) {
+  const authToken = await getAuthToken();
+
+  if (!businessId) {
+    throw new Error("businessId is required");
+  }
+
+  const url = `/super-admin/${businessId}/staff/${staffId}/undelete`;
+
+  const response = await axiosPatch<ApiResponse<any>>(
+    url,
+    {
+      success: true,
+      data: {
+        message: "Staff restored successfully",
+      },
+    },
+    {
+      config: {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+      currentPath: "/dashboard/staffs",
+    }
+  );
+
+  return response;
 }

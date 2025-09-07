@@ -58,7 +58,7 @@ export default function PaymentTable() {
       <Divider className="mb-4" />
       {/* Table */}
       <div className="overflow-x-auto">
-        <Table>
+        <Table minWidth="500px">
           <Thead>
             <Tr>
               <Th withIcon>Date</Th>

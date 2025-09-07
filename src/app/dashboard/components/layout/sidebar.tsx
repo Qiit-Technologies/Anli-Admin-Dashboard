@@ -25,7 +25,7 @@ const Sidebar = ({
     { name: "Issues", icon: Layers, href: "/dashboard/issues" },
     { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
     { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
-    { name: "Users", icon: Users, href: "/dashboard/users" },
+    { name: "Staffs", icon: Users, href: "/dashboard/staffs" },
   ];
 
   return (
@@ -59,7 +59,9 @@ const Sidebar = ({
 
         <nav className="space-y-4">
           {navItems.map(({ name, icon: Icon, href }) => {
-            const isActive = pathname === href;
+            const isActive =
+              pathname === href ||
+              (name === "General Info" && pathname === "/dashboard/details");
             return (
               <Link
                 key={name}
