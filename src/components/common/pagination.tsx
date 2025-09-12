@@ -11,7 +11,6 @@ export const Pagination: FC<PaginationProps> = ({
 }) => {
   console.log("Pagination props:", { page, totalPages });
   if (totalPages <= 1) {
-    console.log("Pagination hidden: totalPages <= 1");
     return null;
   }
 

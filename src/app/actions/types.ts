@@ -1,5 +1,5 @@
 import { BusinessDTO } from "@/types/business";
-import { ApiResponse, PaginationMeta } from "../lib/types";
+import { ApiResponse, PaginatedResponse, PaginationMeta } from "../lib/types";
 import { BillingInfoDTO } from "@/types/plan";
 import { ReportDTO } from "@/types/report";
 import { Role, StaffDTO } from "@/types/staff";
@@ -69,7 +69,10 @@ export interface GetReportsOptions {
   page?: number;
   limit?: number;
 }
+
 export type getReportsResponse = ApiResponse<{ reports: ReportDTO[] }>;
+
+export type getReportsResponse2 = PaginatedResponse<ReportDTO>;
 
 // STAFF PAGE REQUESTS -> RESPONSE TYPES
 export interface GetStaffOptions {

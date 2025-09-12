@@ -16,7 +16,7 @@ import { Button } from "../ui/button";
 interface CustomSheetProps {
   trigger?: ReactNode;
   children: ReactNode;
-  title: string;
+  title?: string;
   subTitle?: string;
   open?: boolean;
   setOpen?: (open: boolean) => void;

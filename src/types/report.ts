@@ -1,9 +1,17 @@
-export type ResportStatus = "unresolved" | "resolved" | "in_progress" | string;
+export type ReportStatus =
+  | "unresolved"
+  | "resolved"
+  | "closed"
+  | "open"
+  | string;
 
 export interface ReportDTO {
   id: number;
-  title: string;
   description: string;
-  status: ResportStatus;
+  status: ReportStatus;
   hotelId: number;
+  createdBy: string;
+  creatorRole: string;
+  createdAt: Date;
+  comment: string;
 }

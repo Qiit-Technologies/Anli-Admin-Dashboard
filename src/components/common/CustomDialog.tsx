@@ -20,12 +20,12 @@ export function CustomDialog({
   loading = false,
 }: {
   title: string;
-  open: boolean;
-  subTitle: string;
+  open?: boolean;
+  subTitle?: string;
   trigger?: React.ReactNode;
   children: React.ReactNode;
   onSubmit: () => void;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
   loading?: boolean;
 }) {
   return (
@@ -36,10 +36,10 @@ export function CustomDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{subTitle}</DialogDescription>
         </DialogHeader>
-        <div className="w-full mt-5">{children}</div>
+        <div className="w-full my-2">{children}</div>
         <DialogFooter>
           <Button
-            className={`bg-orion-blue ${loading && "opacity-60 cursor-not-allowed"}`}
+            className={`bg-orion-blue hover:bg-orion-blue hover:opacity-70 ${loading && "opacity-60 cursor-not-allowed"}`}
             onClick={onSubmit}
           >
             {loading ? "..loading" : "Submit"}

@@ -14,3 +14,8 @@ export type PaginationMeta = {
   limit: number;
   totalPages: number;
 };
+
+export type PaginatedResponse<T> = ApiResponse<{
+  data: T[];
+  meta: PaginationMeta;
+}>;
