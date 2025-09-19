@@ -4,6 +4,7 @@ import { axiosGet } from "../lib/api";
 import { getAuthToken } from "../lib/auth";
 
 export default async function fetcher<T>(url: string): Promise<T | undefined> {
+  console.log(url);
   const authToken = await getAuthToken();
   const response = await axiosGet<T>(url, {
     config: {

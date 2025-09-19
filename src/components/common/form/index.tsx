@@ -109,7 +109,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             inputClassName,
             "w-full",
             icon && iconPosition === "left" && "pl-10",
-            icon && iconPosition === "right" && "pr-10"
+            icon && iconPosition === "right" && "pr-10",
           )}
           required={required}
           min={min}
@@ -118,6 +118,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           disabled={readOnly}
           defaultValue={defaultValue}
         />
+
         {rightIcon &&
           React.cloneElement(
             rightIcon as React.ReactElement<{
@@ -128,10 +129,10 @@ export const InputField: React.FC<InputFieldProps> = ({
               className: cn(
                 "absolute inset-y-0 right-0 flex items-center pr-3",
                 (rightIcon as React.ReactElement<{ className?: string }>).props
-                  .className
+                  .className,
               ),
               onClick: onRightIconClick,
-            }
+            },
           )}
       </div>
     </FormField>
