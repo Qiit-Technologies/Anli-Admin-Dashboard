@@ -151,8 +151,14 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
                 open={showIssueSheet}
                 report={selectedReport}
                 businessId={businessId}
-                setOpen={setShowIssueSheet}
-                refetch={() => mutate()}
+                setOpen={(val: boolean) => {
+                  setSelectedReport(null);
+                  setShowIssueSheet(val);
+                }}
+                refetch={() => {
+                  setSelectedReport(null);
+                  mutate();
+                }}
               />
             )}
 

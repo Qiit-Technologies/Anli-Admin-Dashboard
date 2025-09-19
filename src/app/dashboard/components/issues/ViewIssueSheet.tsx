@@ -13,16 +13,16 @@ export const ViewIssueSheet = ({
   refetch,
 }: {
   open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
+  setOpen: (open: boolean) => void;
   report: ReportDTO;
   businessId: string;
   refetch: () => void;
 }) => {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    comment: report.comment,
+    comment: report.comment || "",
     status: report.status,
   });
-  const [loading, setLoading] = useState(false);
 
   const handleFormChange = (name: string, value: string) => {
     setFormData((prev) => ({
@@ -38,6 +38,10 @@ export const ViewIssueSheet = ({
 
       refetch();
       setOpen(false);
+      setFormData({
+        comment: "",
+        status: "",
+      });
       toast.success("Issue updated successfully");
     } catch (error) {
       if (typeof error == "string") {
