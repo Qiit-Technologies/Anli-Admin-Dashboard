@@ -3,6 +3,7 @@ import { ApiResponse, PaginatedResponse, PaginationMeta } from "../lib/types";
 import { BillingInfoDTO } from "@/types/plan";
 import { ReportDTO } from "@/types/report";
 import { Role, StaffDTO } from "@/types/staff";
+import { SubscriptionPlan } from "@/types/subscriptions";
 
 export interface Permission {
   id: string;
@@ -104,3 +105,8 @@ export interface GetPlanOptions {
 export type getPlanResponse = ApiResponse<{ billingInfo: BillingInfoDTO }>;
 
 // PAYMENT REQUESTS -> RESPONSE TYPES
+
+// SUBSCRIPTIONS -> RESPONSE TYPES
+export type getSubscriptionPlansResponse = ApiResponse<{
+  plans: SubscriptionPlan[];
+}>;

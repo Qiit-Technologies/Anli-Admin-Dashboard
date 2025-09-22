@@ -3,6 +3,9 @@
 import { Zap } from "lucide-react";
 import { PlanCardProps } from "./types";
 import { Divider } from "../divider";
+import { LogInvoiceBtn } from "./LogInvoiceBtn";
+import { SwitchBillingCycleBtn } from "./SwitchBillingCycleBtn";
+import { SelectPlanBtn } from "./SelectPlanBtn";
 
 export const PlanCard = ({
   planName,
@@ -12,9 +15,6 @@ export const PlanCard = ({
   modulesAllowed,
   billingCycle,
   benefits,
-  onUpgrade,
-  onSwitchBilling,
-  onDowngrade,
 }: PlanCardProps) => (
   <div className="rounded-2xl bg-[#FFF9F4] p-6 sm:p-8 space-y-6">
     {/* Top Section */}
@@ -29,35 +29,21 @@ export const PlanCard = ({
             {planName}
           </h3>
           <p className="text-2xl sm:text-[32px] font-semibold text-[#101828]">
-            {price}
+            ₦ {Number(price).toLocaleString()}
           </p>
-          <p className="text-sm sm:text-md font-normal text-[#667085]">
-            {tagline}
-          </p>
+          {planName === "freemium" && (
+            <p className="text-sm sm:text-md font-normal text-[#667085]">
+              {tagline}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Buttons */}
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-        <button
-          className="rounded-lg border border-gray-300 px-4 py-2 text-gray-400 font-semibold text-sm w-full sm:w-auto"
-          disabled
-          onClick={onDowngrade}
-        >
-          Downgrade
-        </button>
-        <button
-          className="rounded-lg bg-gray-500 px-4 py-2 font-semibold text-sm text-white hover:bg-gray-600 w-full sm:w-auto"
-          onClick={onSwitchBilling}
-        >
-          Switch billing cycle
-        </button>
-        <button
-          className="rounded-lg bg-[#007BFF] px-4 py-2 font-semibold text-sm text-white hover:bg-blue-700 w-full sm:w-auto"
-          onClick={onUpgrade}
-        >
-          Upgrade
-        </button>
+        <SelectPlanBtn />
+        <SwitchBillingCycleBtn />
+        <LogInvoiceBtn />
       </div>
     </div>
 

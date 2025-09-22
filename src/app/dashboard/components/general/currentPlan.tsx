@@ -1,14 +1,15 @@
-import getPlan from "@/app/actions/plan";
-import { FaSpinner } from "react-icons/fa";
 import useSWR from "swr";
+import { FaSpinner } from "react-icons/fa";
+import fetcher from "@/app/actions/fetcher";
+import { getPlanResponse } from "@/app/actions/types";
 
 export default function CurrentPlan({ businessId }: { businessId: string }) {
   const { isLoading, data: response } = useSWR(
-    businessId ? businessId : null,
-    () => getPlan({ businessId })
+    `/super-admin/${businessId}/billing/current-plan`,
+    (url: string) => fetcher<getPlanResponse>(url),
   );
 
-  const billingInfo = response?.data?.billingInfo || {
+  const billingInfo = response?.data.billingInfo || {
     plan_name: "",
     renewal_date: "",
     billing_cycle: "",
@@ -23,7 +24,7 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
         <FaSpinner className="animate-spin" />
       ) : (
         <>
-          <ul className="text-sm space-y-4 text-gray-700 pb-6 border-b border-[#DFDFDF]">
+          <ul className="w-full text-sm space-y-4 text-gray-700 pb-6 border-b border-[#DFDFDF]">
             <li className="flex justify-between">
               <span className="font-medium">Plan Name</span>
               <span>{billingInfo?.plan_name}</span>
@@ -36,10 +37,12 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
               <span className="font-medium">Billing Cycle</span>
               <span>{billingInfo?.billing_cycle}</span>
             </li>
-            <li className="flex justify-between">
+            {/*<li className="flex flex-col">
               <span className="font-medium">Modules Allowed</span>
-              <span>{billingInfo?.modules}</span>
-            </li>
+              <p className="lg:w-[300px] inline-block break-words whitespace-normal">
+                {billingInfo?.modules}
+              </p>
+            </li>*/}
           </ul>
 
           <div className="flex flex-col sm:flex-row gap-4">

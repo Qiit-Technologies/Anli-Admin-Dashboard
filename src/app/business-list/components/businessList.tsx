@@ -12,7 +12,7 @@ import { useBusiness } from "@/context/businessContext";
 import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
-import { Shield, Layers } from "lucide-react";
+import { Shield, Layers, Gift } from "lucide-react";
 
 export default function BusinessList() {
   const [page, setPage] = useState(1);
@@ -29,7 +29,7 @@ export default function BusinessList() {
   // Always call hooks first
   const { data: response, isLoading } = useSWR(
     [`/super-admin/hotels`, page, limit, debouncedQuery],
-    () => getBusinessList({ page, limit, searchTerm: debouncedQuery })
+    () => getBusinessList({ page, limit, searchTerm: debouncedQuery }),
   );
 
   const handleBusinessClick = (item: BusinessDTO) => {
@@ -60,6 +60,13 @@ export default function BusinessList() {
         <div className="flex justify-between items-start mb-6">
           <div></div> {/* Left spacer */}
           <div className="flex gap-3">
+            <Button
+              onClick={() => router.push("/subscriptions")}
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Gift size={16} />
+              Subscriptions
+            </Button>
             <Button
               onClick={() => router.push("/modules")}
               className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"

@@ -25,6 +25,7 @@ interface CustomSheetProps {
   onClose?: () => void;
   onComplete?: () => void;
   loading?: boolean;
+  confirmBtnTitle?: string;
 }
 export function CustomSheet({
   trigger,
@@ -38,6 +39,7 @@ export function CustomSheet({
   onClose,
   loading,
   onComplete,
+  confirmBtnTitle = "Update",
 }: Readonly<CustomSheetProps>) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
 
@@ -50,6 +52,7 @@ export function CustomSheet({
     }
     setOpen?.(newOpen);
   };
+
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
@@ -94,7 +97,7 @@ export function CustomSheet({
                 : "bg-[#007bff] hover:bg-[#007bff]"
             }`}
           >
-            {loading ? "...Loading" : "Update"}
+            {loading ? "...Loading" : confirmBtnTitle}
           </Button>
         </div>
       </SheetContent>

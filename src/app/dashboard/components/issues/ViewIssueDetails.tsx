@@ -86,7 +86,7 @@ export const ViewIssueDetails = ({
 
       <div className="flex flex-col gap-2">
         <span className="font-bold text-lg leading-[150%] text-[#354052]">
-          Issue current status
+          Comment
         </span>
         <TextAreaInput
           id="comment"
