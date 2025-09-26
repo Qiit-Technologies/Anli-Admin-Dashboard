@@ -15,7 +15,6 @@ import {
 export default function BusinessDetailsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { business, loading } = useBusiness();
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -64,7 +63,7 @@ export default function BusinessDetailsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={18} color={"gray"} className="flex-shrink-0" />
-                <span>+234 8070 234 000</span>
+                <span>{business?.owner?.phoneNumber}</span>
               </div>
               <div className="flex items-center gap-2">
                 <LayoutGrid

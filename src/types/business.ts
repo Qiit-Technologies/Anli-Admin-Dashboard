@@ -20,4 +20,7 @@ export interface BusinessDTO {
   boardingToken: string | null;
   services: string | null; // Replace 'any' with proper type if services structure is known
   disbursementType: DisbursementType;
+  owner: {
+    phoneNumber: string | null;
+  };
 }

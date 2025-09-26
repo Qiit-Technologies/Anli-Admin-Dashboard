@@ -56,7 +56,7 @@ export const PlanCard = ({
           className="rounded-lg bg-[#007BFF] px-4 py-2 font-semibold text-sm text-white hover:bg-blue-700 w-full sm:w-auto"
           onClick={onUpgrade}
         >
-          Upgrade
+          Make Payment
         </button>
       </div>
     </div>

@@ -80,7 +80,7 @@ export async function axiosPost<T = unknown>(
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
-    return undefined;
+    throw error;
   }
 }
 
@@ -100,7 +100,7 @@ export async function axiosPatch<T = unknown>(
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
-    return undefined;
+    throw error;
   }
 }
 
@@ -119,7 +119,7 @@ export async function axiosDelete<T = unknown>(
     return response.data;
   } catch (error) {
     handleError(error as AxiosError, currentPath);
-    return undefined;
+    throw error;
   }
 }
 

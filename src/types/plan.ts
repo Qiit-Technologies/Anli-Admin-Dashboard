@@ -5,4 +5,5 @@ export interface BillingInfoDTO {
   renewal_date: string;
   billing_cycle: "monthly" | "yearly" | string;
   modules: string[];
+  price: number;
 }

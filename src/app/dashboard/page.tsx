@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { business, loading } = useBusiness();
   const router = useRouter();
+  console.log(business);
 
   useEffect(() => {
     if (!loading && (!business || Object.keys(business).length < 1)) {
@@ -52,7 +53,9 @@ export default function DashboardPage() {
               <p className="text-md font-medium text-[#0B0B0B]">
                 {business?.address}
               </p>
-              <p className="text-sm text-[#0B0B0B]">+234 8070 234 000</p>
+              <p className="text-sm text-[#0B0B0B]">
+                {business?.owner?.phoneNumber}
+              </p>
               <button
                 onClick={() => router.push("/dashboard/details")}
                 className="rounded-[10px] mt-2 bg-[#007BFF] hover:bg-blue-700 text-white w-full py-3 px-6 font-semibold cursor-pointer"
