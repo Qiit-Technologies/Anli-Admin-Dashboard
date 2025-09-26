@@ -1,8 +1,9 @@
 import { BusinessDTO } from "@/types/business";
-import { ApiResponse, PaginationMeta } from "../lib/types";
+import { ApiResponse, PaginatedResponse, PaginationMeta } from "../lib/types";
 import { BillingInfoDTO } from "@/types/plan";
 import { ReportDTO } from "@/types/report";
 import { Role, StaffDTO } from "@/types/staff";
+import { SubscriptionPlan } from "@/types/subscriptions";
 
 export interface Permission {
   id: string;
@@ -69,7 +70,10 @@ export interface GetReportsOptions {
   page?: number;
   limit?: number;
 }
+
 export type getReportsResponse = ApiResponse<{ reports: ReportDTO[] }>;
+
+export type getReportsResponse2 = PaginatedResponse<ReportDTO>;
 
 // STAFF PAGE REQUESTS -> RESPONSE TYPES
 export interface GetStaffOptions {
@@ -101,3 +105,8 @@ export interface GetPlanOptions {
 export type getPlanResponse = ApiResponse<{ billingInfo: BillingInfoDTO }>;
 
 // PAYMENT REQUESTS -> RESPONSE TYPES
+
+// SUBSCRIPTIONS -> RESPONSE TYPES
+export type getSubscriptionPlansResponse = ApiResponse<{
+  plans: SubscriptionPlan[];
+}>;

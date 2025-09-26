@@ -16,7 +16,7 @@ import { Button } from "../ui/button";
 interface CustomSheetProps {
   trigger?: ReactNode;
   children: ReactNode;
-  title: string;
+  title?: string;
   subTitle?: string;
   open?: boolean;
   setOpen?: (open: boolean) => void;
@@ -25,6 +25,7 @@ interface CustomSheetProps {
   onClose?: () => void;
   onComplete?: () => void;
   loading?: boolean;
+  confirmBtnTitle?: string;
 }
 export function CustomSheet({
   trigger,
@@ -38,6 +39,7 @@ export function CustomSheet({
   onClose,
   loading,
   onComplete,
+  confirmBtnTitle = "Update",
 }: Readonly<CustomSheetProps>) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
 
@@ -50,12 +52,13 @@ export function CustomSheet({
     }
     setOpen?.(newOpen);
   };
+
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent
         side="right"
-        className="overflow-y-auto h-full flex flex-col justify-between w-11/12 sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2"
+        className="overflow-y-auto h-full flex flex-col justify-between w-full sm:max-w-md md:max-w-lg"
       >
         <SheetHeader className="text-left pb-2">
           <button
@@ -77,7 +80,9 @@ export function CustomSheet({
             )}
           </SheetTitle>
         </SheetHeader>
-        <div className="h-full overflow-y-auto">{children}</div>
+        <div className="h-full overflow-y-auto">
+          <div>{children}</div>
+        </div>
         <div className="w-full flex gap-4">
           <SheetClose asChild>
             <Button variant="outline" className="w-1/2 h-10 rounded-lg">
@@ -92,7 +97,7 @@ export function CustomSheet({
                 : "bg-[#007bff] hover:bg-[#007bff]"
             }`}
           >
-            {loading ? "...Loading" : "Update"}
+            {loading ? "...Loading" : confirmBtnTitle}
           </Button>
         </div>
       </SheetContent>

@@ -87,6 +87,11 @@ export default function CurrentPlanPage() {
     }
   };
 
+  const handleUpgradePlan = () => {
+    // Handle upgrade plan logic here
+    toast.info("Upgrade plan functionality - to be implemented");
+  };
+
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
@@ -99,14 +104,14 @@ export default function CurrentPlanPage() {
         <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white">
           <PlanCard
             planName="Free plan"
-            price="$00/mth"
+            price={0}
             tagline="Our most popular plan."
             renewalDate="July 15, 2025, 3 days left"
             modulesAllowed={5}
             billingCycle="Monthly"
             benefits="Housekeeping Automation, Advanced Reports, Priority Support"
-            onUpgrade={() => setShowPaymentForm(true)}
-            // onSwitchBilling={() => console.log("switch")}
+            onUpgrade={handleUpgradePlan}
+            onMakePayment={() => setShowPaymentForm(true)}
           />
 
           {/* Payment Status Tracker */}

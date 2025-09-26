@@ -1,20 +1,19 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, isRedirectError } from "../lib/api";
-import { getAuthToken } from "../lib/auth";
-import { GetPlanOptions, getPlanResponse } from "./types";
+import { axiosPost, isRedirectError } from "../lib/api";
 import { ErrorResponseData } from "../lib/types";
+import { getAuthToken } from "../lib/auth";
 
-export default async function getPlan(
-  options: GetPlanOptions
-): Promise<getPlanResponse> {
-  const { businessId } = options;
+export async function selectPlan(payload: { planId: string }, hotelId: number) {
   try {
     const authToken = await getAuthToken();
-    const url = `/super-admin/${businessId}/pricing/current-plan`;
-
-    const response = await axiosGet<getPlanResponse>(url, {
+    if (!authToken) {
+      return { message: "Authentication token not found." };
+    }
+    console.log(payload, hotelId);
+    const url = `/super-admin/${hotelId}/billing/select-plan`;
+    const response = await axiosPost(url, payload, {
       config: {
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -23,39 +22,14 @@ export default async function getPlan(
       },
     });
 
-    if (!response) {
-      return {
-        message: "No data received",
-        data: {
-          billingInfo: {
-            plan_name: "",
-            renewal_date: "",
-            billing_cycle: "",
-            modules: [],
-          },
-        },
-      };
-    }
-
     return response;
-  } catch (error: unknown) {
+  } catch (error) {
+    console.log(error);
     if (isRedirectError(error)) throw error;
-
     const axiosError = error as AxiosError;
     const message =
       (axiosError.response?.data as ErrorResponseData)?.message ||
       "An unexpected error occurred";
-
-    return {
-      message,
-      data: {
-        billingInfo: {
-          plan_name: "",
-          renewal_date: "",
-          billing_cycle: "",
-          modules: [],
-        },
-      },
-    };
+    throw new Error(message);
   }
 }

@@ -1,12 +1,11 @@
 export type PlanCardProps = {
   planName: string;
-  price: string; // e.g. "$00/mth"
+  price: number; // e.g. "$00/mth"
   tagline: string;
-  renewalDate: string; // already formatted, e.g. "July 15, 2025, 3 days left"
+  renewalDate: string; // already formatted, e.g. "July 15, 2025, 3 days left"
   modulesAllowed: number;
-  billingCycle: "Monthly" | "Yearly";
+  billingCycle: string;
   benefits: string; // comma‑separated list
   onUpgrade?: () => void;
-  onSwitchBilling?: () => void;
-  onDowngrade?: () => void;
+  onMakePayment?: () => void;
 };
