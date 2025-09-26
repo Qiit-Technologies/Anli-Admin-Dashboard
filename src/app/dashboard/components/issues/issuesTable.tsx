@@ -15,22 +15,39 @@ import SearchWithIcon from "@/components/common/searchWithIcon";
 import { useState } from "react";
 import LoggedIssueModal from "./issueModal";
 import useSWR from "swr";
-import getReports from "@/app/actions/report";
 import { Spinner } from "@/components/ui/spinner";
 import { Pagination } from "@/components/common/pagination";
+import { useBusiness } from "@/context/businessContext";
+import fetcher from "@/app/actions/fetcher";
+import { getReportsResponse2 } from "@/app/actions/types";
+import { AddIssueBtn } from "./AddIssueBtn";
+import { ViewIssueSheet } from "./ViewIssueSheet";
+import { ReportDTO } from "@/types/report";
 
 export default function IssuesTable({ businessId }: { businessId: string }) {
   const [query, setQuery] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [page, setPage] = useState(1);
-  const limit = 10;
+  const [showIssueSheet, setShowIssueSheet] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+  });
+  const [selectedReport, setSelectedReport] = useState<ReportDTO | null>(null);
 
-  const { data: response, isLoading } = useSWR(`/super-admin/hotels`, () =>
-    getReports({ page, limit, businessId })
+  const {
+    data: response,
+    isLoading,
+    mutate,
+  } = useSWR(
+    [`/super-admin/${businessId}/reports`, pagination.page, query],
+    () =>
+      fetcher<getReportsResponse2>(
+        `/super-admin/${businessId}/reports?page=${pagination.page}&limit=${pagination.limit}&q=${query}`,
+      ),
   );
 
-  const reports = response?.data?.reports || [];
-  const totalPages = response?.totalPages || 1;
+  const reports = response?.data.data || [];
+  const totalPages = response?.data.meta.totalPages || 0;
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {isLoading ? (
@@ -53,10 +70,11 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
                 <ListFilterIcon size={16} />
                 Filters
               </button>
-              <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
+              <AddIssueBtn refetch={() => mutate()} businessId={businessId} />
+              {/*<button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
                 <CloudUpload size={16} />
                 Print Issues
-              </button>
+              </button>*/}
             </div>
           </div>
 
@@ -69,7 +87,6 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-
             <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
               <ListFilterIcon size={16} />
               More filters
@@ -78,20 +95,20 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="table-fixed w-full">
               <Thead>
                 <Tr>
                   <Th className="p-3 w-1">
                     <input type="checkbox" />
                   </Th>
-                  <Th>Issues ID</Th>
-                  <Th withIcon>Title</Th>
-                  <Th withIcon>Description</Th>
-                  <Th withIcon>Hotel ID</Th>
-                  <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
-                    Status
+                  <Th className="w-[100px]">Issues ID</Th>
+                  <Th className="w-[150px] truncate">Creator</Th>
+                  <Th className="w-[300px] truncate">Description</Th>
+                  <Th className="w-[100px]">Hotel ID</Th>
+                  <Th className="w-[100px]">Status</Th>
+                  <Th className="w-[100px]" withIcon>
+                    Action
                   </Th>
-                  <Th withIcon>Action</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -101,21 +118,26 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
                       <input type="checkbox" />
                     </Td>
                     <Td>{i + 1}</Td>
-                    <Td>{row.title}</Td>
-                    <Td>{row.description}</Td>
-                    <Td>{row.hotelId}</Td>
+                    <Td className="truncate">{row.createdBy}</Td>
+                    <Td className="truncate">{row.description}</Td>
+                    <Td> {row.hotelId}</Td>
                     <Td>
                       <StatusBadge
                         status={row.status}
                         statusColorMap={{
                           unresolved: "yellow",
                           resolved: "green",
+                          open: "blue",
+                          closed: "red",
                         }}
                       />
                     </Td>
                     <Td
                       className="text-blue-600 hover:underline cursor-pointer"
-                      onClick={() => setShowModal(true)}
+                      onClick={() => {
+                        setSelectedReport(row);
+                        setShowIssueSheet(true);
+                      }}
                     >
                       View
                     </Td>
@@ -124,14 +146,28 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
               </Tbody>
             </Table>
 
-            {showModal && (
-              <LoggedIssueModal onClose={() => setShowModal(false)} />
+            {selectedReport && (
+              <ViewIssueSheet
+                open={showIssueSheet}
+                report={selectedReport}
+                businessId={businessId}
+                setOpen={(val: boolean) => {
+                  setSelectedReport(null);
+                  setShowIssueSheet(val);
+                }}
+                refetch={() => {
+                  setSelectedReport(null);
+                  mutate();
+                }}
+              />
             )}
 
             <Pagination
               totalPages={totalPages}
-              page={page}
-              onPageChange={setPage}
+              page={pagination.page}
+              onPageChange={(newPage) =>
+                setPagination((prev) => ({ ...prev, page: newPage }))
+              }
             />
           </div>
         </>

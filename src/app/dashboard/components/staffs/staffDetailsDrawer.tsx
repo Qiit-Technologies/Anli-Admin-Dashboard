@@ -5,6 +5,7 @@ import { CustomSheet } from "@/components/common/CustomSheet";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
+import { Permission } from "@/app/actions/types";
 
 export interface StaffInfoInterface {
   id: number;
@@ -16,6 +17,17 @@ export interface StaffInfoInterface {
   roles: {
     id: number;
   };
+  roleId?: number;
+  modules: [];
+  permissions: [];
+}
+
+export interface SimplifiedStaffInfo {
+  id: number;
+  fullName: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
   roleId?: number;
   modules: [];
   permissions: [];
@@ -39,13 +51,14 @@ export const StaffDetailsDrawer = ({
   const [loading, setLoading] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-  const [formData, setFormData] = useState<Partial<StaffInfoInterface>>({
+  const [formData, setFormData] = useState<SimplifiedStaffInfo>({
+    id: staffInfo.id,
     fullName: staffInfo.fullName,
     username: staffInfo.username,
     email: staffInfo.email,
     phoneNumber: staffInfo.phoneNumber,
     roleId: staffInfo?.roles?.id,
-    permissions: staffInfo.permissions || [],
+    permissions: staffInfo.permissions,
     modules: staffInfo.modules || [],
   });
 

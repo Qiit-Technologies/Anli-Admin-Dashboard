@@ -14,7 +14,7 @@ import { GetStaffOptions, getStaffResponse } from "./types";
 import { ApiResponse, ErrorResponseData } from "../lib/types";
 
 export default async function getStaff(
-  options: GetStaffOptions
+  options: GetStaffOptions,
 ): Promise<getStaffResponse> {
   const {
     page = 1,
@@ -32,7 +32,7 @@ export default async function getStaff(
 
     const baseUrl = searchTerm
       ? `/super-admin/${businessId}/staff/search/${encodeURIComponent(
-          searchTerm
+          searchTerm,
         )}`
       : `/super-admin/${businessId}/staff`;
 
@@ -96,7 +96,7 @@ export default async function getStaff(
 export async function updateStaff(
   businessId: number,
   staffPayload: any,
-  staffId: number
+  staffId: number,
 ) {
   const authToken = await getAuthToken();
 
@@ -110,16 +110,14 @@ export async function updateStaff(
           Authorization: `Bearer ${authToken}`,
         },
       },
-    }
+    },
   );
-
-  console.log(response);
 }
 
 export async function resetStaffPassword(
   businessId: number,
   staffId: number,
-  payload: { password: string; email: string }
+  payload: { password: string; email: string },
 ) {
   const authToken = await getAuthToken();
 
@@ -133,7 +131,7 @@ export async function resetStaffPassword(
           Authorization: `Bearer ${authToken}`,
         },
       },
-    }
+    },
   );
 
   return response;
@@ -151,7 +149,7 @@ export async function deleteStaff(businessId: number, staffId: number) {
           Authorization: `Bearer ${authToken}`,
         },
       },
-    }
+    },
   );
 
   return response;
@@ -182,7 +180,7 @@ export async function undeleteStaff(businessId: number, staffId: number) {
         },
       },
       currentPath: "/dashboard/staffs",
-    }
+    },
   );
 
   return response;
