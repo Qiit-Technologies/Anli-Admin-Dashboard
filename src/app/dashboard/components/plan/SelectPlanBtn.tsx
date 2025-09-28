@@ -16,7 +16,7 @@ export const SelectPlanBtn = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const { data: response, isLoading: planLoading } = useSWR(
     "/super-admin/subscription-plan",
-    (url: string) => fetcher<getSubscriptionPlansResponse>(url),
+    (url: string) => fetcher<getSubscriptionPlansResponse>(url)
   );
 
   const handleSelectPlan = async () => {
@@ -38,6 +38,7 @@ export const SelectPlanBtn = () => {
       mutate(`/super-admin/${business.id}/billing/current-plan`);
       setIsDialogOpen(false);
     } catch (error) {
+      console.log(error);
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {
@@ -72,10 +73,10 @@ export const SelectPlanBtn = () => {
         disabled={false}
         value={
           selectedPlan
-            ? (plans?.find(
+            ? plans?.find(
                 (plan: { value: string; label: string }) =>
-                  plan.value === selectedPlan,
-              ) ?? null)
+                  plan.value === selectedPlan
+              ) ?? null
             : null
         }
         className="w-full min-w-0 h-10"

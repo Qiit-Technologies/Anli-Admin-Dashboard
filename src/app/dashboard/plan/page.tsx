@@ -4,7 +4,7 @@ import { PlanCard } from "../components/plan/planCard";
 import PlanHistoryTable from "../components/plan/planHistoryTable";
 import Header from "../components/layout/header";
 import Sidebar from "../components/layout/sidebar";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useBusiness } from "@/context/businessContext";
 import useSWR from "swr";
 import { getPlanResponse } from "@/app/actions/types";
@@ -19,17 +19,20 @@ export default function CurrentPlanPage() {
   const { isLoading, data: response } = useSWR(
     business ? `/super-admin/${business.id}/billing/current-plan` : null,
     (url: string) => fetcher<getPlanResponse>(url),
+    { revalidateOnFocus: false }
   );
 
-  const planDetails: BillingInfoDTO = response?.data.billingInfo || {
-    plan_name: "",
-    renewal_date: "",
-    billing_cycle: "",
-    modules: [],
-    price: 0,
-  };
-
-  console.log(planDetails);
+  const planDetails: BillingInfoDTO = useMemo(
+    () =>
+      response?.data.billingInfo || {
+        plan_name: "",
+        renewal_date: "",
+        billing_cycle: "",
+        modules: [],
+        price: 0,
+      },
+    [response]
+  );
 
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
@@ -41,17 +44,17 @@ export default function CurrentPlanPage() {
           title="Current Plan"
         />
         <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white">
-          {isLoading || loading ? (
+          {isLoading || loading || !business ? (
             "loading..."
           ) : (
             <>
               <PlanCard
-                planName={capitalize(planDetails.plan_name)}
+                modulesAllowed={5}
                 price={planDetails.price}
                 tagline="Our most popular plan."
-                renewalDate={formatPlanRenewalDate(planDetails.renewal_date)}
-                modulesAllowed={5}
+                planName={capitalize(planDetails.plan_name)}
                 billingCycle={capitalize(planDetails.billing_cycle)}
+                renewalDate={formatPlanRenewalDate(planDetails.renewal_date)}
                 benefits="Housekeeping Automation, Advanced Reports, Priority Support"
               />
 
