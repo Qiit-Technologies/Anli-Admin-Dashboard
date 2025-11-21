@@ -96,6 +96,7 @@ export function PaymentStatusTracker({
     }, 10000); // Poll every 10 seconds for pending payments
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentId, payment?.status]);
 
   const getStatusIcon = (status: PaymentStatus) => {

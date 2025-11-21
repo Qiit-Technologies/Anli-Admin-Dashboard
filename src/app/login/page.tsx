@@ -13,6 +13,7 @@ import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
 import { axiosPost } from "../lib/api";
 import { useUser } from "@/context/userContext";
+import { setAuthCookie } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -44,14 +45,24 @@ export default function LoginPage() {
         }
       );
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log(response);
       if (response?.data && response?.access_token) {
         toast.success(response?.message || "Login successful");
-        // Store token in localStorage
+        // Store token in localStorage for client-side access
         localStorage.setItem("access_token", response.access_token);
-        // Store token in cookie for SSR
-        document.cookie = `access_token=${response.access_token}; path=/; secure; samesite=lax`;
+
+        // Store token in cookie via server action for server-side access
+        try {
+          await setAuthCookie(response.access_token);
+        } catch (error) {
+          console.warn("Failed to set auth cookie:", error);
+          // Fallback: set cookie via document.cookie
+          document.cookie = `access_token=${
+            response.access_token
+          }; path=/; secure; samesite=lax; max-age=${60 * 60 * 24 * 7}`;
+        }
+
         setUser({
           id: response.data.id,
           email: response.data.email,
@@ -60,7 +71,11 @@ export default function LoginPage() {
           status: response.data.status,
           roleId: response.data.roleId,
         });
-        router.push("/business-list");
+
+        // Small delay to ensure cookie is set before navigation
+        setTimeout(() => {
+          router.push("/business-list");
+        }, 100);
       } else {
         toast.error(
           response?.message || "Login failed. Please check your credentials."

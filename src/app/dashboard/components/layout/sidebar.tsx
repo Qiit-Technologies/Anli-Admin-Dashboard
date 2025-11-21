@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import BusinessListNavButton from "@/components/common/BusinessListNavButton";
 
 const Sidebar = ({
   isOpen,
@@ -39,25 +40,32 @@ const Sidebar = ({
 
       <aside
         className={`fixed sm:static inset-y-0 left-0 bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0
-    ${isOpen ? "translate-x-0" : "-translate-x-full"} w-full sm:w-60 px-4 py-6`}
+    ${
+      isOpen ? "translate-x-0" : "-translate-x-full"
+    } w-full sm:w-60 px-4 py-6 relative flex flex-col justify-between`}
       >
-        <div className="flex relative justify-center items-center mb-12">
-          <Image
-            src="/logo-white.svg"
-            alt="Logo"
-            width={100}
-            height={24}
-            className="h-6"
-          />
-          <button
-            onClick={() => setIsOpen(false)}
-            className="absolute right-0 text-white sm:hidden"
-          >
-            <X size={20} />
-          </button>
+        <div>
+          {/* Business List Navigation Button - Top Right */}
+          <BusinessListNavButton />
+
+          <div className="flex relative justify-center items-center mb-12">
+            <Image
+              src="/logo-white.svg"
+              alt="Logo"
+              width={100}
+              height={24}
+              className="h-6"
+            />
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute right-0 text-white sm:hidden"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
-        <nav className="space-y-4">
+        <nav className="space-y-4 flex-1">
           {navItems.map(({ name, icon: Icon, href }) => {
             const isActive =
               pathname === href ||

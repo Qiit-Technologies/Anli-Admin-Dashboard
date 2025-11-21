@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import useSWR from "swr";
@@ -30,6 +31,36 @@ export default function BusinessList() {
   const { data: response, isLoading } = useSWR(
     [`/super-admin/hotels`, page, limit, debouncedQuery],
     () => getBusinessList({ page, limit, searchTerm: debouncedQuery }),
+    {
+      onError: (error) => {
+        // Handle 401 errors - token might not be in cookies yet
+        const status = (error as any)?.response?.status;
+        if (status === 401) {
+          // Token might not be in cookies yet, try to get from localStorage
+          const token = localStorage.getItem("access_token");
+          if (token) {
+            // Cookie might not be set yet - try to set it and retry
+            document.cookie = `access_token=${token}; path=/; secure; samesite=lax; max-age=${
+              60 * 60 * 24 * 7
+            }`;
+            console.warn("401 error - retrying after setting cookie");
+          } else {
+            // No token at all - redirect to login
+            router.push("/login");
+          }
+        }
+      },
+      shouldRetryOnError: (error) => {
+        const status = (error as any)?.response?.status;
+        // Retry once on 401 if we have a token in localStorage
+        if (status === 401) {
+          const token = localStorage.getItem("access_token");
+          return !!token;
+        }
+        return status !== 401;
+      },
+      errorRetryCount: 1, // Only retry once
+    }
   );
 
   const handleBusinessClick = (item: BusinessDTO) => {

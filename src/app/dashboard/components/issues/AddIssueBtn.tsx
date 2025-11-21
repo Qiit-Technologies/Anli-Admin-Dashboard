@@ -1,6 +1,5 @@
 import { createIssue } from "@/app/actions/report";
 import { CustomDialog } from "@/components/common/CustomDialog";
-import { InputField } from "@/components/common/form";
 import { TextAreaInput } from "@/components/common/TextAreaInput";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";

@@ -125,7 +125,8 @@ export const EditSubscriptionPlan = ({
 
       setSelectedModules(selected);
     }
-  }, [modules, setSelectedModules]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modules, plan?.features?.moduleAllowed]);
 
   return (
     <CustomSheet

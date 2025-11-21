@@ -81,6 +81,7 @@ export const SearchSelect = <T,>({
         inputRef.current.focus();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, filteredItems.length]);
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export const SearchSelect = <T,>({
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleSelect = (item: T) => {

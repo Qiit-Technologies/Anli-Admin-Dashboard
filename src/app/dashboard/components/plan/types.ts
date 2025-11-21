@@ -1,11 +1,34 @@
+export type PlanWarningInfo = {
+  isActive: boolean;
+  warningStartedAt?: string;
+  warningExpiresAt?: string;
+  secondsRemaining?: number;
+  reason?: string | null;
+  setBy?: string | null;
+};
+
 export type PlanCardProps = {
   planName: string;
-  price: number; // e.g. "$00/mth"
+  price: number;
   tagline: string;
-  renewalDate: string; // already formatted, e.g. "July 15, 2025, 3 days left"
+  renewalDate: string;
   modulesAllowed: number;
   billingCycle: string;
-  benefits: string; // comma‑separated list
+  benefits: string;
+  status?: string;
+  isExpired?: boolean;
+  hotelActive?: boolean;
+  warningInfo?: PlanWarningInfo | null;
+  canStartWarning?: boolean;
+  canCancelWarning?: boolean;
+  warningActionLoading?: boolean;
+  warningCancelLoading?: boolean;
+  onStartWarning?: (payload: {
+    reason?: string;
+    warningStartedAt?: string;
+    warningExpiresAt?: string;
+  }) => Promise<void> | void;
+  onCancelWarning?: () => Promise<void> | void;
   onUpgrade?: () => void;
   onMakePayment?: () => void;
 };

@@ -2,7 +2,6 @@
 
 import { AxiosError } from "axios";
 import { axiosGet, axiosPost, axiosPatch, axiosDelete } from "../lib/api";
-import { getAuthToken } from "../lib/auth";
 import { Permission, GetPermissionsListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
 
@@ -30,22 +29,13 @@ export default async function getPermissionsList(
   const { page = 1, limit = 10, searchTerm } = options;
 
   try {
-    const authToken = await getAuthToken();
-
     const baseUrl = searchTerm
       ? `/permissions/search/${encodeURIComponent(searchTerm)}`
       : `/permissions`;
 
     const url = `${baseUrl}?page=${page}&limit=${limit}`;
 
-    const response = await axiosGet<{ permissions: Permission[] }>(url, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
-    });
+    const response = await axiosGet<{ permissions: Permission[] }>(url);
 
     if (!response) {
       return { permissions: [] };
@@ -64,22 +54,9 @@ export async function createPermission(
   permissionData: CreatePermissionDto
 ): Promise<permissionResponse> {
   try {
-    const authToken = await getAuthToken();
-
-    if (!authToken) {
-      throw new Error("No authentication token found");
-    }
-
     const url = `/permissions`;
 
-    const response = await axiosPost<permissionResponse>(url, permissionData, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
-    });
+    const response = await axiosPost<permissionResponse>(url, permissionData);
 
     if (!response) {
       throw new Error("No data received from API");
@@ -102,18 +79,9 @@ export async function updatePermission(
   permissionData: UpdatePermissionDto
 ): Promise<permissionResponse> {
   try {
-    const authToken = await getAuthToken();
-
     const url = `/permissions/${id}`;
 
-    const response = await axiosPatch<permissionResponse>(url, permissionData, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
-    });
+    const response = await axiosPatch<permissionResponse>(url, permissionData);
 
     if (!response) {
       throw new Error("No data received");
@@ -133,18 +101,9 @@ export async function updatePermission(
 // Delete a permission
 export async function deletePermission(id: string): Promise<void> {
   try {
-    const authToken = await getAuthToken();
-
     const url = `/permissions/${id}`;
 
-    await axiosDelete(url, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
-    });
+    await axiosDelete(url);
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
     const message =
@@ -157,18 +116,7 @@ export async function deletePermission(id: string): Promise<void> {
 
 export async function getPermissions() {
   try {
-    const authToken = await getAuthToken();
-    if (!authToken) {
-      return { error: "Authentication token not found." };
-    }
-    const response = await axiosGet("/permissions/public-permissions", {
-      config: {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      },
-    });
+    const response = await axiosGet("/permissions/public-permissions");
 
     if (!response) {
       return { permissions: [] };

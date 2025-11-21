@@ -5,7 +5,6 @@ import { CustomSheet } from "@/components/common/CustomSheet";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
-import { Permission } from "@/app/actions/types";
 
 export interface StaffInfoInterface {
   id: number;

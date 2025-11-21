@@ -26,15 +26,15 @@ export default function DashboardPage() {
   if (loading || !business) return null;
 
   return (
-    <div className="min-h-screen flex flex-col sm:flex-row">
+    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
           title="General Info"
         />
-        <main className="px-4 sm:px-6 py-10 space-y-6 bg-white overflow-x-hidden">
+        <main className="px-4 sm:px-6 py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
           {/* Top grid section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Profile Card */}

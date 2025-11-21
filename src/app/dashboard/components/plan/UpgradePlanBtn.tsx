@@ -7,11 +7,9 @@ import { useBusiness } from "@/context/businessContext";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import useSWR, { useSWRConfig } from "swr";
-import {
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
+export const UpgradePlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const { mutate } = useSWRConfig();
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -22,7 +20,7 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
     (url: string) => fetcher<getSubscriptionPlansResponse>(url)
   );
 
-  const handleSelectPlan = async () => {
+  const handleUpgradePlan = async () => {
     setLoading(true);
     try {
       if (!selectedPlan) {
@@ -35,13 +33,12 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
       }
 
       const payload = { planId: selectedPlan };
-      console.log(payload, business?.id);
-      const response = await selectPlan(payload, business?.id);
-      console.log(response);
+      await selectPlan(payload, business?.id);
 
-      toast.success("Plan has been changed successfully");
+      toast.success("Plan has been upgraded successfully");
       mutate(`/super-admin/${business.id}/billing/current-plan`);
       setIsDialogOpen(false);
+      setSelectedPlan(null);
     } catch (error) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
@@ -60,9 +57,9 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
     return (
       <CustomDialog
         open={isDialogOpen}
-        onSubmit={handleSelectPlan}
+        onSubmit={handleUpgradePlan}
         onOpenChange={setIsDialogOpen}
-        title="Select Subscription Plan"
+        title="Upgrade Subscription Plan"
         loading={loading || businessLoading || planLoading}
         trigger={
           <DropdownMenuItem
@@ -72,14 +69,14 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
             }}
             className="cursor-pointer"
           >
-            Select Plan
+            Upgrade Plan
           </DropdownMenuItem>
         }
       >
         <SearchSelect
-          id="plans"
-          label="Subscription Plans"
-          placeholder="Select a Plan"
+          id="upgrade-plans"
+          label="Available Plans"
+          placeholder="Select a plan to upgrade to"
           items={plans}
           disabled={false}
           value={
@@ -103,20 +100,20 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   return (
     <CustomDialog
       open={isDialogOpen}
-      onSubmit={handleSelectPlan}
+      onSubmit={handleUpgradePlan}
       onOpenChange={setIsDialogOpen}
-      title="Select Subscription Plan"
+      title="Upgrade Subscription Plan"
       loading={loading || businessLoading || planLoading}
       trigger={
         <button className="rounded-lg bg-[#007BFF] px-4 py-2 font-semibold text-sm text-white hover:bg-blue-700 w-full sm:w-auto">
-          Select Plan
+          Upgrade Plan
         </button>
       }
     >
       <SearchSelect
-        id="plans"
-        label="Subscription Plans"
-        placeholder="Select a Plan"
+        id="upgrade-plans"
+        label="Available Plans"
+        placeholder="Select a plan to upgrade to"
         items={plans}
         disabled={false}
         value={

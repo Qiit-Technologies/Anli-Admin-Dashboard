@@ -9,15 +9,15 @@ export default function PaymentHistoryPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col sm:flex-row">
+    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
           title="Payment History"
         />
-        <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white">
+        <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
           <PaymentHistoryTable />
         </main>
       </div>

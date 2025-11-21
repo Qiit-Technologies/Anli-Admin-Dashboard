@@ -9,12 +9,11 @@ import {
   axiosDelete,
   isRedirectError,
 } from "../lib/api";
-import { getAuthToken } from "../lib/auth";
 import { GetStaffOptions, getStaffResponse } from "./types";
 import { ApiResponse, ErrorResponseData } from "../lib/types";
 
 export default async function getStaff(
-  options: GetStaffOptions,
+  options: GetStaffOptions
 ): Promise<getStaffResponse> {
   const {
     page = 1,
@@ -28,11 +27,9 @@ export default async function getStaff(
   } = options;
 
   try {
-    const authToken = await getAuthToken();
-
     const baseUrl = searchTerm
       ? `/super-admin/${businessId}/staff/search/${encodeURIComponent(
-          searchTerm,
+          searchTerm
         )}`
       : `/super-admin/${businessId}/staff`;
 
@@ -49,14 +46,7 @@ export default async function getStaff(
 
     const url = `${baseUrl}?${params.toString()}`;
 
-    const response = await axiosGet<getStaffResponse>(url, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
-    });
+    const response = await axiosGet<getStaffResponse>(url);
 
     if (!response) {
       return {
@@ -96,68 +86,38 @@ export default async function getStaff(
 export async function updateStaff(
   businessId: number,
   staffPayload: any,
-  staffId: number,
+  staffId: number
 ) {
-  const authToken = await getAuthToken();
-
   const response = await axiosPatch<ApiResponse<any>>(
     `/super-admin/${businessId}/staff/${staffId}`,
-    staffPayload,
-    {
-      config: {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      },
-    },
+    staffPayload
   );
+
+  return response;
 }
 
 export async function resetStaffPassword(
   businessId: number,
   staffId: number,
-  payload: { password: string; email: string },
+  payload: { password: string; email: string }
 ) {
-  const authToken = await getAuthToken();
-
   const response = await axiosPost<ApiResponse<any>>(
     `/super-admin/${businessId}/staff/${staffId}/reset-password`,
-    payload,
-    {
-      config: {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      },
-    },
+    payload
   );
 
   return response;
 }
 
 export async function deleteStaff(businessId: number, staffId: number) {
-  const authToken = await getAuthToken();
-
   const response = await axiosDelete<ApiResponse<any>>(
-    `/super-admin/${businessId}/staff/${staffId}`,
-    {
-      config: {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      },
-    },
+    `/super-admin/${businessId}/staff/${staffId}`
   );
 
   return response;
 }
 
 export async function undeleteStaff(businessId: number, staffId: number) {
-  const authToken = await getAuthToken();
-
   if (!businessId) {
     throw new Error("businessId is required");
   }
@@ -173,14 +133,8 @@ export async function undeleteStaff(businessId: number, staffId: number) {
       },
     },
     {
-      config: {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      },
       currentPath: "/dashboard/staffs",
-    },
+    }
   );
 
   return response;

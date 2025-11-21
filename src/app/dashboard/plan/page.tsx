@@ -6,7 +6,7 @@ import { PaymentStatusTracker } from "../components/plan/paymentStatusTracker";
 import { PaymentVerificationModal } from "../components/plan/paymentVerificationModal";
 import Header from "../components/layout/header";
 import Sidebar from "../components/layout/sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,11 @@ import { CheckCircle, Clock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useBusiness } from "@/context/businessContext";
 import { initiatePayment } from "@/app/actions/payments";
+import useSWR from "swr";
+import fetcher from "@/app/actions/fetcher";
+import { getPlanResponse } from "@/app/actions/types";
+import { cancelWarningTimer, startWarningTimer } from "@/app/actions/plan";
+import { FaSpinner } from "react-icons/fa";
 
 export default function CurrentPlanPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,12 +46,123 @@ export default function CurrentPlanPage() {
   const [paymentStatus, setPaymentStatus] = useState<string>("");
   const { business } = useBusiness();
   const selectedHotelId = business?.id ? String(business.id) : "";
+  const selectedHotelNumericId = business?.id ? Number(business.id) : null;
   const [paymentData, setPaymentData] = useState({
     amount: "",
     method: "",
     description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [warningActionLoading, setWarningActionLoading] = useState(false);
+  const [warningCancelLoading, setWarningCancelLoading] = useState(false);
+
+  const {
+    data: planResponse,
+    isLoading: isPlanLoading,
+    error: planError,
+    mutate: mutatePlan,
+  } = useSWR(
+    selectedHotelNumericId
+      ? `/super-admin/${selectedHotelNumericId}/billing/current-plan`
+      : null,
+    async (url: string) => {
+      try {
+        return await fetcher<getPlanResponse>(url);
+      } catch (error) {
+        // Handle 404 gracefully - hotel might not have a subscription yet
+        const axiosError = error as {
+          response?: { status?: number };
+          status?: number;
+        };
+        const status = axiosError?.response?.status || axiosError?.status;
+        if (status === 404) {
+          console.warn(
+            "Subscription not found for hotel:",
+            selectedHotelNumericId
+          );
+          return undefined;
+        }
+        // Re-throw other errors so SWR can handle them
+        throw error;
+      }
+    },
+    {
+      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+        // Don't retry on 404 errors
+        const axiosError = error as {
+          response?: { status?: number };
+          status?: number;
+        };
+        const status = axiosError?.response?.status || axiosError?.status;
+        if (status === 404) {
+          return;
+        }
+        // Retry up to 3 times for other errors
+        if (retryCount >= 3) return;
+        setTimeout(() => revalidate({ retryCount }), 5000);
+      },
+      onError: (error) => {
+        // Suppress 404 errors - they're expected when hotel has no subscription
+        const axiosError = error as {
+          response?: { status?: number };
+          status?: number;
+        };
+        const status = axiosError?.response?.status || axiosError?.status;
+        if (status === 404) {
+          // Don't treat 404 as an error - it's expected
+          return;
+        }
+        // Let other errors propagate normally
+      },
+    }
+  );
+
+  // Log error for debugging (only non-404 errors) - use useEffect to avoid render-time logging
+  useEffect(() => {
+    if (!planError) return;
+
+    // Check for 404 status in various possible error structures
+    const axiosError = planError as {
+      response?: { status?: number };
+      status?: number;
+      code?: string;
+    };
+    const status = axiosError?.response?.status || axiosError?.status;
+
+    // Don't log 404 errors - they're expected when hotel has no subscription
+    if (status === 404) {
+      return;
+    }
+
+    // Log other errors
+    console.error("Plan fetch error:", planError);
+  }, [planError]);
+
+  const billingInfo = planResponse?.data.billingInfo;
+  const renewalDateLabel = billingInfo?.renewal_date
+    ? new Date(billingInfo.renewal_date).toLocaleString(undefined, {
+        dateStyle: "long",
+        timeStyle: "short",
+      })
+    : "Not available";
+  const modulesAllowed = (() => {
+    if (!billingInfo?.modules) return 0;
+    if (Array.isArray(billingInfo.modules)) {
+      return billingInfo.modules.length;
+    }
+    return billingInfo.modules.split(",").filter(Boolean).length;
+  })();
+  const benefitsList = (() => {
+    if (!billingInfo?.modules) return "—";
+    if (Array.isArray(billingInfo.modules)) {
+      return billingInfo.modules.join(", ");
+    }
+    return billingInfo.modules;
+  })();
+
+  const canStartWarning =
+    Boolean(billingInfo?.isExpired) && !billingInfo?.warningInfo?.isActive;
+  const canCancelWarning = Boolean(billingInfo?.warningInfo?.isActive);
 
   const handleInitiatePayment = async () => {
     if (!paymentData.amount || !paymentData.method) {
@@ -87,32 +203,115 @@ export default function CurrentPlanPage() {
     }
   };
 
+  const handleStartWarningTimer = async ({
+    reason,
+    warningStartedAt,
+    warningExpiresAt,
+  }: {
+    reason?: string;
+    warningStartedAt?: string;
+    warningExpiresAt?: string;
+  }) => {
+    if (!selectedHotelNumericId) return;
+    setWarningActionLoading(true);
+    try {
+      const payload: {
+        durationHours?: number;
+        reason?: string;
+        warningStartedAt?: string;
+        warningExpiresAt?: string;
+      } = {
+        reason,
+        warningStartedAt,
+        warningExpiresAt,
+      };
+      if (!warningStartedAt || !warningExpiresAt) {
+        payload.durationHours = 24;
+      }
+      await startWarningTimer(selectedHotelNumericId, payload);
+      toast.success("Warning timer started");
+      await mutatePlan();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to start warning timer"
+      );
+    } finally {
+      setWarningActionLoading(false);
+    }
+  };
+
+  const handleCancelWarningTimer = async () => {
+    if (!selectedHotelNumericId) return;
+    setWarningCancelLoading(true);
+    try {
+      await cancelWarningTimer(selectedHotelNumericId);
+      toast.success("Warning timer cleared");
+      await mutatePlan();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to clear warning timer"
+      );
+    } finally {
+      setWarningCancelLoading(false);
+    }
+  };
+
   const handleUpgradePlan = () => {
     // Handle upgrade plan logic here
     toast.info("Upgrade plan functionality - to be implemented");
   };
 
+  console.log(billingInfo);
   return (
-    <div className="min-h-screen flex flex-col sm:flex-row">
+    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
           title="Current Plan"
         />
-        <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white">
-          <PlanCard
-            planName="Free plan"
-            price={0}
-            tagline="Our most popular plan."
-            renewalDate="July 15, 2025, 3 days left"
-            modulesAllowed={5}
-            billingCycle="Monthly"
-            benefits="Housekeeping Automation, Advanced Reports, Priority Support"
-            onUpgrade={handleUpgradePlan}
-            onMakePayment={() => setShowPaymentForm(true)}
-          />
+        <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
+          {!selectedHotelNumericId ? (
+            <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+              Select a business to view subscription details.
+            </div>
+          ) : isPlanLoading ? (
+            <div className="rounded-2xl border border-gray-100 bg-[#FFF9F4] p-6 flex items-center gap-3 text-sm text-gray-600">
+              <FaSpinner className="animate-spin" />
+              Loading plan information...
+            </div>
+          ) : billingInfo ? (
+            <PlanCard
+              planName={billingInfo.plan_name || "Current Plan"}
+              price={billingInfo.price || 0}
+              tagline={
+                billingInfo.plan_name?.toLowerCase() === "freemium"
+                  ? "Our most popular plan."
+                  : "Manage the subscription status for this hotel."
+              }
+              renewalDate={renewalDateLabel}
+              modulesAllowed={modulesAllowed}
+              billingCycle={billingInfo.billing_cycle || "monthly"}
+              benefits={benefitsList}
+              status={billingInfo.status}
+              isExpired={billingInfo.isExpired}
+              hotelActive={billingInfo.hotelActive}
+              warningInfo={billingInfo.warningInfo || undefined}
+              canStartWarning={canStartWarning}
+              canCancelWarning={canCancelWarning}
+              warningActionLoading={warningActionLoading}
+              warningCancelLoading={warningCancelLoading}
+              onStartWarning={handleStartWarningTimer}
+              onCancelWarning={handleCancelWarningTimer}
+              onUpgrade={handleUpgradePlan}
+              onMakePayment={() => setShowPaymentForm(true)}
+            />
+          ) : (
+            <div className="rounded-2xl border border-gray-100 bg-[#FFF9F4] p-6 text-sm text-gray-600">
+              Unable to load plan information for this business.
+            </div>
+          )}
 
           {/* Payment Status Tracker */}
           {currentPayment && (

@@ -20,15 +20,15 @@ export default function BusinessDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col sm:flex-row">
+    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
           title="General Info"
         />
-        <main className="px-4 sm:px-10 py-4 sm:py-10 space-y-6 bg-white">
+        <main className="px-4 sm:px-10 py-4 sm:py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
           <div className="w-full p-4 sm:p-10 shadow-lg text-start flex flex-col gap-4 sm:gap-6 rounded-2xl">
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-8">
               <div className="border-4 border-white rounded-full flex-shrink-0">
