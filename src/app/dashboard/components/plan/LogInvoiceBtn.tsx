@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { logInvoice } from "@/app/actions/payments";
+import { useBusiness } from "@/context/businessContext";
+import { useSWRConfig } from "swr";
 
 export const LogInvoiceBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const [formData, setFormData] = useState({
@@ -17,22 +20,41 @@ export const LogInvoiceBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   });
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { business } = useBusiness();
+  const { mutate } = useSWRConfig();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.invoiceNumber || !formData.amount || !formData.date) {
       toast.error("Please fill in all required fields");
       return;
     }
+
+    if (!business?.id) {
+      toast.error("No business selected");
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Implement API call to log invoice
+      await logInvoice(business.id.toString(), {
+        invoiceNumber: formData.invoiceNumber,
+        amount: parseFloat(formData.amount),
+        description: formData.description || undefined,
+        date: formData.date,
+      });
       toast.success("Invoice logged successfully");
-      console.log("Invoice data:", formData);
       setFormData({ invoiceNumber: "", amount: "", description: "", date: "" });
       setIsDialogOpen(false);
+      // Refresh payment history and plan data
+      if (business.id) {
+        mutate(`/super-admin/${business.id}/billing/payment-history`);
+        mutate(`/super-admin/${business.id}/billing/current-plan`);
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Failed to log invoice");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to log invoice";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

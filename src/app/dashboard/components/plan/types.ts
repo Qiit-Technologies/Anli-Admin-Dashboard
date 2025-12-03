@@ -31,4 +31,6 @@ export type PlanCardProps = {
   onCancelWarning?: () => Promise<void> | void;
   onUpgrade?: () => void;
   onMakePayment?: () => void;
+  onReactivate?: () => Promise<void> | void;
+  reactivating?: boolean;
 };

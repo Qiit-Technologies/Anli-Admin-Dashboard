@@ -14,6 +14,7 @@ interface BusinessContextType {
   setBusiness: (business: BusinessDTO | null) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  refresh: () => void;
 }
 
 const BusinessContext = createContext<BusinessContextType | undefined>(
@@ -24,7 +25,7 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
   const [business, setBusinessState] = useState<BusinessDTO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
+  const loadBusiness = () => {
     const storedBusiness = localStorage.getItem("business");
     if (storedBusiness) {
       try {
@@ -35,6 +36,10 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
       }
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    loadBusiness();
   }, []);
 
   const setBusiness = (newBusiness: BusinessDTO | null) => {
@@ -46,9 +51,14 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     setBusinessState(newBusiness);
   };
 
+  const refresh = () => {
+    setLoading(true);
+    loadBusiness();
+  };
+
   return (
     <BusinessContext.Provider
-      value={{ business, setBusiness, loading, setLoading }}
+      value={{ business, setBusiness, loading, setLoading, refresh }}
     >
       {children}
     </BusinessContext.Provider>

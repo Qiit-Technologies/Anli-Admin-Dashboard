@@ -65,3 +65,72 @@ export async function cancelWarningTimer(hotelId: number) {
     throw new Error(message);
   }
 }
+
+export async function switchBillingCycle(
+  hotelId: number,
+  billingCycle: "monthly" | "yearly"
+) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/switch-billing-cycle`;
+    const response = await axiosPost(
+      url,
+      { billingCycle },
+      {
+        currentPath: "/dashboard/plan",
+      }
+    );
+
+    return response;
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to switch billing cycle";
+    throw new Error(message);
+  }
+}
+
+export async function sendPaymentReminder(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/payment-reminder`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/dashboard",
+      }
+    );
+
+    return response;
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to send payment reminder";
+    throw new Error(message);
+  }
+}
+
+export async function reactivateBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/reactivate`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/dashboard",
+      }
+    );
+
+    return response;
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to reactivate business";
+    throw new Error(message);
+  }
+}

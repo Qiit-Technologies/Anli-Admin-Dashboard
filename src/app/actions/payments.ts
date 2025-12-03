@@ -97,3 +97,30 @@ export async function getPaymentStatus(paymentId: string) {
 
   return response;
 }
+
+export async function logInvoice(
+  hotelId: string,
+  invoiceData: {
+    invoiceNumber: string;
+    amount: number;
+    description?: string;
+    date: string;
+  }
+) {
+  const url = `/super-admin/${hotelId}/billing/log-invoice`;
+
+  const response = await axiosPost<any>(
+    url,
+    {
+      invoiceNumber: invoiceData.invoiceNumber,
+      amount: invoiceData.amount,
+      description: invoiceData.description,
+      date: invoiceData.date,
+    },
+    {
+      currentPath: "/dashboard/plan",
+    }
+  );
+
+  return response;
+}

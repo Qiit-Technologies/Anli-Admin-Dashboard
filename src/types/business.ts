@@ -23,4 +23,9 @@ export interface BusinessDTO {
   owner: {
     phoneNumber: string | null;
   };
+  subscription?: {
+    status: string;
+    endDate: string | null;
+    isExpired: boolean;
+  } | null;
 }

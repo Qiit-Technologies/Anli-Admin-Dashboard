@@ -12,26 +12,44 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { switchBillingCycle } from "@/app/actions/plan";
+import { useBusiness } from "@/context/businessContext";
+import { useSWRConfig } from "swr";
 
 export const SwitchBillingCycleBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const [loading, setLoading] = useState(false);
   const [selectedCycle, setSelectedCycle] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { business } = useBusiness();
+  const { mutate } = useSWRConfig();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedCycle) {
       toast.error("Please select a billing cycle");
       return;
     }
+
+    if (!business?.id) {
+      toast.error("No business selected");
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Implement API call to switch billing cycle
+      await switchBillingCycle(
+        Number(business.id),
+        selectedCycle as "monthly" | "yearly"
+      );
       toast.success(`Billing cycle switched to ${selectedCycle}`);
-      console.log("Switching to:", selectedCycle);
       setIsDialogOpen(false);
+      setSelectedCycle("");
+      // Refresh the plan data
+      mutate(`/super-admin/${business.id}/billing/current-plan`);
     } catch (error) {
       console.log(error);
-      toast.error("Failed to switch billing cycle");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to switch billing cycle";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

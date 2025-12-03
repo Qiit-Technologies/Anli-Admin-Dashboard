@@ -13,7 +13,9 @@ import { useBusiness } from "@/context/businessContext";
 import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
-import { Shield, Layers, Gift } from "lucide-react";
+import { Shield, Layers, Gift, RefreshCw } from "lucide-react";
+import { reactivateBusiness } from "@/app/actions/business";
+import toast from "react-hot-toast";
 
 export default function BusinessList() {
   const [page, setPage] = useState(1);
@@ -22,13 +24,18 @@ export default function BusinessList() {
   const limit = 6;
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
+  const [reactivatingId, setReactivatingId] = useState<number | null>(null);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
 
   // Always call hooks first
-  const { data: response, isLoading } = useSWR(
+  const {
+    data: response,
+    isLoading,
+    mutate,
+  } = useSWR(
     [`/super-admin/hotels`, page, limit, debouncedQuery],
     () => getBusinessList({ page, limit, searchTerm: debouncedQuery }),
     {
@@ -67,6 +74,23 @@ export default function BusinessList() {
     setBusiness(item);
     if (!loading) {
       router.push("/dashboard");
+    }
+  };
+
+  const handleReactivate = async (e: React.MouseEvent, hotelId: number) => {
+    e.stopPropagation(); // Prevent card click
+    setReactivatingId(hotelId);
+    try {
+      await reactivateBusiness(hotelId);
+      toast.success("Business reactivated successfully!");
+      // Refresh the list
+      await mutate();
+    } catch (error: any) {
+      toast.error(
+        error?.message || "Failed to reactivate business. Please try again."
+      );
+    } finally {
+      setReactivatingId(null);
     }
   };
   const businesses = response?.data?.hotels ?? [];
@@ -140,31 +164,72 @@ export default function BusinessList() {
       {/* Business Grid */}
       {businesses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto z-20 relative px-4">
-          {businesses.map((b, idx) => (
-            <div
-              key={idx}
-              className="bg-white border rounded-2xl py-4 px-5 text-center transition-all border-gray-200 hover:border-[#F47411] cursor-pointer"
-              style={{
-                boxShadow:
-                  "0px 1px 3px 0px #F4E7DD0F, 0px 3px 2px 0px #0000001A",
-              }}
-              onClick={() => handleBusinessClick(b)}
-            >
-              <Image
-                src={b?.coverImage || "/sample-company.png"}
-                alt={b.name}
-                width={70}
-                height={70}
-                className="mx-auto mb-3 object-contain"
-              />
-              <h2 className="font-medium text-lg sm:text-xl text-black hover:text-[#F47411]">
-                {b.name}
-              </h2>
-              <p className="text-sm sm:text-md text-gray-500 font-normal">
-                {b.address}
-              </p>
-            </div>
-          ))}
+          {businesses.map((b, idx) => {
+            const isExpired =
+              b.subscription?.status === "expired" ||
+              b.subscription?.isExpired ||
+              false;
+            const isReactivating = reactivatingId === b.id;
+
+            return (
+              <div
+                key={idx}
+                className={`bg-white border rounded-2xl py-4 px-5 text-center transition-all ${
+                  isExpired
+                    ? "border-red-300 hover:border-red-400"
+                    : "border-gray-200 hover:border-[#F47411]"
+                } cursor-pointer relative`}
+                style={{
+                  boxShadow:
+                    "0px 1px 3px 0px #F4E7DD0F, 0px 3px 2px 0px #0000001A",
+                }}
+                onClick={() => handleBusinessClick(b)}
+              >
+                {isExpired && (
+                  <div className="absolute top-2 right-2">
+                    <Button
+                      size="sm"
+                      onClick={(e) => handleReactivate(e, b.id)}
+                      disabled={isReactivating}
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-auto"
+                    >
+                      {isReactivating ? (
+                        <>
+                          <Spinner size="sm" className="mr-1" />
+                          Reactivating...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw size={12} className="mr-1" />
+                          Reactivate
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+                {isExpired && (
+                  <div className="absolute top-2 left-2">
+                    <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
+                      Expired
+                    </span>
+                  </div>
+                )}
+                <Image
+                  src={b?.coverImage || "/sample-company.png"}
+                  alt={b.name}
+                  width={70}
+                  height={70}
+                  className="mx-auto mb-3 object-contain"
+                />
+                <h2 className="font-medium text-lg sm:text-xl text-black hover:text-[#F47411]">
+                  {b.name}
+                </h2>
+                <p className="text-sm sm:text-md text-gray-500 font-normal">
+                  {b.address}
+                </p>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center text-gray-500 z-20 relative">

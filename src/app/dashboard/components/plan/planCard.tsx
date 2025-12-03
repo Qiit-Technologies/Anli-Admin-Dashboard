@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Clock, Zap, MoreVertical } from "lucide-react";
+import { AlertTriangle, Clock, Zap, MoreVertical, RefreshCw } from "lucide-react";
 import { PlanCardProps } from "./types";
 import { Divider } from "../divider";
 import { LogInvoiceBtn } from "./LogInvoiceBtn";
@@ -82,6 +82,8 @@ export const PlanCard = ({
   onCancelWarning,
   onUpgrade,
   onMakePayment,
+  onReactivate,
+  reactivating,
 }: PlanCardProps) => {
   const [warningReason, setWarningReason] = useState("");
   const [useCustomTimes, setUseCustomTimes] = useState(false);
@@ -127,7 +129,8 @@ export const PlanCard = ({
     ? "expired"
     : "unknown";
 
-  const showWarningPanel = warningInfo?.isActive || canStartWarning;
+  // Don't show warning panel if plan is expired - reactivate button is shown instead
+  const showWarningPanel = !isExpired && (warningInfo?.isActive || canStartWarning);
 
   const handleStartWarning = async (options?: {
     reason?: string;
@@ -206,6 +209,41 @@ export const PlanCard = ({
       </div>
 
       <Divider className="my-4 sm:my-8 border-[#D3D3D3]" />
+
+      {isExpired && onReactivate && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-full bg-red-100 p-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-red-800 mb-1">
+                Subscription Expired
+              </p>
+              <p className="text-sm text-red-700 mb-4">
+                This business subscription has expired. Reactivate to restore access.
+              </p>
+              <button
+                onClick={onReactivate}
+                disabled={reactivating}
+                className="w-full sm:w-auto rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed px-4 py-2 text-sm font-semibold text-white flex items-center justify-center gap-2"
+              >
+                {reactivating ? (
+                  <>
+                    <Clock className="h-4 w-4 animate-spin" />
+                    Reactivating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    Reactivate Business
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm text-gray-700">
         <div>

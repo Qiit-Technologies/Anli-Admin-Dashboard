@@ -27,7 +27,11 @@ import { initiatePayment } from "@/app/actions/payments";
 import useSWR from "swr";
 import fetcher from "@/app/actions/fetcher";
 import { getPlanResponse } from "@/app/actions/types";
-import { cancelWarningTimer, startWarningTimer } from "@/app/actions/plan";
+import {
+  cancelWarningTimer,
+  startWarningTimer,
+  reactivateBusiness,
+} from "@/app/actions/plan";
 import { FaSpinner } from "react-icons/fa";
 
 export default function CurrentPlanPage() {
@@ -55,6 +59,7 @@ export default function CurrentPlanPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [warningActionLoading, setWarningActionLoading] = useState(false);
   const [warningCancelLoading, setWarningCancelLoading] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
 
   const {
     data: planResponse,
@@ -257,8 +262,32 @@ export default function CurrentPlanPage() {
   };
 
   const handleUpgradePlan = () => {
-    // Handle upgrade plan logic here
-    toast.info("Upgrade plan functionality - to be implemented");
+    // Upgrade plan is handled by UpgradePlanBtn component
+    // This function is kept for compatibility but the actual upgrade
+    // is handled by the UpgradePlanBtn component in PlanCard
+  };
+
+  const handleReactivate = async () => {
+    if (!selectedHotelNumericId) {
+      toast.error("No business selected");
+      return;
+    }
+
+    setReactivating(true);
+    try {
+      await reactivateBusiness(selectedHotelNumericId);
+      toast.success("Business reactivated successfully");
+      await mutatePlan();
+    } catch (error) {
+      console.error("Failed to reactivate business:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to reactivate business";
+      toast.error(errorMessage);
+    } finally {
+      setReactivating(false);
+    }
   };
 
   console.log(billingInfo);
@@ -306,6 +335,8 @@ export default function CurrentPlanPage() {
               onCancelWarning={handleCancelWarningTimer}
               onUpgrade={handleUpgradePlan}
               onMakePayment={() => setShowPaymentForm(true)}
+              onReactivate={handleReactivate}
+              reactivating={reactivating}
             />
           ) : (
             <div className="rounded-2xl border border-gray-100 bg-[#FFF9F4] p-6 text-sm text-gray-600">

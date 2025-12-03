@@ -1,7 +1,7 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, isRedirectError } from "../lib/api";
+import { axiosGet, axiosPatch, axiosPost, isRedirectError } from "../lib/api";
 import { getBusinessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
 
@@ -58,5 +58,51 @@ export default async function getBusinessList(
       limit,
       total: 0,
     };
+  }
+}
+
+export async function updateHotelServices(hotelId: string, services: string) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}`;
+    const response = await axiosPatch(
+      url,
+      { services },
+      {
+        currentPath: "/dashboard/details",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "An unexpected error occurred";
+    throw new Error(message);
+  }
+}
+
+export async function reactivateBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/reactivate`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "An unexpected error occurred";
+    throw new Error(message);
   }
 }

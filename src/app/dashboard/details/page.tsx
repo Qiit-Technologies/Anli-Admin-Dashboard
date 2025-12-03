@@ -3,7 +3,7 @@ import Image from "next/image";
 import Header from "../components/layout/header";
 import Sidebar from "../components/layout/sidebar";
 import { useBusiness } from "@/context/businessContext";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Calendar, LayoutGrid, MapPin, Phone, Plus } from "lucide-react";
 import {
   capitalize,
@@ -11,10 +11,86 @@ import {
   generateModuleArr,
   removeUnderscore,
 } from "@/utils/utils";
+import { CustomDialog } from "@/components/common/CustomDialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { updateHotelServices } from "@/app/actions/business";
+import getModulesList, { Module } from "@/app/actions/modules";
+import { useRouter } from "next/navigation";
 
 export default function BusinessDetailsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { business, loading } = useBusiness();
+  const [isManageModulesOpen, setIsManageModulesOpen] = useState(false);
+  const [availableModules, setAvailableModules] = useState<Module[]>([]);
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  const [loadingModules, setLoadingModules] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { business, loading, refresh } = useBusiness();
+  const router = useRouter();
+
+  const currentModules = useMemo(() => {
+    if (!business?.services) return [];
+    return generateModuleArr(business.services);
+  }, [business?.services]);
+
+  useEffect(() => {
+    if (isManageModulesOpen) {
+      setLoadingModules(true);
+      getModulesList()
+        .then((modules) => {
+          setAvailableModules(modules);
+          // Pre-select currently assigned modules
+          const currentModuleNames = currentModules.map((m) => m.toLowerCase());
+          const selected = modules
+            .filter((m) => currentModuleNames.includes(m.name.toLowerCase()))
+            .map((m) => m.name);
+          setSelectedModules(selected);
+        })
+        .catch((error) => {
+          console.error("Failed to load modules:", error);
+          toast.error("Failed to load available modules");
+        })
+        .finally(() => {
+          setLoadingModules(false);
+        });
+    }
+  }, [isManageModulesOpen, currentModules]);
+
+  const handleModuleToggle = (moduleName: string) => {
+    setSelectedModules((prev) =>
+      prev.includes(moduleName)
+        ? prev.filter((m) => m !== moduleName)
+        : [...prev, moduleName]
+    );
+  };
+
+  const handleSaveModules = async () => {
+    if (!business?.id) {
+      toast.error("No business selected");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const servicesString = selectedModules.join(",");
+      await updateHotelServices(business.id.toString(), servicesString);
+      toast.success("Modules updated successfully");
+      setIsManageModulesOpen(false);
+      // Refresh business data
+      refresh();
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to update modules:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update modules";
+      toast.error(errorMessage);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -100,12 +176,60 @@ export default function BusinessDetailsPage() {
                   : null}
               </div>
             </div>
-            <button className="rounded-[10px] bg-[#FF6F00] hover:bg-blue-700 text-white w-full sm:w-fit py-3 sm:py-2 px-4 font-semibold cursor-pointer flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-transform">
+            <Button
+              onClick={() => setIsManageModulesOpen(true)}
+              className="rounded-[10px] bg-[#FF6F00] hover:bg-[#FF6F00]/90 text-white w-full sm:w-fit py-3 sm:py-2 px-4 font-semibold cursor-pointer flex items-center justify-center gap-2"
+            >
               Manage Modules <Plus size={18} />
-            </button>
+            </Button>
           </div>
         </main>
       </div>
+
+      <CustomDialog
+        open={isManageModulesOpen}
+        onOpenChange={setIsManageModulesOpen}
+        title="Manage Modules"
+        onSubmit={handleSaveModules}
+        loading={saving}
+        trigger={<></>}
+      >
+        <div className="space-y-4">
+          {loadingModules ? (
+            <div className="text-center py-4">Loading modules...</div>
+          ) : availableModules.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              No modules available
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {availableModules.map((module) => (
+                <div
+                  key={module.id}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50"
+                >
+                  <Checkbox
+                    id={`module-${module.id}`}
+                    checked={selectedModules.includes(module.name)}
+                    onCheckedChange={() => handleModuleToggle(module.name)}
+                  />
+                  <Label
+                    htmlFor={`module-${module.id}`}
+                    className="flex-1 cursor-pointer font-normal"
+                  >
+                    {capitalize(removeUnderscore(module.name))}
+                    {module.description && (
+                      <span className="text-xs text-gray-500 block mt-1">
+                        {module.description}
+                      </span>
+                    )}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CustomDialog>
     </div>
   );
 }
