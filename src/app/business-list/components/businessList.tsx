@@ -112,29 +112,32 @@ export default function BusinessList() {
 
       {/* Header */}
       <div className="text-center mb-8 z-20 relative px-4">
-        <div className="flex justify-between items-start mb-6">
-          <div></div> {/* Left spacer */}
-          <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div className="hidden sm:block"></div> {/* Left spacer */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
             <Button
               onClick={() => router.push("/subscriptions")}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 sm:px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
             >
               <Gift size={16} />
-              Subscriptions
+              <span className="hidden sm:inline">Subscriptions</span>
+              <span className="sm:hidden">Subscriptions</span>
             </Button>
             <Button
               onClick={() => router.push("/modules")}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 sm:px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
             >
               <Layers size={16} />
-              Manage Modules
+              <span className="hidden sm:inline">Manage Modules</span>
+              <span className="sm:hidden">Modules</span>
             </Button>
             <Button
               onClick={() => router.push("/permissions")}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 sm:px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
             >
               <Shield size={16} />
-              Manage Permissions
+              <span className="hidden sm:inline">Manage Permissions</span>
+              <span className="sm:hidden">Permissions</span>
             </Button>
           </div>
         </div>

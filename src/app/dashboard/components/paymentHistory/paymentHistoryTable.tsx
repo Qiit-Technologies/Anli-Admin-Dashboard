@@ -56,13 +56,13 @@ export default function PaymentHistoryTable() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
-      <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
-        <h2 className="text-lg font-normal text-[#101828]">
+      <div className="flex flex-col px-4 sm:px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h2 className="text-base sm:text-lg font-normal text-[#101828]">
           Current Payment Transaction
         </h2>
-        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <SearchWithIcon
-            className="w-[478px]"
+            className="w-full sm:w-[300px] md:w-[478px]"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -79,7 +79,7 @@ export default function PaymentHistoryTable() {
       </div>
       <Divider className="mb-4" />
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
         <Table>
           <Thead>
             <Tr>

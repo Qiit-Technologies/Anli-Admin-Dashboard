@@ -144,11 +144,11 @@ export default function PaymentTable() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
-      <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
-        <h2 className="text-lg font-normal text-[#101828]">
+      <div className="flex flex-col px-4 sm:px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h2 className="text-base sm:text-lg font-normal text-[#101828]">
           Current Payment Transaction
         </h2>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={handleDateFilter}
             className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto transition-colors"
@@ -167,7 +167,7 @@ export default function PaymentTable() {
       </div>
       <Divider className="mb-4" />
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
         {isLoading ? (
           <div className="flex justify-center items-center py-8">
             <FaSpinner className="animate-spin text-gray-400" size={24} />

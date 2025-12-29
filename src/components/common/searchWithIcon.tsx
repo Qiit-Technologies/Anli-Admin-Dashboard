@@ -15,9 +15,9 @@ export default function SearchWithIcon({
   className = "",
 }: SearchWithIconProps) {
   return (
-    <div className={`${className}`}>
+    <div className={`w-full ${className}`}>
       <div className="flex items-center gap-2 border border-gray-300 rounded-md py-2 px-3 h-12">
-        <SearchIcon className="text-gray-400 w-4 h-4" />
+        <SearchIcon className="text-gray-400 w-4 h-4 flex-shrink-0" />
         <Input
           placeholder={placeholder}
           value={value}

@@ -403,10 +403,10 @@ export default function CurrentPlanPage() {
 
       {/* Payment Initiation Modal */}
       {showPaymentForm && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md mx-auto">
             <CardHeader>
-              <CardTitle>Initiate Payment</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Initiate Payment</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

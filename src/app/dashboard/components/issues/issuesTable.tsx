@@ -81,7 +81,7 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
           {/* Search + Filters */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-4 sm:px-6 py-5">
             <SearchWithIcon
-              className="w-full sm:w-[478px]"
+              className="w-full sm:w-[300px] md:w-[478px]"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -92,8 +92,8 @@ export default function IssuesTable({ businessId }: { businessId: string }) {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
-            <Table className="table-fixed w-full">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <Table className="table-fixed w-full min-w-[600px]">
               <Thead>
                 <Tr>
                   <Th className="p-3 w-1">
