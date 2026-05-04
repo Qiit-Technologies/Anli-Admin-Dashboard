@@ -280,9 +280,12 @@ export default function ModulePage() {
           </Button>
           <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
             <Layers size={24} className="text-[#F47411]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Modules</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Modules
+            </h1>
           </div>
-          <div className="hidden sm:block w-24"></div> {/* Spacer for centering */}
+          <div className="hidden sm:block w-24"></div>{" "}
+          {/* Spacer for centering */}
         </div>
         {/* Logo */}
         <div className="text-center mb-8">
@@ -329,7 +332,9 @@ export default function ModulePage() {
                       {paginatedModules.map((module) => (
                         <Tr key={module.id}>
                           <Td className="min-w-[120px]">{module.name}</Td>
-                          <Td className="min-w-[150px]">{module.description || "-"}</Td>
+                          <Td className="min-w-[150px]">
+                            {module.description || "-"}
+                          </Td>
                           <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4 min-w-[100px]">
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                               <span

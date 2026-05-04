@@ -40,11 +40,14 @@ export default function PaymentTable() {
   }>({});
   const [statusFilter, setStatusFilter] = useState<string>("");
 
+  const [showFilters, setShowFilters] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   useEffect(() => {
     if (business?.id) {
       fetchPayments();
     }
-  }, [business?.id]);
+  }, [business?.id, statusFilter, dateFilter]);
 
   const fetchPayments = async () => {
     if (!business?.id) return;
@@ -56,7 +59,7 @@ export default function PaymentTable() {
         let filteredPayments = response.data.paymentHistory;
 
         // Apply status filter
-        if (statusFilter) {
+        if (statusFilter && statusFilter !== "all" && statusFilter !== "") {
           filteredPayments = filteredPayments.filter(
             (p: Payment) =>
               p.status.toLowerCase() === statusFilter.toLowerCase()
@@ -69,6 +72,10 @@ export default function PaymentTable() {
             const paymentDate = new Date(p.createdAt);
             const startDate = new Date(dateFilter.start!);
             const endDate = new Date(dateFilter.end!);
+            // Normalize dates to start of day for accurate comparison
+            paymentDate.setHours(0, 0, 0, 0);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
             return paymentDate >= startDate && paymentDate <= endDate;
           });
         }
@@ -121,26 +128,6 @@ export default function PaymentTable() {
     router.push(`/dashboard/payments`);
   };
 
-  const handleDateFilter = () => {
-    const startDate = prompt("Enter start date (YYYY-MM-DD):");
-    const endDate = prompt("Enter end date (YYYY-MM-DD):");
-    if (startDate && endDate) {
-      setDateFilter({ start: startDate, end: endDate });
-      fetchPayments();
-    }
-  };
-
-  const handleStatusFilter = () => {
-    const status = prompt("Enter status (completed, pending, failed):");
-    if (status) {
-      setStatusFilter(status);
-      fetchPayments();
-    } else if (status === "") {
-      setStatusFilter("");
-      fetchPayments();
-    }
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
@@ -150,21 +137,130 @@ export default function PaymentTable() {
         </h2>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
-            onClick={handleDateFilter}
-            className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto transition-colors"
+            onClick={() => {
+              setShowDatePicker(!showDatePicker);
+              setShowFilters(false);
+            }}
+            className={`flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm w-full sm:w-auto transition-colors ${
+              showDatePicker
+                ? "bg-blue-50 border-blue-300 text-blue-700"
+                : "text-gray-700 hover:bg-gray-50"
+            }`}
           >
             <Calendar size={16} />
             Select dates
           </button>
           <button
-            onClick={handleStatusFilter}
-            className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto transition-colors"
+            onClick={() => {
+              setShowFilters(!showFilters);
+              setShowDatePicker(false);
+            }}
+            className={`flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm w-full sm:w-auto transition-colors ${
+              showFilters
+                ? "bg-blue-50 border-blue-300 text-blue-700"
+                : "text-gray-700 hover:bg-gray-50"
+            }`}
           >
             <ListFilterIcon size={16} />
             Filters
           </button>
         </div>
       </div>
+
+      {/* Date Picker Panel */}
+      {showDatePicker && (
+        <div className="px-6 py-4 bg-gray-50 border-b">
+          <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFilter.start || ""}
+                  onChange={(e) =>
+                    setDateFilter((prev) => ({
+                      ...prev,
+                      start: e.target.value,
+                    }))
+                  }
+                  className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFilter.end || ""}
+                  onChange={(e) =>
+                    setDateFilter((prev) => ({
+                      ...prev,
+                      end: e.target.value,
+                    }))
+                  }
+                  className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mb-1">
+              <button
+                onClick={() => setDateFilter({})}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="px-4 py-2 text-sm bg-white border rounded-md hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="px-6 py-4 bg-gray-50 border-b">
+          <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                Status
+              </label>
+              <select
+                value={statusFilter || "all"}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border rounded-md px-3 py-2 text-sm min-w-[150px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="completed">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="flex gap-2 mb-1">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="px-4 py-2 text-sm bg-white border rounded-md hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Divider className="mb-4" />
       {/* Table */}
       <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
@@ -203,13 +299,14 @@ export default function PaymentTable() {
                         paid: "green",
                         pending: "yellow",
                         failed: "red",
+                        cancelled: "gray",
                       }}
                     />
                   </Td>
                   <Td>
                     <button
-                      onClick={() => handleViewPayment(payment.id)}
-                      className="text-blue-600 hover:underline cursor-pointer"
+                        onClick={() => handleViewPayment(payment.id)}
+                        className="text-blue-600 hover:underline cursor-pointer"
                     >
                       View
                     </button>

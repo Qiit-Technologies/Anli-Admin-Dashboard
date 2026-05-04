@@ -106,3 +106,30 @@ export async function reactivateBusiness(hotelId: number) {
     throw new Error(message);
   }
 }
+
+export async function createBusiness(data: {
+  name: string;
+  address: string;
+  businessType: string;
+  ownerEmail: string;
+  ownerFirstName: string;
+  ownerLastName: string;
+  ownerPhoneNumber: string;
+}) {
+  try {
+    const url = `/super-admin/hotels`;
+    const response = await axiosPost(url, data, {
+      currentPath: "/business-list",
+    });
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to create business";
+    throw new Error(message);
+  }
+}

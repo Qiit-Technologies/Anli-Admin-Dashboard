@@ -13,8 +13,11 @@ import { useBusiness } from "@/context/businessContext";
 import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
-import { Shield, Layers, Gift, RefreshCw } from "lucide-react";
-import { reactivateBusiness } from "@/app/actions/business";
+import { Plus, Shield, Layers, Gift, RefreshCw, Menu, X } from "lucide-react";
+import { createBusiness, reactivateBusiness } from "@/app/actions/business";
+import { CustomDialog } from "@/components/common/CustomDialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 
 export default function BusinessList() {
@@ -25,6 +28,18 @@ export default function BusinessList() {
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
   const [reactivatingId, setReactivatingId] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isAddBusinessOpen, setIsAddBusinessOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newBusiness, setNewBusiness] = useState({
+    name: "",
+    address: "",
+    businessType: "HOTEL",
+    ownerFirstName: "",
+    ownerLastName: "",
+    ownerEmail: "",
+    ownerPhoneNumber: "",
+  });
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -93,13 +108,41 @@ export default function BusinessList() {
       setReactivatingId(null);
     }
   };
+
+  const handleAddBusiness = async () => {
+    if (!newBusiness.name || !newBusiness.ownerEmail) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+    setCreating(true);
+    try {
+      await createBusiness(newBusiness);
+      toast.success("Business created successfully!");
+      setIsAddBusinessOpen(false);
+      setNewBusiness({
+        name: "",
+        address: "",
+        businessType: "HOTEL",
+        ownerFirstName: "",
+        ownerLastName: "",
+        ownerEmail: "",
+        ownerPhoneNumber: "",
+      });
+      await mutate(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to create business");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const businesses = response?.data?.hotels ?? [];
   const totalPages = response?.totalPages ?? 1;
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden px-4 py-6">
+    <div className="min-h-screen bg-white relative overflow-x-hidden overflow-y-auto px-4 py-6">
       {/* Background triangles */}
-      <div className="absolute inset-0 overflow-hidden z-10">
+      <div className="fixed inset-0 overflow-hidden z-10 pointer-events-none">
         <div
           className="absolute top-0 left-0 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-[#FFE2CC]"
           style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
@@ -112,33 +155,69 @@ export default function BusinessList() {
 
       {/* Header */}
       <div className="text-center mb-8 z-20 relative px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <div className="hidden sm:block"></div> {/* Left spacer */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+        <div className="flex justify-end mb-6 gap-2">
+          <Button
+            onClick={() => setIsAddBusinessOpen(true)}
+            className="bg-[#007BFF] hover:bg-[#007BFF]/90 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Add Business</span>
+          </Button>
+          <div className="relative">
             <Button
-              onClick={() => router.push("/subscriptions")}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 sm:px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
             >
-              <Gift size={16} />
-              <span className="hidden sm:inline">Subscriptions</span>
-              <span className="sm:hidden">Subscriptions</span>
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              <span className="hidden sm:inline">Menu</span>
             </Button>
-            <Button
-              onClick={() => router.push("/modules")}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 sm:px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
-            >
-              <Layers size={16} />
-              <span className="hidden sm:inline">Manage Modules</span>
-              <span className="sm:hidden">Modules</span>
-            </Button>
-            <Button
-              onClick={() => router.push("/permissions")}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 sm:px-6 py-2 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
-            >
-              <Shield size={16} />
-              <span className="hidden sm:inline">Manage Permissions</span>
-              <span className="sm:hidden">Permissions</span>
-            </Button>
+
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30 sm:hidden"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-40 py-2">
+                  <button
+                    onClick={() => {
+                      router.push("/subscriptions");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <Gift size={18} className="text-[#F47411]" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Subscriptions
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push("/modules");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <Layers size={18} className="text-[#F47411]" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Manage Modules
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push("/permissions");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <Shield size={18} className="text-[#F47411]" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Manage Permissions
+                    </span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <Image
@@ -257,6 +336,108 @@ export default function BusinessList() {
           />
         </>
       )}
+
+      {/* Add Business Modal */}
+      <CustomDialog
+        open={isAddBusinessOpen}
+        onOpenChange={setIsAddBusinessOpen}
+        title="Add New Business"
+        subTitle="Enter the business and owner details to onboarding a new business."
+        onSubmit={handleAddBusiness}
+        loading={creating}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="businessName">Business Name *</Label>
+            <Input
+              id="businessName"
+              placeholder="e.g. Grand Hotel"
+              value={newBusiness.name}
+              onChange={(e) =>
+                setNewBusiness({ ...newBusiness, name: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="businessType">Business Type</Label>
+            <Input
+              id="businessType"
+              placeholder="e.g. HOTEL"
+              value={newBusiness.businessType}
+              onChange={(e) =>
+                setNewBusiness({ ...newBusiness, businessType: e.target.value })
+              }
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              placeholder="Address"
+              value={newBusiness.address}
+              onChange={(e) =>
+                setNewBusiness({ ...newBusiness, address: e.target.value })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ownerFirstName">Owner First Name</Label>
+            <Input
+              id="ownerFirstName"
+              placeholder="First Name"
+              value={newBusiness.ownerFirstName}
+              onChange={(e) =>
+                setNewBusiness({
+                  ...newBusiness,
+                  ownerFirstName: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ownerLastName">Owner Last Name</Label>
+            <Input
+              id="ownerLastName"
+              placeholder="Last Name"
+              value={newBusiness.ownerLastName}
+              onChange={(e) =>
+                setNewBusiness({
+                  ...newBusiness,
+                  ownerLastName: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ownerEmail">Owner Email *</Label>
+            <Input
+              id="ownerEmail"
+              type="email"
+              placeholder="Email"
+              value={newBusiness.ownerEmail}
+              onChange={(e) =>
+                setNewBusiness({ ...newBusiness, ownerEmail: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ownerPhoneNumber">Owner Phone Number</Label>
+            <Input
+              id="ownerPhoneNumber"
+              placeholder="Phone Number"
+              value={newBusiness.ownerPhoneNumber}
+              onChange={(e) =>
+                setNewBusiness({
+                  ...newBusiness,
+                  ownerPhoneNumber: e.target.value,
+                })
+              }
+            />
+          </div>
+        </div>
+      </CustomDialog>
     </div>
   );
 }

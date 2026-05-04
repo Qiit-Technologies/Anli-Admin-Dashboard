@@ -1,9 +1,21 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-html,
+html {
+    font-family: var(--font-dm-sans), sans-serif;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
 body {
     font-family: var(--font-dm-sans), sans-serif;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    position: relative;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -140,8 +152,29 @@ button {
         @apply border-border outline-ring/50;
     }
 
+    html {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+        overflow: hidden;
+    }
+
     body {
         @apply bg-background text-foreground;
-        overflow-x: hidden;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        position: static !important;
+        display: block !important;
+        overflow-x: hidden !important;
+    }
+
+    #__next, [data-nextjs-scroll-focus-boundary] {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
     }
 }

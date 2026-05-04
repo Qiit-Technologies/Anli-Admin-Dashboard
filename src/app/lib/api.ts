@@ -40,14 +40,14 @@ instance.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 function handleError(error: AxiosError, currentPath?: string) {
@@ -87,7 +87,7 @@ export async function axiosGet<T = unknown>(
     params?: Record<string, string | number>;
     config?: AxiosRequestConfig;
     currentPath?: string; //pass manually for redirect check
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     // Merge config - interceptor will handle Authorization header automatically
@@ -115,7 +115,7 @@ export async function axiosPost<T = unknown>(
   }: {
     config?: AxiosRequestConfig;
     currentPath?: string;
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     // Interceptor will handle Authorization header automatically
@@ -136,7 +136,7 @@ export async function axiosPatch<T = unknown>(
   }: {
     config?: AxiosRequestConfig;
     currentPath?: string;
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     // Interceptor will handle Authorization header automatically
@@ -156,7 +156,7 @@ export async function axiosDelete<T = unknown>(
   }: {
     config?: AxiosRequestConfig;
     currentPath?: string;
-  } = {}
+  } = {},
 ): Promise<T | undefined> {
   try {
     // Interceptor will handle Authorization header automatically

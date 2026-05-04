@@ -22,11 +22,11 @@ export default function PaymentHistoryPage() {
   if (loading || !business) return null;
 
   return (
-    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
+    <div className="h-screen w-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         <Header isOpen={menuOpen} setIsOpen={setMenuOpen} title="Staffs" />
-        <main className="px-4 sm:px-8 md:px-10 py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
+        <main className="px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 space-y-4 sm:space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1 min-h-0">
           <UsersTable businessId={business.id?.toString()} />
         </main>
       </div>

@@ -129,8 +129,8 @@ export const PlanCard = ({
     ? "expired"
     : "unknown";
 
-  // Don't show warning panel if plan is expired - reactivate button is shown instead
-  const showWarningPanel = !isExpired && (warningInfo?.isActive || canStartWarning);
+  // Always show warning panel
+  const showWarningPanel = true;
 
   const handleStartWarning = async (options?: {
     reason?: string;

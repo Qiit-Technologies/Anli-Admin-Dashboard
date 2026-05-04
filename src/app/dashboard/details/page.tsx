@@ -96,24 +96,24 @@ export default function BusinessDetailsPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
+    <div className="h-screen w-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
           title="General Info"
         />
-        <main className="px-4 sm:px-10 py-4 sm:py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
-          <div className="w-full p-4 sm:p-10 shadow-lg text-start flex flex-col gap-4 sm:gap-6 rounded-2xl">
+        <main className="px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-10 space-y-4 sm:space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1 min-h-0">
+          <div className="w-full p-4 sm:p-6 md:p-10 shadow-lg text-start flex flex-col gap-4 sm:gap-6 rounded-2xl">
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-8">
               <div className="border-4 border-white rounded-full flex-shrink-0">
                 <Image
-                  src="/sample-company.png"
+                  src={business?.coverImage || "/sample-company.png"}
                   alt="Company Logo"
                   width={120}
                   height={120}
-                  className="sm:w-[150px] sm:h-[150px]"
+                  className="sm:w-[150px] sm:h-[150px] object-contain"
                 />
               </div>
               <div className="flex flex-col gap-2 text-center sm:text-left">

@@ -165,8 +165,7 @@ export default function CurrentPlanPage() {
     return billingInfo.modules;
   })();
 
-  const canStartWarning =
-    Boolean(billingInfo?.isExpired) && !billingInfo?.warningInfo?.isActive;
+  const canStartWarning = !billingInfo?.warningInfo?.isActive;
   const canCancelWarning = Boolean(billingInfo?.warningInfo?.isActive);
 
   const handleInitiatePayment = async () => {
@@ -292,15 +291,15 @@ export default function CurrentPlanPage() {
 
   console.log(billingInfo);
   return (
-    <div className="h-screen flex flex-col sm:flex-row overflow-hidden">
+    <div className="h-screen w-screen flex flex-col sm:flex-row overflow-hidden">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
           title="Current Plan"
         />
-        <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1">
+        <main className="px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10 space-y-4 sm:space-y-6 bg-white overflow-y-auto overflow-x-hidden flex-1 min-h-0">
           {!selectedHotelNumericId ? (
             <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
               Select a business to view subscription details.
@@ -406,7 +405,9 @@ export default function CurrentPlanPage() {
         <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md mx-auto">
             <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">Initiate Payment</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">
+                Initiate Payment
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
