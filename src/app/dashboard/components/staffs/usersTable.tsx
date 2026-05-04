@@ -4,12 +4,6 @@ import {
   ArrowDown,
   Calendar,
   ListFilterIcon,
-  Plus,
-  Shield,
-  Layers,
-  Gift,
-  Menu,
-  X,
   Eye,
   EyeOff,
   Key,
@@ -69,16 +63,16 @@ export default function UsersTable({ businessId }: { businessId: string }) {
     Record<number, string>
   >({});
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>(
-    {}
+    {},
   );
   const [resettingPasswords, setResettingPasswords] = useState<
     Record<number, boolean>
   >({});
   const [deletingStaff, setDeletingStaff] = useState<Record<number, boolean>>(
-    {}
+    {},
   );
   const [undeletingStaff, setUndeleteStaff] = useState<Record<number, boolean>>(
-    {}
+    {},
   );
   const [showResetPasswordConfirm, setShowResetPasswordConfirm] = useState<
     Record<number, boolean>
@@ -109,7 +103,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
         department: departmentFilter !== "all" ? departmentFilter : undefined,
         startDate: dateRange.start || undefined,
         endDate: dateRange.end || undefined,
-      })
+      }),
   );
 
   const staff = response?.data?.staffs ?? [];
@@ -144,7 +138,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       }, 15000);
 
       toast.success(
-        `Password reset successfully! New password: ${newPassword}`
+        `Password reset successfully! New password: ${newPassword}`,
       );
     } catch (error) {
       console.error("Failed to reset password:", error);
@@ -213,7 +207,9 @@ export default function UsersTable({ businessId }: { businessId: string }) {
         <>
           {/* Header */}
           <div className="flex flex-col px-4 sm:px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h2 className="text-base sm:text-lg font-normal text-[#101828]">Users</h2>
+            <h2 className="text-base sm:text-lg font-normal text-[#101828]">
+              Users
+            </h2>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <SearchWithIcon
                 className="w-full sm:w-[300px] md:w-[478px]"
@@ -443,7 +439,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                               row?.profileImage ||
                               `https://ui-avatars.com/api/?name=${row.fullName?.replaceAll(
                                 " ",
-                                "-"
+                                "-",
                               )}`
                             }
                             alt={row.fullName}
@@ -503,7 +499,10 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                                 title="Reset password"
                               >
                                 {resettingPasswords[row.id] ? (
-                                  <Spinner size="sm" className="text-gray-500" />
+                                  <Spinner
+                                    size="sm"
+                                    className="text-gray-500"
+                                  />
                                 ) : (
                                   <RefreshCw
                                     size={12}
