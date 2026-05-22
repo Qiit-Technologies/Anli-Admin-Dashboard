@@ -69,7 +69,7 @@ export function PaymentVerificationModal({
       } else {
         toast.error(response?.message || "Payment verification failed");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to verify payment:", error);
       toast.error("Failed to verify payment");
     } finally {
@@ -93,7 +93,7 @@ export function PaymentVerificationModal({
       } else {
         toast.error(response?.message || "Failed to mark payment as completed");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to mark payment as completed:", error);
       toast.error("Failed to mark payment as completed");
     } finally {
@@ -112,7 +112,7 @@ export function PaymentVerificationModal({
       } else {
         toast.error(response?.message || "Failed to cancel payment");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to cancel payment:", error);
       toast.error("Failed to cancel payment");
     } finally {

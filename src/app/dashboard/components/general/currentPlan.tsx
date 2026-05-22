@@ -17,7 +17,7 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
     data: response,
     mutate,
   } = useSWR(`/super-admin/${businessId}/billing/current-plan`, (url: string) =>
-    fetcher<getPlanResponse>(url)
+    fetcher<getPlanResponse>(url),
   );
 
   const billingInfo = response?.data.billingInfo || {
@@ -46,7 +46,7 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
       if (mutate) {
         await mutate();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to send payment reminder:", error);
       const errorMessage =
         error instanceof Error
@@ -71,7 +71,7 @@ export default function CurrentPlan({ businessId }: { businessId: string }) {
       if (mutate) {
         await mutate();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to reactivate business:", error);
       const errorMessage =
         error instanceof Error

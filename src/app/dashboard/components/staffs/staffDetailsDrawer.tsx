@@ -84,7 +84,7 @@ export const StaffDetailsDrawer = ({
       toast.success("Staff member updated successfully");
       refetch();
       closeSheetMenu();
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       if (error instanceof AxiosError) {
         const message =

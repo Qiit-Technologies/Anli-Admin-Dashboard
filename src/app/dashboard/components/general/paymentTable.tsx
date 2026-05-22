@@ -62,7 +62,7 @@ export default function PaymentTable() {
         if (statusFilter && statusFilter !== "all" && statusFilter !== "") {
           filteredPayments = filteredPayments.filter(
             (p: Payment) =>
-              p.status.toLowerCase() === statusFilter.toLowerCase()
+              p.status.toLowerCase() === statusFilter.toLowerCase(),
           );
         }
 
@@ -84,13 +84,13 @@ export default function PaymentTable() {
         filteredPayments = filteredPayments
           .sort(
             (a: Payment, b: Payment) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           )
           .slice(0, 5);
 
         setPayments(filteredPayments);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to fetch payments:", error);
       toast.error("Failed to load payment history");
     } finally {
@@ -305,8 +305,8 @@ export default function PaymentTable() {
                   </Td>
                   <Td>
                     <button
-                        onClick={() => handleViewPayment(payment.id)}
-                        className="text-blue-600 hover:underline cursor-pointer"
+                      onClick={() => handleViewPayment(payment.id)}
+                      className="text-blue-600 hover:underline cursor-pointer"
                     >
                       View
                     </button>

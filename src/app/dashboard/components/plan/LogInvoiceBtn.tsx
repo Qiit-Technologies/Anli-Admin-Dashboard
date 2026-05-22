@@ -1,8 +1,6 @@
 import { CustomDialog } from "@/components/common/CustomDialog";
 import { useState } from "react";
-import {
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +48,7 @@ export const LogInvoiceBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
         mutate(`/super-admin/${business.id}/billing/payment-history`);
         mutate(`/super-admin/${business.id}/billing/current-plan`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       const errorMessage =
         error instanceof Error ? error.message : "Failed to log invoice";
@@ -181,9 +179,7 @@ export const LogInvoiceBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
             id="date"
             type="date"
             value={formData.date}
-            onChange={(e) =>
-              setFormData({ ...formData, date: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             className="mt-2"
           />
         </div>

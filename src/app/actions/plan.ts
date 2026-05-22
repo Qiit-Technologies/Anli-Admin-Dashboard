@@ -12,7 +12,7 @@ export async function selectPlan(payload: { planId: string }, hotelId: number) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -29,7 +29,7 @@ export async function startWarningTimer(
     reason?: string;
     warningStartedAt?: string;
     warningExpiresAt?: string;
-  }
+  },
 ) {
   try {
     const url = `/super-admin/${hotelId}/billing/warning-timer`;
@@ -38,7 +38,7 @@ export async function startWarningTimer(
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -56,7 +56,7 @@ export async function cancelWarningTimer(hotelId: number) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -68,7 +68,7 @@ export async function cancelWarningTimer(hotelId: number) {
 
 export async function switchBillingCycle(
   hotelId: number,
-  billingCycle: "monthly" | "yearly"
+  billingCycle: "monthly" | "yearly",
 ) {
   try {
     const url = `/super-admin/${hotelId}/billing/switch-billing-cycle`;
@@ -77,11 +77,11 @@ export async function switchBillingCycle(
       { billingCycle },
       {
         currentPath: "/dashboard/plan",
-      }
+      },
     );
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -99,11 +99,11 @@ export async function sendPaymentReminder(hotelId: number) {
       {},
       {
         currentPath: "/dashboard",
-      }
+      },
     );
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -121,11 +121,11 @@ export async function reactivateBusiness(hotelId: number) {
       {},
       {
         currentPath: "/dashboard",
-      }
+      },
     );
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =

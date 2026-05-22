@@ -38,7 +38,7 @@ export const AddIssueBtn = ({
 
       toast.success("Staff member updated successfully");
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {

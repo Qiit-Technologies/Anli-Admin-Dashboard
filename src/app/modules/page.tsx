@@ -53,7 +53,7 @@ const AddModuleDialog = ({
       setName("");
       setDescription("");
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create module:", error);
     } finally {
       setLoading(false);
@@ -134,7 +134,7 @@ const EditModuleDialog = ({
         ...formData,
       });
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update module:", error);
     } finally {
       setLoading(false);
@@ -196,12 +196,12 @@ export default function ModulePage() {
 
   // Simulate search and pagination client-side
   const filteredModules = modules.filter((m) =>
-    m.name.toLowerCase().includes(debouncedQuery.toLowerCase())
+    m.name.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
   const totalPages = Math.max(1, Math.ceil(filteredModules.length / limit));
   const paginatedModules = filteredModules.slice(
     (page - 1) * limit,
-    page * limit
+    page * limit,
   );
 
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function ModulePage() {
         if (response) {
           setModules(response);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch modules:", error);
       } finally {
         setLoading(false);
@@ -232,14 +232,14 @@ export default function ModulePage() {
       let response;
       try {
         response = await createModule(moduleData);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to create module:", error);
         throw error;
       }
       if (response && response.data) {
         setModules([...modules, response.data]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add module:", error);
     }
   };
@@ -248,7 +248,7 @@ export default function ModulePage() {
     try {
       await deleteModule(id);
       setModules(modules.filter((m) => m.id !== id));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete module:", error);
     }
   };
@@ -259,7 +259,7 @@ export default function ModulePage() {
 
   const handleSaveModule = (updatedModule: Module) => {
     setModules(
-      modules.map((m) => (m.id === updatedModule.id ? updatedModule : m))
+      modules.map((m) => (m.id === updatedModule.id ? updatedModule : m)),
     );
     setEditingModule(null);
   };

@@ -42,7 +42,7 @@ export default function LoginPage() {
         },
         {
           currentPath: "/login",
-        }
+        },
       );
     },
     onSuccess: async (response) => {
@@ -55,7 +55,7 @@ export default function LoginPage() {
         // Store token in cookie via server action for server-side access
         try {
           await setAuthCookie(response.access_token);
-        } catch (error) {
+        } catch (error: any) {
           console.warn("Failed to set auth cookie:", error);
           // Fallback: set cookie via document.cookie
           document.cookie = `access_token=${
@@ -78,7 +78,7 @@ export default function LoginPage() {
         }, 100);
       } else {
         toast.error(
-          response?.message || "Login failed. Please check your credentials."
+          response?.message || "Login failed. Please check your credentials.",
         );
       }
     },

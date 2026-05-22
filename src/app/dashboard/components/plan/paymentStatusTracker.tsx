@@ -53,7 +53,7 @@ export function PaymentStatusTracker({
         setPayment(response.data);
         onStatusChange?.(response.data.status);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to fetch payment status:", error);
       toast.error("Failed to fetch payment status");
     } finally {
@@ -72,7 +72,7 @@ export function PaymentStatusTracker({
       } else {
         toast.error(response?.message || "Failed to verify payment");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to verify payment:", error);
       toast.error("Failed to verify payment");
     } finally {

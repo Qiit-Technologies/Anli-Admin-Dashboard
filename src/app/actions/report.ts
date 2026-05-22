@@ -10,14 +10,14 @@ export async function updateReport(
   payload: {
     comment: string;
     status: string;
-  }
+  },
 ) {
   try {
     const url = `/super-admin/${hotelId}/reports/update/${reportId}`;
     const response = await axiosPatch(url, payload);
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -29,14 +29,14 @@ export async function updateReport(
 
 export async function createIssue(
   payload: { description: string },
-  businessId: string
+  businessId: string,
 ) {
   try {
     const url = `/super-admin/${businessId}/reports`;
 
     const response = await axiosPost(url, payload);
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =

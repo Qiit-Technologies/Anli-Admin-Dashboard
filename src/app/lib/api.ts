@@ -22,7 +22,7 @@ instance.interceptors.request.use(
       // Server-side: get from cookies
       try {
         token = await getAuthToken();
-      } catch (error) {
+      } catch (error: any) {
         // If getAuthToken fails (e.g., cookies() called in wrong context), continue without token
         // This can happen if cookies() is called outside of a server component/action context
         // In that case, the request will proceed without auth and likely get a 401
@@ -100,7 +100,7 @@ export async function axiosGet<T = unknown>(
 
     const response = await instance.get<T>(url, mergedConfig);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     handleError(error as AxiosError, currentPath);
     throw error;
   }
@@ -121,7 +121,7 @@ export async function axiosPost<T = unknown>(
     // Interceptor will handle Authorization header automatically
     const response = await instance.post<T>(url, data, config);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     handleError(error as AxiosError, currentPath);
     throw error;
   }
@@ -142,7 +142,7 @@ export async function axiosPatch<T = unknown>(
     // Interceptor will handle Authorization header automatically
     const response = await instance.patch<T>(url, data, config);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     handleError(error as AxiosError, currentPath);
     throw error;
   }
@@ -162,7 +162,7 @@ export async function axiosDelete<T = unknown>(
     // Interceptor will handle Authorization header automatically
     const response = await instance.delete<T>(url, config);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     handleError(error as AxiosError, currentPath);
     throw error;
   }

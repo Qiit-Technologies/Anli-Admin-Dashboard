@@ -1,8 +1,6 @@
 import { CustomDialog } from "@/components/common/CustomDialog";
 import { useState } from "react";
-import {
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -16,7 +14,11 @@ import { switchBillingCycle } from "@/app/actions/plan";
 import { useBusiness } from "@/context/businessContext";
 import { useSWRConfig } from "swr";
 
-export const SwitchBillingCycleBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
+export const SwitchBillingCycleBtn = ({
+  asMenuItem,
+}: {
+  asMenuItem?: boolean;
+}) => {
   const [loading, setLoading] = useState(false);
   const [selectedCycle, setSelectedCycle] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,17 +40,19 @@ export const SwitchBillingCycleBtn = ({ asMenuItem }: { asMenuItem?: boolean }) 
     try {
       await switchBillingCycle(
         Number(business.id),
-        selectedCycle as "monthly" | "yearly"
+        selectedCycle as "monthly" | "yearly",
       );
       toast.success(`Billing cycle switched to ${selectedCycle}`);
       setIsDialogOpen(false);
       setSelectedCycle("");
       // Refresh the plan data
       mutate(`/super-admin/${business.id}/billing/current-plan`);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to switch billing cycle";
+        error instanceof Error
+          ? error.message
+          : "Failed to switch billing cycle";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -78,10 +82,7 @@ export const SwitchBillingCycleBtn = ({ asMenuItem }: { asMenuItem?: boolean }) 
         <div className="space-y-4">
           <div>
             <Label htmlFor="billingCycle">Select Billing Cycle</Label>
-            <Select
-              value={selectedCycle}
-              onValueChange={setSelectedCycle}
-            >
+            <Select value={selectedCycle} onValueChange={setSelectedCycle}>
               <SelectTrigger id="billingCycle" className="mt-2">
                 <SelectValue placeholder="Choose billing cycle" />
               </SelectTrigger>
@@ -115,10 +116,7 @@ export const SwitchBillingCycleBtn = ({ asMenuItem }: { asMenuItem?: boolean }) 
       <div className="space-y-4">
         <div>
           <Label htmlFor="billingCycle">Select Billing Cycle</Label>
-          <Select
-            value={selectedCycle}
-            onValueChange={setSelectedCycle}
-          >
+          <Select value={selectedCycle} onValueChange={setSelectedCycle}>
             <SelectTrigger id="billingCycle" className="mt-2">
               <SelectValue placeholder="Choose billing cycle" />
             </SelectTrigger>

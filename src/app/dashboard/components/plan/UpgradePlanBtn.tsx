@@ -17,7 +17,7 @@ export const UpgradePlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const { data: response, isLoading: planLoading } = useSWR(
     "/super-admin/subscription-plan",
-    (url: string) => fetcher<getSubscriptionPlansResponse>(url)
+    (url: string) => fetcher<getSubscriptionPlansResponse>(url),
   );
 
   const handleUpgradePlan = async () => {
@@ -39,7 +39,7 @@ export const UpgradePlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
       mutate(`/super-admin/${business.id}/billing/current-plan`);
       setIsDialogOpen(false);
       setSelectedPlan(null);
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {
@@ -81,10 +81,10 @@ export const UpgradePlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
           disabled={false}
           value={
             selectedPlan
-              ? plans?.find(
+              ? (plans?.find(
                   (plan: { value: string; label: string }) =>
-                    plan.value === selectedPlan
-                ) ?? null
+                    plan.value === selectedPlan,
+                ) ?? null)
               : null
           }
           className="w-full min-w-0 h-10"
@@ -118,10 +118,10 @@ export const UpgradePlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
         disabled={false}
         value={
           selectedPlan
-            ? plans?.find(
+            ? (plans?.find(
                 (plan: { value: string; label: string }) =>
-                  plan.value === selectedPlan
-              ) ?? null
+                  plan.value === selectedPlan,
+              ) ?? null)
             : null
         }
         className="w-full min-w-0 h-10"

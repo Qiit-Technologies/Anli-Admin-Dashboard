@@ -7,9 +7,7 @@ import { useBusiness } from "@/context/businessContext";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import useSWR, { useSWRConfig } from "swr";
-import {
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const { mutate } = useSWRConfig();
@@ -19,7 +17,7 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const { data: response, isLoading: planLoading } = useSWR(
     "/super-admin/subscription-plan",
-    (url: string) => fetcher<getSubscriptionPlansResponse>(url)
+    (url: string) => fetcher<getSubscriptionPlansResponse>(url),
   );
 
   const handleSelectPlan = async () => {
@@ -42,7 +40,7 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
       toast.success("Plan has been changed successfully");
       mutate(`/super-admin/${business.id}/billing/current-plan`);
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {
@@ -84,10 +82,10 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
           disabled={false}
           value={
             selectedPlan
-              ? plans?.find(
+              ? (plans?.find(
                   (plan: { value: string; label: string }) =>
-                    plan.value === selectedPlan
-                ) ?? null
+                    plan.value === selectedPlan,
+                ) ?? null)
               : null
           }
           className="w-full min-w-0 h-10"
@@ -121,10 +119,10 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
         disabled={false}
         value={
           selectedPlan
-            ? plans?.find(
+            ? (plans?.find(
                 (plan: { value: string; label: string }) =>
-                  plan.value === selectedPlan
-              ) ?? null
+                  plan.value === selectedPlan,
+              ) ?? null)
             : null
         }
         className="w-full min-w-0 h-10"

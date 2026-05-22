@@ -25,11 +25,11 @@ export async function initiatePayment({
       { amount, method, description },
       {
         currentPath: "/dashboard/plan",
-      }
+      },
     );
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to initiate payment:", error);
     throw error;
   }
@@ -53,7 +53,7 @@ export async function markPaymentCompleted(paymentId: string) {
     { paymentId, transactionReference: `MANUAL_${Date.now()}` },
     {
       currentPath: "/dashboard/payments",
-    }
+    },
   );
 
   return response;
@@ -68,7 +68,7 @@ export async function cancelPayment(paymentId: string) {
     {},
     {
       currentPath: "/dashboard/payments",
-    }
+    },
   );
 
   return response;
@@ -82,7 +82,7 @@ export async function verifyPayment(paymentId: string) {
     {},
     {
       currentPath: "/dashboard/plan",
-    }
+    },
   );
 
   return response;
@@ -105,7 +105,7 @@ export async function logInvoice(
     amount: number;
     description?: string;
     date: string;
-  }
+  },
 ) {
   const url = `/super-admin/${hotelId}/billing/log-invoice`;
 
@@ -119,7 +119,7 @@ export async function logInvoice(
     },
     {
       currentPath: "/dashboard/plan",
-    }
+    },
   );
 
   return response;

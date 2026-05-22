@@ -73,7 +73,7 @@ export default function CurrentPlanPage() {
     async (url: string) => {
       try {
         return await fetcher<getPlanResponse>(url);
-      } catch (error) {
+      } catch (error: any) {
         // Handle 404 gracefully - hotel might not have a subscription yet
         const axiosError = error as {
           response?: { status?: number };
@@ -83,7 +83,7 @@ export default function CurrentPlanPage() {
         if (status === 404) {
           console.warn(
             "Subscription not found for hotel:",
-            selectedHotelNumericId
+            selectedHotelNumericId,
           );
           return undefined;
         }
@@ -119,7 +119,7 @@ export default function CurrentPlanPage() {
         }
         // Let other errors propagate normally
       },
-    }
+    },
   );
 
   // Log error for debugging (only non-404 errors) - use useEffect to avoid render-time logging
@@ -191,7 +191,7 @@ export default function CurrentPlanPage() {
 
       if (result?.success) {
         toast.success(
-          "Payment initiated successfully! Payment link sent to hotel owner."
+          "Payment initiated successfully! Payment link sent to hotel owner.",
         );
         setCurrentPayment(result.data);
         setPaymentStatus("pending");
@@ -235,9 +235,11 @@ export default function CurrentPlanPage() {
       await startWarningTimer(selectedHotelNumericId, payload);
       toast.success("Warning timer started");
       await mutatePlan();
-    } catch (error) {
+    } catch (error: any) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to start warning timer"
+        error instanceof Error
+          ? error.message
+          : "Failed to start warning timer",
       );
     } finally {
       setWarningActionLoading(false);
@@ -251,9 +253,11 @@ export default function CurrentPlanPage() {
       await cancelWarningTimer(selectedHotelNumericId);
       toast.success("Warning timer cleared");
       await mutatePlan();
-    } catch (error) {
+    } catch (error: any) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to clear warning timer"
+        error instanceof Error
+          ? error.message
+          : "Failed to clear warning timer",
       );
     } finally {
       setWarningCancelLoading(false);
@@ -277,7 +281,7 @@ export default function CurrentPlanPage() {
       await reactivateBusiness(selectedHotelNumericId);
       toast.success("Business reactivated successfully");
       await mutatePlan();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to reactivate business:", error);
       const errorMessage =
         error instanceof Error

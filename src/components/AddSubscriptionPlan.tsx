@@ -92,7 +92,7 @@ export const AddSubscriptionPlan = ({ refetch }: { refetch: () => void }) => {
       });
       refetch();
       setIsDrawerOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {

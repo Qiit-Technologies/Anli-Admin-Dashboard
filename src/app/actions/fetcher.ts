@@ -9,7 +9,7 @@ export default async function fetcher<T>(url: string): Promise<T | undefined> {
     const response = await axiosGet<T>(url);
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     // Handle 404 errors gracefully - hotel might not have a subscription
     const axiosError = error as AxiosError;
     if (axiosError?.response?.status === 404) {

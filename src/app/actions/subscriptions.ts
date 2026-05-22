@@ -16,7 +16,7 @@ export async function createSubscriptionPlan(payload: {
     const response = await axiosPost(url, payload);
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
@@ -33,14 +33,14 @@ export async function updateSubscriptionPlan(
     price: string;
     description: string;
     features: any;
-  }
+  },
 ) {
   try {
     const url = `/super-admin/subscription-plan/${planId}/edit`;
     const response = await axiosPatch(url, payload);
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =

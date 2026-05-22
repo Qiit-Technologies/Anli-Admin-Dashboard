@@ -61,7 +61,7 @@ const AddPermissionDialog = ({
         if (response) {
           setModules(response);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch modules:", error);
       } finally {
         setLoading(false);
@@ -240,11 +240,11 @@ const EditPermissionDialog = ({
 export default function PermissionPage() {
   const router = useRouter();
   const [permissions, setPermissions] = useState<{ permissions: Permission[] }>(
-    { permissions: [] }
+    { permissions: [] },
   );
   const [modules, setModules] = useState<Module[]>([]);
   const [editingPermission, setEditingPermission] = useState<Permission | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -255,12 +255,12 @@ export default function PermissionPage() {
   console.log(modules);
   // Simulate search and pagination client-side
   const filteredPermissions = permissions.permissions.filter((p) =>
-    p.name.toLowerCase().includes(debouncedQuery.toLowerCase())
+    p.name.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
   const totalPages = Math.max(1, Math.ceil(filteredPermissions.length / limit));
   const paginatedPermissions = filteredPermissions.slice(
     (page - 1) * limit,
-    page * limit
+    page * limit,
   );
 
   useEffect(() => {
@@ -276,7 +276,7 @@ export default function PermissionPage() {
         ]);
         setPermissions(permissionsResponse);
         setModules(modulesResponse);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
@@ -293,7 +293,7 @@ export default function PermissionPage() {
           permissions: [...permissions.permissions, response.data],
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add permission:", error);
     }
   };
@@ -304,7 +304,7 @@ export default function PermissionPage() {
       setPermissions({
         permissions: permissions.permissions.filter((p) => p.id !== id),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete permission:", error);
     }
   };
@@ -323,12 +323,12 @@ export default function PermissionPage() {
       if (response.data) {
         setPermissions({
           permissions: permissions.permissions.map((p) =>
-            p.id === updatedPermission.id ? response.data : p
+            p.id === updatedPermission.id ? response.data : p,
           ),
         });
       }
       setEditingPermission(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update permission:", error);
     }
   };
@@ -353,7 +353,8 @@ export default function PermissionPage() {
             <span className="hidden sm:inline">Back to Business List</span>
             <span className="sm:hidden">Back</span>
           </Button>
-          <div className="hidden sm:block w-24"></div> {/* Spacer for centering */}
+          <div className="hidden sm:block w-24"></div>{" "}
+          {/* Spacer for centering */}
         </div>
         {/* Logo */}
         <div className="text-center mb-8">
@@ -401,8 +402,12 @@ export default function PermissionPage() {
                       {paginatedPermissions.map((permission) => (
                         <Tr key={permission.id}>
                           <Td className="min-w-[120px]">{permission.name}</Td>
-                          <Td className="min-w-[150px]">{permission.description}</Td>
-                          <Td className="min-w-[100px]">{getModuleName(permission)}</Td>
+                          <Td className="min-w-[150px]">
+                            {permission.description}
+                          </Td>
+                          <Td className="min-w-[100px]">
+                            {getModuleName(permission)}
+                          </Td>
                           <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4 min-w-[100px]">
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                               <span

@@ -43,7 +43,7 @@ export const ViewIssueSheet = ({
         status: "",
       });
       toast.success("Issue updated successfully");
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error == "string") {
         toast.error(error);
       } else {

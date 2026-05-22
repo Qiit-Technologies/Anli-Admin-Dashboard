@@ -56,7 +56,7 @@ export const ViewStaffDetailsBtn = ({
     try {
       await onDelete?.(staffInfo.id);
       setShowDeleteConfirm(false);
-    } catch (error) {
+    } catch (error: any) {
       // Keep modal open on error, let the parent handle the error display
       console.error("Delete failed:", error);
     }
@@ -73,7 +73,7 @@ export const ViewStaffDetailsBtn = ({
     try {
       await onUndelete?.(staffInfo.id);
       setShowRestoreConfirm(false);
-    } catch (error) {
+    } catch (error: any) {
       // Keep modal open on error, let the parent handle the error display
       console.error("Restore failed:", error);
     }

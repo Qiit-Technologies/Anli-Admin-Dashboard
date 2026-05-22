@@ -140,7 +140,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       toast.success(
         `Password reset successfully! New password: ${newPassword}`,
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to reset password:", error);
       toast.error("Failed to reset password. Please try again.");
     } finally {
@@ -168,7 +168,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       } else {
         throw new Error("No response received");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete staff:", error);
       toast.error("Failed to delete staff. Please try again.");
       throw error; // Re-throw the error so the modal stays open
@@ -188,7 +188,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       } else {
         throw new Error("No response received");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to restore staff:", error);
       toast.error("Failed to restore staff. Please try again.");
       throw error; // Re-throw the error so the modal stays open

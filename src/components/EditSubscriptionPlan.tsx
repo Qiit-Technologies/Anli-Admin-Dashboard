@@ -107,7 +107,7 @@ export const EditSubscriptionPlan = ({
       toast.success("Subscription plan updated successfully");
       refetch();
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {
