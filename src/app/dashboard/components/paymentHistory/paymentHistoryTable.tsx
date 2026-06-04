@@ -12,47 +12,101 @@ import {
   Tr,
 } from "@/components/common/customTable";
 import SearchWithIcon from "@/components/common/searchWithIcon";
-import { useState } from "react";
-const payments = [
-  {
-    date: "23rd March 2024",
-    amount: "₦240,000,00.00",
-    paymentMethod: "Transfer",
-    status: "Paid",
-    color: "green",
-  },
-  {
-    date: "23rd March 2024",
-    amount: "₦240,000,00.00",
-    paymentMethod: "Transfer",
-    status: "Paid",
-    color: "green",
-  },
-  {
-    date: "23rd March 2024",
-    amount: "₦240,000,00.00",
-    paymentMethod: "Transfer",
-    status: "Paid",
-    color: "green",
-  },
-  {
-    date: "23rd March 2024",
-    amount: "₦240,000,00.00",
-    paymentMethod: "Transfer",
-    status: "Paid",
-    color: "green",
-  },
-  {
-    date: "23rd March 2024",
-    amount: "₦240,000,00.00",
-    paymentMethod: "Transfer",
-    status: "Paid",
-    color: "green",
-  },
-];
+import { useEffect, useMemo, useState } from "react";
+import { useBusiness } from "@/context/businessContext";
+import { axiosGet } from "@/app/lib/api";
+
+type SubscriptionPayment = {
+  id: string;
+  amount: number;
+  status: "pending" | "successful" | "failed";
+  method: "online" | "transfer" | "cash";
+  createdAt: string;
+  completedAt?: string | null;
+  transactionRef?: string | null;
+  paystackReference?: string | null;
+  description?: string | null;
+};
 
 export default function PaymentHistoryTable() {
   const [query, setQuery] = useState("");
+  const { business } = useBusiness();
+  const businessId = useMemo(() => business?.id?.toString() || "", [business]);
+  const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!businessId) return;
+
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+      try {
+        const response = await axiosGet<{
+          success: boolean;
+          data: { payments: SubscriptionPayment[] };
+          message?: string;
+        }>(`/super-admin/${businessId}/billing/payment-history`, {
+          currentPath: "/dashboard/payments",
+        });
+
+        if (cancelled) return;
+        if (response?.success) {
+          setPayments(response.data?.payments ?? []);
+        } else {
+          setPayments([]);
+          setErrorMessage(response?.message || "Failed to load payments");
+        }
+      } catch (error: any) {
+        if (cancelled) return;
+        setPayments([]);
+        setErrorMessage(
+          error?.response?.data?.message || "Failed to load payments",
+        );
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [businessId]);
+
+  const filteredPayments = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return payments;
+    return payments.filter((p) => {
+      const haystack = [
+        p.id,
+        p.status,
+        p.method,
+        p.transactionRef,
+        p.paystackReference,
+        p.description,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [payments, query]);
+
+  const formatCurrency = (amount: number) =>
+    `₦${Number(amount || 0).toLocaleString()}`;
+  const formatDate = (value?: string | null) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+  };
+  const normalizeStatus = (status: SubscriptionPayment["status"]) => {
+    if (status === "successful") return "paid";
+    if (status === "pending") return "pending";
+    return "failed";
+  };
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
       {/* Header */}
@@ -85,30 +139,49 @@ export default function PaymentHistoryTable() {
             <Tr>
               <Th withIcon>Date</Th>
               <Th withIcon>Amount</Th>
-              <Th withIcon>Payment Method</Th>
+              <Th withIcon>Method</Th>
               <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
                 Status
               </Th>
-              <Th withIcon>Action</Th>
+              <Th withIcon>Reference</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {payments.map((row, i) => (
-              <Tr key={i}>
-                <Td>{row.date}</Td>
-                <Td>{row.amount}</Td>
-                <Td>{row.paymentMethod}</Td>
+            {errorMessage && (
+              <Tr>
+                <Td colSpan={5}>
+                  <div className="text-sm text-red-600">{errorMessage}</div>
+                </Td>
+              </Tr>
+            )}
+
+            {!errorMessage && !isLoading && filteredPayments.length === 0 && (
+              <Tr>
+                <Td colSpan={5}>
+                  <div className="text-sm text-gray-500">
+                    No subscription payments found.
+                  </div>
+                </Td>
+              </Tr>
+            )}
+
+            {filteredPayments.map((p) => (
+              <Tr key={p.id}>
+                <Td>{formatDate(p.completedAt || p.createdAt)}</Td>
+                <Td>{formatCurrency(p.amount)}</Td>
+                <Td className="capitalize">{p.method}</Td>
                 <Td>
                   <StatusBadge
-                    status={row.status}
+                    status={normalizeStatus(p.status)}
                     statusColorMap={{
-                      unpaid: "yellow",
+                      pending: "yellow",
                       paid: "green",
+                      failed: "red",
                     }}
                   />
                 </Td>
-                <Td className="text-blue-600 hover:underline cursor-pointer">
-                  View
+                <Td className="text-xs text-gray-600">
+                  {p.paystackReference || p.transactionRef || "—"}
                 </Td>
               </Tr>
             ))}

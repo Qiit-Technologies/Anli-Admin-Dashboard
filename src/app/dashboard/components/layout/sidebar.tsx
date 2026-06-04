@@ -2,6 +2,7 @@
 import {
   ChartNoAxesColumn,
   CreditCard,
+  Landmark,
   Layers,
   SquareCheckBig,
   Users,
@@ -26,6 +27,7 @@ const Sidebar = ({
     { name: "Issues", icon: Layers, href: "/dashboard/issues" },
     { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
     { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
+    { name: "Booking Payment", icon: Landmark, href: "/dashboard/booking-payments" },
     { name: "Staffs", icon: Users, href: "/dashboard/staffs" },
   ];
 
