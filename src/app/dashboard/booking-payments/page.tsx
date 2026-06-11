@@ -255,7 +255,20 @@ export default function BookingPaymentsPage() {
   }, [businessId, selectedTransfer, loadData]);
 
   const handleTransfer = useCallback(async () => {
-    if (!businessId || !selectedBookingItem) return;
+    console.log("handleTransfer called!");
+    console.log("businessId:", businessId);
+    console.log("selectedBookingItem:", selectedBookingItem);
+    console.log("transferAmount:", transferAmount);
+    console.log("useManualAccount:", useManualAccount);
+    console.log("selectedBankAccountId:", selectedBankAccountId);
+    console.log("manualAccountNumber:", manualAccountNumber);
+    console.log("manualBankName:", manualBankName);
+    console.log("resolvedAccountName:", resolvedAccountName);
+
+    if (!businessId || !selectedBookingItem) {
+      console.log("Missing businessId or selectedBookingItem!");
+      return;
+    }
     const amount = Number(transferAmount);
     if (amount <= 0 || amount > selectedBookingItem.totalPaidAmount) {
       toast.error("Invalid transfer amount");
@@ -287,6 +300,8 @@ export default function BookingPaymentsPage() {
         }
       }
 
+      console.log("Sending payload:", payload);
+
       const response = await axiosPost<{
         success: boolean;
         message?: string;
@@ -295,14 +310,16 @@ export default function BookingPaymentsPage() {
         payload,
         { currentPath: "/dashboard/booking-payments" },
       );
+      console.log("Response:", response);
       if (response?.success) {
         toast.success(response.message || "Transfer initiated successfully");
         setTransferModalOpen(false);
         await loadData();
       } else {
-        toast.error("Failed to initiate transfer");
+        toast.error(response?.message || "Failed to initiate transfer");
       }
     } catch (error: any) {
+      console.error("Error transferring:", error);
       toast.error(
         error?.response?.data?.message || "Could not transfer booking payment",
       );
