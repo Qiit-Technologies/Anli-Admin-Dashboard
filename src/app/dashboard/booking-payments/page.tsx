@@ -37,6 +37,11 @@ type BookingPaymentItem = {
     status: "pending" | "success" | "failed";
     transferredAmount: number;
     paystackReference?: string;
+    paystackTransferCode?: string;
+    recipientBankName?: string;
+    recipientAccountNumber?: string;
+    recipientAccountName?: string;
+    failureReason?: string;
     createdAt: string;
   } | null;
 };
@@ -89,8 +94,13 @@ export default function BookingPaymentsPage() {
     BookingPaymentSummaryResponse["data"] | null
   >(null);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [transferDetailsModalOpen, setTransferDetailsModalOpen] =
+    useState(false);
   const [selectedBookingItem, setSelectedBookingItem] =
     useState<BookingPaymentItem | null>(null);
+  const [selectedTransfer, setSelectedTransfer] = useState<
+    BookingPaymentItem["transfer"] | null
+  >(null);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [paystackBanks, setPaystackBanks] = useState<PaystackBank[]>([]);
   const [transferAmount, setTransferAmount] = useState<string>("");
@@ -104,6 +114,7 @@ export default function BookingPaymentsPage() {
   );
   const [isResolvingAccount, setIsResolvingAccount] = useState(false);
   const [isSubmittingTransfer, setIsSubmittingTransfer] = useState(false);
+  const [isRetryingTransfer, setIsRetryingTransfer] = useState(false);
 
   const businessId = useMemo(
     () => business?.id?.toString() || "",
@@ -209,11 +220,49 @@ export default function BookingPaymentsPage() {
     [loadBankAccounts, loadPaystackBanks],
   );
 
+  const openTransferDetailsModal = useCallback(
+    (transfer: BookingPaymentItem["transfer"]) => {
+      setSelectedTransfer(transfer);
+      setTransferDetailsModalOpen(true);
+    },
+    [],
+  );
+
+  const handleRetryTransfer = useCallback(async () => {
+    if (!businessId || !selectedTransfer) return;
+    setIsRetryingTransfer(true);
+    try {
+      const response = await axiosPost<{
+        success: boolean;
+        message?: string;
+      }>(
+        `/super-admin/${businessId}/billing/booking-payments/transfers/${selectedTransfer.id}/retry`,
+        {},
+        { currentPath: "/dashboard/booking-payments" },
+      );
+      if (response?.success) {
+        toast.success("Transfer retry initiated successfully!");
+        setTransferDetailsModalOpen(false);
+        await loadData();
+      } else {
+        toast.error(response?.message || "Failed to retry transfer");
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Could not retry transfer");
+    } finally {
+      setIsRetryingTransfer(false);
+    }
+  }, [businessId, selectedTransfer, loadData]);
+
   const handleTransfer = useCallback(async () => {
     if (!businessId || !selectedBookingItem) return;
     const amount = Number(transferAmount);
     if (amount <= 0 || amount > selectedBookingItem.totalPaidAmount) {
       toast.error("Invalid transfer amount");
+      return;
+    }
+    if (amount < 100) {
+      toast.error("Minimum transfer amount is ₦100 (Paystack requirement)");
       return;
     }
 
@@ -353,13 +402,25 @@ export default function BookingPaymentsPage() {
                         <td className="px-4 py-3 capitalize">
                           {status.replace("_", " ")}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 flex gap-2">
+                          {item.transfer && (
+                            <Button
+                              variant="secondary"
+                              onClick={() =>
+                                openTransferDetailsModal(item.transfer)
+                              }
+                            >
+                              View Transfer
+                            </Button>
+                          )}
                           <Button
                             disabled={!canTransfer}
                             className="bg-[#007BFF] hover:bg-[#0056b3] text-white disabled:opacity-50"
                             onClick={() => openTransferModal(item)}
                           >
-                            Transfer to hotel
+                            {item.transfer
+                              ? "Retry Transfer"
+                              : "Transfer to hotel"}
                           </Button>
                         </td>
                       </tr>
@@ -389,11 +450,12 @@ export default function BookingPaymentsPage() {
                 value={transferAmount}
                 onChange={(e) => setTransferAmount(e.target.value)}
                 max={selectedBookingItem?.totalPaidAmount}
-                min={0}
+                min={100}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Total paid:{" "}
-                {formatCurrency(selectedBookingItem?.totalPaidAmount || 0)}
+                {formatCurrency(selectedBookingItem?.totalPaidAmount || 0)} •
+                Minimum transfer: ₦100
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -498,6 +560,110 @@ export default function BookingPaymentsPage() {
               {isSubmittingTransfer ? "Transferring..." : "Confirm Transfer"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={transferDetailsModalOpen}
+        onOpenChange={setTransferDetailsModalOpen}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Transfer Details</DialogTitle>
+          </DialogHeader>
+          {selectedTransfer && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Transfer ID</p>
+                  <p className="font-medium">{selectedTransfer.id}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Status</p>
+                  <p
+                    className={`font-medium capitalize ${
+                      selectedTransfer.status === "success"
+                        ? "text-green-600"
+                        : selectedTransfer.status === "failed"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                    }`}
+                  >
+                    {selectedTransfer.status}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Amount</p>
+                  <p className="font-medium">
+                    {formatCurrency(selectedTransfer.transferredAmount)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Date</p>
+                  <p className="font-medium">
+                    {new Date(selectedTransfer.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Recipient Bank</p>
+                  <p className="font-medium">
+                    {selectedTransfer.recipientBankName || "-"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Recipient Account Number</p>
+                  <p className="font-medium">
+                    {selectedTransfer.recipientAccountNumber || "-"}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-gray-500">Recipient Account Name</p>
+                  <p className="font-medium">
+                    {selectedTransfer.recipientAccountName || "-"}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-gray-500">Paystack Reference</p>
+                  <p className="font-medium text-xs break-all">
+                    {selectedTransfer.paystackReference || "-"}
+                  </p>
+                </div>
+                {selectedTransfer.paystackTransferCode && (
+                  <div className="md:col-span-2">
+                    <p className="text-gray-500">Paystack Transfer Code</p>
+                    <p className="font-medium text-xs break-all">
+                      {selectedTransfer.paystackTransferCode}
+                    </p>
+                  </div>
+                )}
+                {selectedTransfer.failureReason && (
+                  <div className="md:col-span-2">
+                    <p className="text-gray-500">Failure Reason</p>
+                    <p className="font-medium text-red-600">
+                      {selectedTransfer.failureReason}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <DialogFooter className="gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => setTransferDetailsModalOpen(false)}
+                >
+                  Close
+                </Button>
+                {selectedTransfer.status !== "success" && (
+                  <Button
+                    className="bg-[#007BFF] hover:bg-[#0056b3]"
+                    onClick={handleRetryTransfer}
+                    disabled={isRetryingTransfer}
+                  >
+                    {isRetryingTransfer ? "Retrying..." : "Retry Transfer"}
+                  </Button>
+                )}
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
