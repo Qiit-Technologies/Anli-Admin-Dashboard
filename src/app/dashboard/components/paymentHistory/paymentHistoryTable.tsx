@@ -12,9 +12,11 @@ import {
   Tr,
 } from "@/components/common/customTable";
 import SearchWithIcon from "@/components/common/searchWithIcon";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { useBusiness } from "@/context/businessContext";
-import { axiosGet } from "@/app/lib/api";
+import fetcher from "@/app/actions/fetcher";
+import { LogInvoiceBtn } from "@/app/dashboard/components/plan/LogInvoiceBtn";
 
 type SubscriptionPayment = {
   id: string;
@@ -26,55 +28,34 @@ type SubscriptionPayment = {
   transactionRef?: string | null;
   paystackReference?: string | null;
   description?: string | null;
+  invoiceRemarks?: string | null;
+  invoiceDocumentUrl?: string | null;
+  invoiceDocumentName?: string | null;
+  invoiceUploadedBy?: string | null;
+  invoiceBillingMonth?: string | null;
 };
 
 export default function PaymentHistoryTable() {
   const [query, setQuery] = useState("");
   const { business } = useBusiness();
   const businessId = useMemo(() => business?.id?.toString() || "", [business]);
-  const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!businessId) return;
+  const {
+    data: paymentResponse,
+    isLoading,
+    error,
+  } = useSWR(
+    businessId ? `/super-admin/${businessId}/billing/payment-history` : null,
+    (url: string) =>
+      fetcher<{
+        success: boolean;
+        data: { payments: SubscriptionPayment[] };
+        message?: string;
+      }>(url),
+  );
 
-    let cancelled = false;
-    const load = async () => {
-      setIsLoading(true);
-      setErrorMessage(null);
-      try {
-        const response = await axiosGet<{
-          success: boolean;
-          data: { payments: SubscriptionPayment[] };
-          message?: string;
-        }>(`/super-admin/${businessId}/billing/payment-history`, {
-          currentPath: "/dashboard/payments",
-        });
-
-        if (cancelled) return;
-        if (response?.success) {
-          setPayments(response.data?.payments ?? []);
-        } else {
-          setPayments([]);
-          setErrorMessage(response?.message || "Failed to load payments");
-        }
-      } catch (error: any) {
-        if (cancelled) return;
-        setPayments([]);
-        setErrorMessage(
-          error?.response?.data?.message || "Failed to load payments",
-        );
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [businessId]);
+  const payments = paymentResponse?.data?.payments ?? [];
+  const errorMessage = error?.message || paymentResponse?.message || null;
 
   const filteredPayments = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -87,6 +68,10 @@ export default function PaymentHistoryTable() {
         p.transactionRef,
         p.paystackReference,
         p.description,
+        p.invoiceRemarks,
+        p.invoiceDocumentName,
+        p.invoiceUploadedBy,
+        p.invoiceBillingMonth,
       ]
         .filter(Boolean)
         .join(" ")
@@ -129,6 +114,9 @@ export default function PaymentHistoryTable() {
             <ListFilterIcon size={16} />
             Filters
           </button>
+          <div className="w-full sm:w-auto">
+            <LogInvoiceBtn />
+          </div>
         </div>
       </div>
       <Divider className="mb-4" />
@@ -144,12 +132,14 @@ export default function PaymentHistoryTable() {
                 Status
               </Th>
               <Th withIcon>Reference</Th>
+              <Th withIcon>Invoice</Th>
+              <Th withIcon>Uploaded by</Th>
             </Tr>
           </Thead>
           <Tbody>
             {errorMessage && (
               <Tr>
-                <Td colSpan={5}>
+                <Td colSpan={7}>
                   <div className="text-sm text-red-600">{errorMessage}</div>
                 </Td>
               </Tr>
@@ -157,7 +147,7 @@ export default function PaymentHistoryTable() {
 
             {!errorMessage && !isLoading && filteredPayments.length === 0 && (
               <Tr>
-                <Td colSpan={5}>
+                <Td colSpan={7}>
                   <div className="text-sm text-gray-500">
                     No subscription payments found.
                   </div>
@@ -182,6 +172,23 @@ export default function PaymentHistoryTable() {
                 </Td>
                 <Td className="text-xs text-gray-600">
                   {p.paystackReference || p.transactionRef || "—"}
+                </Td>
+                <Td className="text-xs text-gray-600">
+                  {p.invoiceDocumentUrl ? (
+                    <a
+                      href={p.invoiceDocumentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      {p.invoiceDocumentName || "View invoice"}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </Td>
+                <Td className="text-xs text-gray-600">
+                  {p.invoiceUploadedBy || "—"}
                 </Td>
               </Tr>
             ))}

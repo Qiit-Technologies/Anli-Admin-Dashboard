@@ -104,23 +104,43 @@ export async function logInvoice(
     invoiceNumber: string;
     amount: number;
     description?: string;
+    remarks?: string;
+    billingMonth?: string;
     date: string;
+    file?: File | null;
   },
 ) {
   const url = `/super-admin/${hotelId}/billing/log-invoice`;
+  const formData = new FormData();
 
-  const response = await axiosPost<any>(
-    url,
-    {
-      invoiceNumber: invoiceData.invoiceNumber,
-      amount: invoiceData.amount,
-      description: invoiceData.description,
-      date: invoiceData.date,
+  formData.append("invoiceNumber", invoiceData.invoiceNumber);
+  formData.append("amount", invoiceData.amount.toString());
+  formData.append("date", invoiceData.date);
+
+  if (invoiceData.description) {
+    formData.append("description", invoiceData.description);
+  }
+
+  if (invoiceData.remarks) {
+    formData.append("remarks", invoiceData.remarks);
+  }
+
+  if (invoiceData.billingMonth) {
+    formData.append("billingMonth", invoiceData.billingMonth);
+  }
+
+  if (invoiceData.file) {
+    formData.append("file", invoiceData.file);
+  }
+
+  const response = await axiosPost<any>(url, formData, {
+    config: {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     },
-    {
-      currentPath: "/dashboard/plan",
-    },
-  );
+    currentPath: "/dashboard/payments",
+  });
 
   return response;
 }

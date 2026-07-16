@@ -13,7 +13,16 @@ import { useBusiness } from "@/context/businessContext";
 import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
-import { Plus, Shield, Layers, Gift, RefreshCw, Menu, X } from "lucide-react";
+import {
+  Plus,
+  Shield,
+  Layers,
+  Gift,
+  RefreshCw,
+  Menu,
+  X,
+  UtensilsCrossed,
+} from "lucide-react";
 import { createBusiness, reactivateBusiness } from "@/app/actions/business";
 import { CustomDialog } from "@/components/common/CustomDialog";
 import { Input } from "@/components/ui/input";
@@ -82,7 +91,7 @@ export default function BusinessList() {
         return status !== 401;
       },
       errorRetryCount: 1, // Only retry once
-    }
+    },
   );
 
   const handleBusinessClick = (item: BusinessDTO) => {
@@ -102,7 +111,7 @@ export default function BusinessList() {
       await mutate();
     } catch (error: any) {
       toast.error(
-        error?.message || "Failed to reactivate business. Please try again."
+        error?.message || "Failed to reactivate business. Please try again.",
       );
     } finally {
       setReactivatingId(null);
@@ -213,6 +222,18 @@ export default function BusinessList() {
                     <Shield size={18} className="text-[#F47411]" />
                     <span className="text-sm font-medium text-gray-700">
                       Manage Permissions
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push("/restaurants");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <UtensilsCrossed size={18} className="text-[#F47411]" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Restaurant Catalog
                     </span>
                   </button>
                 </div>
