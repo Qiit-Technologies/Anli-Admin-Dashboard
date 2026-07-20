@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -88,6 +88,54 @@ const validateRestaurantForm = (
   return errors;
 };
 
+const ImagePreview = ({
+  src,
+  alt,
+  onClear,
+}: {
+  src: string;
+  alt?: string;
+  onClear?: () => void;
+}) => {
+  const [error, setError] = useState(false);
+
+  if (error || !src) return null;
+
+  return (
+    <div className="relative w-full h-40 rounded-lg overflow-hidden border bg-gray-50">
+      <Image
+        src={src}
+        alt={alt || "Preview"}
+        fill
+        className="object-cover"
+        onError={() => setError(true)}
+      />
+      {onClear && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+};
+
 const AddRestaurantDialog = ({
   onAddRestaurant,
 }: {
@@ -97,6 +145,33 @@ const AddRestaurantDialog = ({
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<RestaurantForm>(emptyForm);
   const [errors, setErrors] = useState<RestaurantFormErrors>({});
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData({ ...formData, file });
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const clearPreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setFormData({ ...formData, file: null });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +189,7 @@ const AddRestaurantDialog = ({
       await onAddRestaurant(formData);
       setFormData(emptyForm);
       setErrors({});
+      clearPreview();
       setOpen(false);
     } finally {
       setSaving(false);
@@ -127,7 +203,7 @@ const AddRestaurantDialog = ({
           Add Restaurant
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Restaurant</DialogTitle>
         </DialogHeader>
@@ -166,13 +242,17 @@ const AddRestaurantDialog = ({
           <div className="space-y-2">
             <FormLabel htmlFor="coverImage">Cover Image</FormLabel>
             <Input
+              ref={fileInputRef}
               id="coverImage"
               type="file"
-              accept="image/png,image/jpeg,image/jpg,image/gif"
-              onChange={(e) =>
-                setFormData({ ...formData, file: e.target.files?.[0] || null })
-              }
+              accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+              onChange={handleFileChange}
             />
+            {previewUrl && (
+              <div className="mt-2">
+                <ImagePreview src={previewUrl} onClear={clearPreview} />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -288,6 +368,80 @@ const AddRestaurantDialog = ({
   );
 };
 
+const ViewRestaurantDialog = ({
+  restaurant,
+  open,
+  onOpenChange,
+}: {
+  restaurant: RestaurantCatalogItem | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  if (!restaurant) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{restaurant.name}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {restaurant.coverImage && (
+            <div className="relative w-full h-64 sm:h-80 rounded-lg overflow-hidden border bg-gray-50">
+              <Image
+                src={restaurant.coverImage}
+                alt={restaurant.name}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-500">Address</span>
+              <p className="font-medium">{restaurant.address || "—"}</p>
+            </div>
+            <div>
+              <span className="text-gray-500">Rating</span>
+              <p className="font-medium">
+                {restaurant.rating ?? 0} ({restaurant.ratingCount ?? 0})
+              </p>
+            </div>
+            <div>
+              <span className="text-gray-500">Tags</span>
+              <p className="font-medium">{restaurant.tags || "—"}</p>
+            </div>
+            <div>
+              <span className="text-gray-500">Display Hours</span>
+              <p className="font-medium">
+                {restaurant.displayHours || "—"}
+              </p>
+            </div>
+            <div>
+              <span className="text-gray-500">Status</span>
+              <p className="font-medium">
+                <StatusBadge
+                  status={restaurant.isActive ? "Active" : "Inactive"}
+                  statusColorMap={{
+                    Active: "green",
+                    Inactive: "gray",
+                  }}
+                />
+              </p>
+            </div>
+            <div>
+              <span className="text-gray-500">Bookable</span>
+              <p className="font-medium">
+                {restaurant.isBookable ? "Yes" : "No"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const EditRestaurantDialog = ({
   restaurant,
   onSave,
@@ -303,11 +457,39 @@ const EditRestaurantDialog = ({
 }) => {
   const [formData, setFormData] = useState<RestaurantForm>(restaurant);
   const [errors, setErrors] = useState<RestaurantFormErrors>({});
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setFormData(restaurant);
     setErrors({});
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }, [restaurant, open]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData({ ...formData, file });
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const clearPreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setFormData({ ...formData, file: null });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -324,9 +506,11 @@ const EditRestaurantDialog = ({
     onOpenChange(false);
   };
 
+  const currentImageSrc = previewUrl || restaurant.coverImage || null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Restaurant</DialogTitle>
         </DialogHeader>
@@ -365,13 +549,20 @@ const EditRestaurantDialog = ({
           <div className="space-y-2">
             <FormLabel htmlFor="coverImage">Cover Image</FormLabel>
             <Input
+              ref={fileInputRef}
               id="coverImage"
               type="file"
-              accept="image/png,image/jpeg,image/jpg,image/gif"
-              onChange={(e) =>
-                setFormData({ ...formData, file: e.target.files?.[0] || null })
-              }
+              accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+              onChange={handleFileChange}
             />
+            {currentImageSrc && (
+              <div className="mt-2">
+                <ImagePreview
+                  src={currentImageSrc}
+                  onClear={clearPreview}
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -490,10 +681,11 @@ const EditRestaurantDialog = ({
 export default function RestaurantsPage() {
   const router = useRouter();
   const [restaurants, setRestaurants] = useState<RestaurantCatalogItem[]>([]);
-  console.log("Restaurants: ", restaurants);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingRestaurant, setEditingRestaurant] =
+    useState<RestaurantCatalogItem | null>(null);
+  const [viewingRestaurant, setViewingRestaurant] =
     useState<RestaurantCatalogItem | null>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query);
@@ -546,7 +738,7 @@ export default function RestaurantsPage() {
           editingRestaurant.id,
           formData,
         );
-        //@ts-expect-error typescript doesnt recognize the type
+        // @ts-expect-error ignore the error
         setRestaurants((prev) =>
           prev.map((item) =>
             item.id === editingRestaurant.id ? updated : item,
@@ -555,7 +747,7 @@ export default function RestaurantsPage() {
         toast.success("Restaurant updated successfully");
       } else {
         const created = await createScrapedRestaurant(formData);
-        //@ts-expect-error typescript doesnt recognize the type
+        // @ts-expect-error ignore the error
         setRestaurants((prev) => [created, ...prev]);
         toast.success("Restaurant created successfully");
       }
@@ -664,8 +856,15 @@ export default function RestaurantsPage() {
                               }}
                             />
                           </Td>
-                          <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4 min-w-[120px]">
+                          <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4 min-w-[150px]">
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                              <span
+                                className="cursor-pointer text-blue-600 hover:underline text-sm flex items-center gap-1"
+                                onClick={() => setViewingRestaurant(restaurant)}
+                              >
+                                <Eye size={14} />
+                                View
+                              </span>
                               <span
                                 className="cursor-pointer text-blue-600 hover:underline text-sm"
                                 onClick={() => setEditingRestaurant(restaurant)}
@@ -708,6 +907,14 @@ export default function RestaurantsPage() {
             saving={saving}
           />
         )}
+
+        <ViewRestaurantDialog
+          restaurant={viewingRestaurant}
+          open={!!viewingRestaurant}
+          onOpenChange={(open) => {
+            if (!open) setViewingRestaurant(null);
+          }}
+        />
       </div>
     </div>
   );
