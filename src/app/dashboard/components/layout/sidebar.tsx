@@ -5,6 +5,7 @@ import {
   Landmark,
   Layers,
   SquareCheckBig,
+  Utensils,
   Users,
   X,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const Sidebar = ({
 
   const navItems = [
     { name: "General Info", icon: ChartNoAxesColumn, href: "/dashboard" },
+    { name: "Restaurant Details", icon: Utensils, href: "/dashboard/restaurant-details" },
     { name: "Issues", icon: Layers, href: "/dashboard/issues" },
     { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
     { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
