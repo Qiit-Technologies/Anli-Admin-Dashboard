@@ -14,6 +14,7 @@ import {
     Share2,
     DollarSign,
     Star,
+    Tag,
     Plus,
     Trash2,
     Loader2,
@@ -47,6 +48,7 @@ export interface HotelRestaurantDetails {
     description?: string | null;
     amenities?: string[] | string | null;
     website?: string | null;
+    tags?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
     weekdayHours?: string | null;
@@ -90,6 +92,7 @@ interface RestaurantDetails {
     description: string;
     amenities: string;
     website: string;
+    tags: string;
     contactEmail: string;
     contactPhone: string;
     weekdayHours: string;
@@ -124,6 +127,7 @@ export default function RestaurantDetailsPage() {
         description: "",
         amenities: "",
         website: "",
+        tags: "",
         contactEmail: "",
         contactPhone: "",
         weekdayHours: "",
@@ -180,6 +184,7 @@ export default function RestaurantDetailsPage() {
                         : hotel.amenities ||
                         "Perfect for date Night, Outdoor/ Indoor Seating, Romantic Ambience",
                     website: hotel.website || "www.southkitchen.com",
+                    tags: hotel.tags || "",
                     contactEmail: hotel.contactEmail || "ujua1@gmail.com",
                     contactPhone: hotel.contactPhone || "+234 6098 890 768",
                     weekdayHours:
@@ -236,6 +241,7 @@ export default function RestaurantDetailsPage() {
                 description: details.description,
                 amenities: splitCsv(details.amenities),
                 website: details.website,
+                tags: details.tags,
                 contactEmail: details.contactEmail,
                 contactPhone: details.contactPhone,
                 weekdayHours: details.weekdayHours,
@@ -500,6 +506,23 @@ export default function RestaurantDetailsPage() {
                                         className={inputCls}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="pt-2">
+                                <label className={labelCls} htmlFor="tags">
+                                    <Tag className="w-3.5 h-3.5 text-gray-400 inline mr-1.5" />
+                                    Tags (comma-separated)
+                                </label>
+                                <input
+                                    id="tags"
+                                    type="text"
+                                    value={details.tags}
+                                    onChange={(e) =>
+                                        updateField("tags", e.target.value)
+                                    }
+                                    placeholder="e.g. Nigerian, Fine Dining, Outdoor"
+                                    className={inputCls}
+                                />
                             </div>
 
                             <div className="pt-2">
