@@ -52,6 +52,7 @@ const emptyForm: RestaurantForm = {
   description: "",
   amenities: [],
   website: "",
+  bookingUrl: "",
   contactEmail: "",
   contactPhone: "",
   twitterUrl: "",
@@ -418,6 +419,15 @@ const RestaurantFormFields = ({
             value={f.website || ""}
             onChange={(e) => set({ website: e.target.value })}
             placeholder="www.restaurant.com"
+          />
+        </div>
+        <div className="space-y-2">
+          <FormLabel htmlFor="bookingUrl">Booking URL</FormLabel>
+          <Input
+            id="bookingUrl"
+            value={f.bookingUrl || ""}
+            onChange={(e) => set({ bookingUrl: e.target.value })}
+            placeholder="https://opentable.com/..."
           />
         </div>
       </div>
@@ -809,7 +819,7 @@ const ViewRestaurantDialog = ({
             </div>
           )}
 
-          {(restaurant.contactPhone || restaurant.contactEmail || restaurant.website) && (
+          {(restaurant.contactPhone || restaurant.contactEmail || restaurant.website || restaurant.bookingUrl) && (
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-[#F47411] border-b border-gray-100 pb-1 mb-3">
                 Contact & Web
@@ -818,6 +828,7 @@ const ViewRestaurantDialog = ({
                 {field("Phone", restaurant.contactPhone)}
                 {field("Email", restaurant.contactEmail)}
                 {field("Website", restaurant.website)}
+                {field("Booking URL", restaurant.bookingUrl)}
                 {field("Twitter", restaurant.twitterUrl)}
                 {field("Instagram", restaurant.instagramUrl)}
                 {field("Facebook", restaurant.facebookUrl)}

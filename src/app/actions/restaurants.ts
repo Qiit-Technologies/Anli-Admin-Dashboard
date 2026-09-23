@@ -26,6 +26,7 @@ export interface RestaurantCatalogItem {
 
   // Contact & Web
   website?: string | null;
+  bookingUrl?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
 
@@ -98,6 +99,8 @@ function toFormData(
   // Contact & Web
   if (data.website !== undefined && data.website !== null)
     append("website", data.website);
+  if (data.bookingUrl !== undefined && data.bookingUrl !== null)
+    append("bookingUrl", data.bookingUrl);
   if (data.contactEmail !== undefined && data.contactEmail !== null)
     append("contactEmail", data.contactEmail);
   if (data.contactPhone !== undefined && data.contactPhone !== null)

@@ -48,6 +48,7 @@ export interface HotelRestaurantDetails {
     description?: string | null;
     amenities?: string[] | string | null;
     website?: string | null;
+    bookingUrl?: string | null;
     tags?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
@@ -92,6 +93,7 @@ interface RestaurantDetails {
     description: string;
     amenities: string;
     website: string;
+    bookingUrl: string;
     tags: string;
     contactEmail: string;
     contactPhone: string;
@@ -127,6 +129,7 @@ export default function RestaurantDetailsPage() {
         description: "",
         amenities: "",
         website: "",
+        bookingUrl: "",
         tags: "",
         contactEmail: "",
         contactPhone: "",
@@ -184,6 +187,7 @@ export default function RestaurantDetailsPage() {
                         : hotel.amenities ||
                         "Perfect for date Night, Outdoor/ Indoor Seating, Romantic Ambience",
                     website: hotel.website || "www.southkitchen.com",
+                    bookingUrl: hotel.bookingUrl || "",
                     tags: hotel.tags || "",
                     contactEmail: hotel.contactEmail || "ujua1@gmail.com",
                     contactPhone: hotel.contactPhone || "+234 6098 890 768",
@@ -241,6 +245,7 @@ export default function RestaurantDetailsPage() {
                 description: details.description,
                 amenities: splitCsv(details.amenities),
                 website: details.website,
+                bookingUrl: details.bookingUrl,
                 tags: details.tags,
                 contactEmail: details.contactEmail,
                 contactPhone: details.contactPhone,
@@ -503,6 +508,23 @@ export default function RestaurantDetailsPage() {
                                             updateField("website", e.target.value)
                                         }
                                         placeholder="www.southkitchen.com"
+                                        className={inputCls}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className={labelCls} htmlFor="bookingUrl">
+                                        <Globe className="w-3.5 h-3.5 text-gray-400 inline mr-1.5" />
+                                        Booking URL
+                                    </label>
+                                    <input
+                                        id="bookingUrl"
+                                        type="text"
+                                        value={details.bookingUrl}
+                                        onChange={(e) =>
+                                            updateField("bookingUrl", e.target.value)
+                                        }
+                                        placeholder="https://opentable.com/..."
                                         className={inputCls}
                                     />
                                 </div>
