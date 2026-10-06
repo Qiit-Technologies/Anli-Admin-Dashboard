@@ -1,0 +1,5 @@
+{
+    "editor.tabSize": 4,            // Change to your preferred tab size (2 or 4)
+    "editor.insertSpaces": true,    // Use spaces instead of tabs (recommended by Prettier)
+    "editor.detectIndentation": false // Disable auto-detection of indentation
+  }

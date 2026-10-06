@@ -1,0 +1,108 @@
+import {
+    Beer,
+    Box,
+    CalendarDays,
+    House,
+    ListChecks,
+    Phone,
+    Soup,
+    Users,
+    Utensils,
+    Wallet,
+} from 'lucide-react';
+import { FaPeopleGroup } from 'react-icons/fa6';
+import { LuCalendar } from 'react-icons/lu';
+
+export const serviceModules = [
+    {
+        title: 'Front Office',
+        service: 'front_office',
+        description: 'Manage Bookings & other things',
+        icon: Phone,
+        href: '/front-office',
+    },
+    {
+        title: 'Reservations',
+        service: 'reservation',
+        description: 'Manage Reservations',
+        icon: LuCalendar,
+        href: '/reservations',
+    },
+    {
+        title: 'Housekeeping',
+        service: 'housekeeping',
+        description: 'Room Cleaning',
+        icon: House,
+        href: '/house-keeping',
+    },
+    {
+        title: 'Stock',
+        service: 'stock',
+        description: 'Inventory',
+        icon: Box,
+        href: '/stock',
+    },
+    {
+        title: 'Bar',
+        service: 'bar',
+        description: 'Drinks & Stock',
+        icon: Beer,
+        href: '/bar',
+    },
+    {
+        title: 'Account',
+        service: 'account',
+        description: 'Finance Reports',
+        icon: Wallet,
+        href: '/account',
+    },
+    {
+        title: 'Restaurant',
+        service: 'restaurant',
+        description: 'Orders & Billing',
+        icon: Utensils,
+        href: '/front-of-house',
+    },
+    {
+        title: 'Front of House',
+        service: 'front-of-house',
+        description: 'Orders & Billing',
+        icon: Utensils,
+        href: '/front-of-house',
+    },
+    {
+        title: 'Kitchen',
+        service: 'kitchen',
+        description: 'Kitchen Orders',
+        icon: Soup,
+        href: '/kitchen',
+    },
+    {
+        title: 'Back Of House',
+        service: 'back_of_house',
+        description: 'Manage Restaurant',
+        icon: ListChecks,
+        href: '/back-of-house',
+    },
+    {
+        title: 'People',
+        service: 'employee',
+        description: 'Employee Management',
+        icon: Users,
+        href: '/employee',
+    },
+    {
+        title: 'Banquet',
+        service: 'banquet',
+        description: 'Event Planning',
+        icon: CalendarDays,
+        href: '/banquet',
+    },
+    {
+        title: 'Membership',
+        service: 'membership',
+        description: 'Membership Management',
+        icon: FaPeopleGroup,
+        href: '/membership',
+    },
+];

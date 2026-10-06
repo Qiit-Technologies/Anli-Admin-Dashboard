@@ -1,0 +1,49 @@
+import { Checkbox } from '@/components/ui/checkbox';
+
+interface GridHeaderProps {
+    currentDate: Date;
+    daysToShow: number;
+}
+
+export function GridHeader({ currentDate, daysToShow }: GridHeaderProps) {
+    return (
+        <thead>
+            <tr>
+                <th className="border-b border-r font-normal text-sm text-muted-foreground px-2 sticky left-0 bg-white z-10 w-[200px]">
+                    <div className="flex items-center">
+                        <span>Room Type / Number</span>
+                        <Checkbox
+                            className="h-4 w-4 ml-2"
+                            defaultChecked
+                            onChange={() => {}}
+                        />
+                    </div>
+                </th>
+                {Array.from({ length: daysToShow }, (_, i) => {
+                    const date = new Date(currentDate);
+                    date.setDate(date.getDate() + i);
+                    return (
+                        <th
+                            key={i}
+                            className="border-b border-r border-r-transparent bg-black text-white p-1 text-center w-[100px] min-w-[100px]"
+                        >
+                            <div className="text-xs font-medium">
+                                {date.toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                })}
+                            </div>
+                            <div className="text-xs font-medium">
+                                {date.getDate()}
+                            </div>
+                            <div className="text-xs font-medium">
+                                {date.toLocaleDateString('en-US', {
+                                    month: 'short',
+                                })}
+                            </div>
+                        </th>
+                    );
+                })}
+            </tr>
+        </thead>
+    );
+}
