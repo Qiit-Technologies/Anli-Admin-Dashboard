@@ -137,3 +137,4 @@ const CustomDialog: React.FC<CustomDialogProps> = ({
 };
 
 export default CustomDialog;
+export { CustomDialog };
