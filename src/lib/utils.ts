@@ -217,3 +217,29 @@ export const getFileType = (fileName?: string) => {
         return 'document';
     }
 };
+
+// ── Merged from main branch's src/lib/utils.ts ──────────────────────────
+export function capitalize(str: string) {
+    const strArr = str.split('');
+    strArr[0] = strArr[0].toUpperCase();
+
+    return strArr.join('');
+}
+
+export function removeUnderscore(str: string) {
+    return str.replace('_', ' ');
+}
+
+// Main-branch variant of formatDate (D/M/YYYY). Kept under a distinct name
+// because this module already exports the feature branch's formatDate
+// (MM/DD/YYYY); main's tree never imported formatDate from @/lib/utils,
+// so no caller changes are needed.
+export function formatDateDMY(date: Date | string): string {
+    const d = new Date(date);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+}
+
+export function generateModuleArr(modulesString: string): string[] {
+    const modules = modulesString.split(',');
+    return modules.map((module) => module.trim());
+}

@@ -10,13 +10,13 @@ export const ModuleActivityGrowthSection = (): React.ReactNode => {
   };
 
   return (
-    <div className="w-3/5 sm:p-6 rounded-xl border hidden sm:flex flex-col">
+    <div className="w-full lg:w-3/5 p-4 sm:p-6 rounded-xl border flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
         <h3 className="text-sm font-medium">General Actives Growth</h3>
-        <div className="flex  text-sm text-gray-500 border border-gray-300 rounded-md overflow-hidden">
+        <div className="flex text-sm text-gray-500 border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">
           <button
             onClick={() => handlePeriodChange("year")}
-            className={`hover:text-black border-r px-4 py-2 ${
+            className={`hover:text-black border-r px-3 sm:px-4 py-2 flex-1 sm:flex-none ${
               selectedPeriod === "year" && "bg-gray-50 font-semibold"
             }`}
           >
@@ -24,7 +24,7 @@ export const ModuleActivityGrowthSection = (): React.ReactNode => {
           </button>
           <button
             onClick={() => handlePeriodChange("30d")}
-            className={`hover:text-black border-r px-4 py-2 ${
+            className={`hover:text-black border-r px-3 sm:px-4 py-2 flex-1 sm:flex-none ${
               selectedPeriod === "30d" && "bg-gray-50 font-semibold"
             }`}
           >
@@ -32,7 +32,7 @@ export const ModuleActivityGrowthSection = (): React.ReactNode => {
           </button>
           <button
             onClick={() => handlePeriodChange("7d")}
-            className={`hover:text-black  px-4 py-2 ${
+            className={`hover:text-black px-3 sm:px-4 py-2 flex-1 sm:flex-none ${
               selectedPeriod === "7d" && "bg-gray-50 font-semibold"
             }`}
           >

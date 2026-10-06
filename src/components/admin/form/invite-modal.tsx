@@ -1,6 +1,6 @@
 import { getModules, Module } from '@/app/actions/modules';
 import { getPermissions, Permission } from '@/app/actions/permissions';
-import { fetchRoles, inviteStaff, updateStaff } from '@/app/actions/staff';
+import { fetchRoles, inviteStaff, updateStaffMember } from '@/app/actions/staff';
 import BrandButton from '@/components/common/Button';
 import { InputField } from '@/components/common/Form';
 // Remove the old MultiSelect import completely
@@ -107,7 +107,7 @@ export const InviteModal = ({
 
         try {
             if (mode === 'edit') {
-                await updateStaff(payload, formData.id);
+                await updateStaffMember(payload, formData.id);
                 await mutate('/staff-members');
                 toast.custom(() => (
                     <Toast

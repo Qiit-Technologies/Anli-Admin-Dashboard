@@ -1,6 +1,6 @@
 import { CustomSheet } from "@/components/common/CustomSheet";
 import { ViewIssueDetails } from "./ViewIssueDetails";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { ReportDTO } from "@/types/report";
 import { updateReport } from "@/app/actions/report";
 import { toast } from "react-toastify";
@@ -43,7 +43,7 @@ export const ViewIssueSheet = ({
         status: "",
       });
       toast.success("Issue updated successfully");
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error == "string") {
         toast.error(error);
       } else {

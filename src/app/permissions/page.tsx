@@ -61,7 +61,7 @@ const AddPermissionDialog = ({
         if (response) {
           setModules(response);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch modules:", error);
       } finally {
         setLoading(false);
@@ -240,11 +240,11 @@ const EditPermissionDialog = ({
 export default function PermissionPage() {
   const router = useRouter();
   const [permissions, setPermissions] = useState<{ permissions: Permission[] }>(
-    { permissions: [] }
+    { permissions: [] },
   );
   const [modules, setModules] = useState<Module[]>([]);
   const [editingPermission, setEditingPermission] = useState<Permission | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -255,12 +255,12 @@ export default function PermissionPage() {
   console.log(modules);
   // Simulate search and pagination client-side
   const filteredPermissions = permissions.permissions.filter((p) =>
-    p.name.toLowerCase().includes(debouncedQuery.toLowerCase())
+    p.name.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
   const totalPages = Math.max(1, Math.ceil(filteredPermissions.length / limit));
   const paginatedPermissions = filteredPermissions.slice(
     (page - 1) * limit,
-    page * limit
+    page * limit,
   );
 
   useEffect(() => {
@@ -276,7 +276,7 @@ export default function PermissionPage() {
         ]);
         setPermissions(permissionsResponse);
         setModules(modulesResponse);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
@@ -293,7 +293,7 @@ export default function PermissionPage() {
           permissions: [...permissions.permissions, response.data],
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add permission:", error);
     }
   };
@@ -304,7 +304,7 @@ export default function PermissionPage() {
       setPermissions({
         permissions: permissions.permissions.filter((p) => p.id !== id),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete permission:", error);
     }
   };
@@ -323,12 +323,12 @@ export default function PermissionPage() {
       if (response.data) {
         setPermissions({
           permissions: permissions.permissions.map((p) =>
-            p.id === updatedPermission.id ? response.data : p
+            p.id === updatedPermission.id ? response.data : p,
           ),
         });
       }
       setEditingPermission(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update permission:", error);
     }
   };
@@ -343,16 +343,18 @@ export default function PermissionPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <Button
             variant="ghost"
             onClick={() => router.push("/business-list")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base"
           >
             <ArrowLeft size={20} />
-            Back to Business List
+            <span className="hidden sm:inline">Back to Business List</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <div className="w-24"></div> {/* Spacer for centering */}
+          <div className="hidden sm:block w-24"></div>{" "}
+          {/* Spacer for centering */}
         </div>
         {/* Logo */}
         <div className="text-center mb-8">
@@ -366,66 +368,76 @@ export default function PermissionPage() {
         </div>
         {/* Content */}
         <div className="bg-white rounded-lg shadow-sm border">
-          <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3 border-b">
-            <h2 className="text-lg font-normal text-[#101828]">
+          <div className="flex flex-col px-4 sm:px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3 border-b">
+            <h2 className="text-base sm:text-lg font-normal text-[#101828]">
               System Permissions
             </h2>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <SearchWithIcon
-                className="w-[478px]"
+                className="w-full sm:w-[300px] md:w-[478px]"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
               <AddPermissionDialog onAddPermission={handleAddPermission} />
             </div>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {loading ? (
               <div className="p-5">
                 <Spinner size="lg" />
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <Thead>
-                    <Tr>
-                      <Th withIcon>Name</Th>
-                      <Th withIcon>Description</Th>
-                      <Th withIcon>Module</Th>
-                      <Th>Action</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {paginatedPermissions.map((permission) => (
-                      <Tr key={permission.id}>
-                        <Td>{permission.name}</Td>
-                        <Td>{permission.description}</Td>
-                        <Td>{getModuleName(permission)}</Td>
-                        <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4">
-                          <span
-                            className="mr-4 cursor-pointer text-blue-600 hover:underline"
-                            onClick={() => handleEditClick(permission)}
-                          >
-                            Edit
-                          </span>
-                          <span
-                            className="cursor-pointer text-red-600 hover:underline"
-                            onClick={() =>
-                              handleDeletePermission(permission.id)
-                            }
-                          >
-                            Delete
-                          </span>
-                        </Td>
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="min-w-full inline-block align-middle">
+                  <Table>
+                    <Thead>
+                      <Tr>
+                        <Th withIcon>Name</Th>
+                        <Th withIcon>Description</Th>
+                        <Th withIcon>Module</Th>
+                        <Th>Action</Th>
                       </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-                <Pagination
-                  totalPages={totalPages}
-                  page={page}
-                  onPageChange={setPage}
-                />
+                    </Thead>
+                    <Tbody>
+                      {paginatedPermissions.map((permission) => (
+                        <Tr key={permission.id}>
+                          <Td className="min-w-[120px]">{permission.name}</Td>
+                          <Td className="min-w-[150px]">
+                            {permission.description}
+                          </Td>
+                          <Td className="min-w-[100px]">
+                            {getModuleName(permission)}
+                          </Td>
+                          <Td className="text-blue-600 hover:underline cursor-pointer py-4 px-4 min-w-[100px]">
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                              <span
+                                className="cursor-pointer text-blue-600 hover:underline text-sm"
+                                onClick={() => handleEditClick(permission)}
+                              >
+                                Edit
+                              </span>
+                              <span
+                                className="cursor-pointer text-red-600 hover:underline text-sm"
+                                onClick={() =>
+                                  handleDeletePermission(permission.id)
+                                }
+                              >
+                                Delete
+                              </span>
+                            </div>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </div>
+                <div className="mt-4">
+                  <Pagination
+                    totalPages={totalPages}
+                    page={page}
+                    onPageChange={setPage}
+                  />
+                </div>
               </div>
             )}
           </div>

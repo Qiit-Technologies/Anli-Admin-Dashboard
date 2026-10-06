@@ -189,3 +189,41 @@ input[type='password']::-ms-clear {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
 }
+
+/* ── Merged from main branch: full-viewport reset rules ─────────────── */
+html {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    position: static !important;
+    display: block !important;
+    overflow-x: hidden !important;
+}
+
+#__next, [data-nextjs-scroll-focus-boundary] {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+button {
+    cursor: pointer;
+}
+
+.noscroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.noscroll::-webkit-scrollbar {
+    display: none;
+}

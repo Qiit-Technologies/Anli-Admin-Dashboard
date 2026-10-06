@@ -1,6 +1,5 @@
 import { createIssue } from "@/app/actions/report";
 import { CustomDialog } from "@/components/common/CustomDialog";
-import { InputField } from "@/components/common/form";
 import { TextAreaInput } from "@/components/common/TextAreaInput";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -39,7 +38,7 @@ export const AddIssueBtn = ({
 
       toast.success("Staff member updated successfully");
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {

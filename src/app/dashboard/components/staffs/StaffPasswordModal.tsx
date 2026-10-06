@@ -45,7 +45,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
       const response = await resetStaffPassword(
         business?.id,
         staffInfo.id,
-        payload
+        payload,
       );
 
       if (!response) {
@@ -55,7 +55,7 @@ export const StaffPasswordModal = ({ staffInfo, isOpen, setIsOpen }: Props) => {
       toast.success("Password reset successfully");
 
       setIsOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof AxiosError) {
         const errorMessage =
           (error.response?.data as ErrorResponseData)?.message ||

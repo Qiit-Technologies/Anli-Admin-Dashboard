@@ -8,7 +8,8 @@ import { ItemsProvider } from '@/context/ItemsContext';
 import { UserProvider } from '@/context/useUser';
 import { SWRProvider } from '@/providers/SWRProvider';
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans } from 'next/font/google';
+import { DM_Mono, DM_Sans } from 'next/font/google';
+import Providers from '../config/providers';
 import Script from 'next/script';
 import React from 'react';
 import './globals.css';
@@ -18,6 +19,12 @@ const dmSans = DM_Sans({
     weight: ['300', '400', '500', '600', '700'],
     variable: '--font-dm-sans',
     display: 'swap',
+});
+
+const dmMono = DM_Mono({
+    subsets: ['latin'],
+    variable: '--font-dm-mono',
+    weight: '400',
 });
 
 export const viewport: Viewport = {
@@ -78,7 +85,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className="h-full m-0 p-0">
             <Script id="schema-org" type="application/ld+json">
                 {JSON.stringify({
                     '@context': 'https://schema.org',
@@ -123,8 +130,11 @@ export default function RootLayout({
                 `}
             </Script>
 
-            <body className={`${dmSans.variable} antialiased`}>
-                <Site24x7Tracker />
+            <body
+                className={`${dmSans.variable} ${dmMono.variable} antialiased h-full m-0 p-0`}
+            >
+                <Providers>
+                    <Site24x7Tracker />
                 <SWRProvider>
                     <UserProvider>
                         <IdleLogoutProvider>
@@ -139,6 +149,7 @@ export default function RootLayout({
                         </IdleLogoutProvider>
                     </UserProvider>
                 </SWRProvider>
+                </Providers>
             </body>
         </html>
     );

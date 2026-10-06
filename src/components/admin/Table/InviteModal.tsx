@@ -1,4 +1,4 @@
-import { fetchRoles, inviteStaff, updateStaff } from '@/app/actions/staff';
+import { fetchRoles, inviteStaff, updateStaffMember } from '@/app/actions/staff';
 import Toast from '@/components/toast';
 import { MiniStaff, Role, SimplifiedStaff } from '@/types/staff.types';
 import {
@@ -88,7 +88,7 @@ const InviteModal: React.FC<InviteModalProps> = ({
     const handleSave = async (member: MiniStaff) => {
         try {
             if (isEdit) {
-                await updateStaff(
+                await updateStaffMember(
                     {
                         fullName: member.fullName,
                         email: member.email,

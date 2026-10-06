@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowDown, Calendar, ListFilterIcon } from "lucide-react";
+import {
+  ArrowDown,
+  Calendar,
+  ListFilterIcon,
+  Eye,
+  EyeOff,
+  Key,
+  RefreshCw,
+} from "lucide-react";
 import { Divider } from "../divider";
 import SearchWithIcon from "@/components/common/searchWithIcon";
 import { useState } from "react";
@@ -17,10 +25,25 @@ import Image from "next/image";
 import { Pagination } from "@/components/common/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import useSWR from "swr";
-import getStaff, { deleteStaff, undeleteStaff } from "@/app/actions/staff";
+import getStaff, {
+  deleteStaff,
+  resetStaffPassword,
+  undeleteStaff,
+} from "@/app/actions/staff";
 import { Spinner } from "@/components/ui/spinner";
 import { ViewStaffDetailsBtn } from "./viewStaffDetailsBtn";
 import { toast } from "react-toastify";
+import { ConfirmationModal } from "@/components/common/ConfirmationModal";
+
+function generateRandomPassword(length = 12) {
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+  let retVal = "";
+  for (let i = 0, n = charset.length; i < length; ++i) {
+    retVal += charset.charAt(Math.floor(Math.random() * n));
+  }
+  return retVal;
+}
 
 export default function UsersTable({ businessId }: { businessId: string }) {
   const [page, setPage] = useState(1);
@@ -36,18 +59,24 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
 
-  // const [plainTextPasswords, setPlainTextPasswords] = useState<
-  //   Record<number, string>
-  // >({});
+  const [plainTextPasswords, setPlainTextPasswords] = useState<
+    Record<number, string>
+  >({});
+  const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>(
+    {},
+  );
+  const [resettingPasswords, setResettingPasswords] = useState<
+    Record<number, boolean>
+  >({});
   const [deletingStaff, setDeletingStaff] = useState<Record<number, boolean>>(
-    {}
+    {},
   );
   const [undeletingStaff, setUndeleteStaff] = useState<Record<number, boolean>>(
-    {}
+    {},
   );
-  // const [showResetPasswordConfirm, setShowResetPasswordConfirm] = useState<
-  //   Record<number, boolean>
-  // >({});
+  const [showResetPasswordConfirm, setShowResetPasswordConfirm] = useState<
+    Record<number, boolean>
+  >({});
 
   const {
     data: response,
@@ -74,60 +103,59 @@ export default function UsersTable({ businessId }: { businessId: string }) {
         department: departmentFilter !== "all" ? departmentFilter : undefined,
         startDate: dateRange.start || undefined,
         endDate: dateRange.end || undefined,
-      })
+      }),
   );
 
   const staff = response?.data?.staffs ?? [];
   const totalPages = response?.data?.totalPages ?? 1;
 
-  // const handleResetPassword = async (staffId: number) => {
-  //   setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
-  //   try {
-  //     const newPassword = generateRandomPassword();
-  //     const response = await resetStaffPassword(Number(businessId), staffId, {
-  //       password: newPassword,
-  //     });
+  const handleResetPassword = async (staffId: number, email: string) => {
+    setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
+    try {
+      const newPassword = generateRandomPassword();
+      await resetStaffPassword(Number(businessId), staffId, {
+        password: newPassword,
+        email: email,
+      });
 
-  //     // Store the plain text password from the response
-  //     if (response?.data?.plainTextPassword) {
-  //       setPlainTextPasswords((prev) => ({
-  //         ...prev,
-  //         [staffId]: response.data.plainTextPassword,
-  //       }));
-  //     }
+      // Store the plain text password from the response for local display
+      setPlainTextPasswords((prev) => ({
+        ...prev,
+        [staffId]: newPassword,
+      }));
 
-  //     // Show the new password temporarily
-  //     setShowPasswords((prev) => ({ ...prev, [staffId]: true }));
+      // Show the new password temporarily
+      setShowPasswords((prev) => ({ ...prev, [staffId]: true }));
 
-  //     // Hide the password after 10 seconds
-  //     setTimeout(() => {
-  //       setShowPasswords((prev) => ({ ...prev, [staffId]: false }));
-  //       setPlainTextPasswords((prev) => {
-  //         const newState = { ...prev };
-  //         delete newState[staffId];
-  //         return newState;
-  //       });
-  //     }, 10000);
+      // Hide the password after 15 seconds
+      setTimeout(() => {
+        setShowPasswords((prev) => ({ ...prev, [staffId]: false }));
+        setPlainTextPasswords((prev) => {
+          const newState = { ...prev };
+          delete newState[staffId];
+          return newState;
+        });
+      }, 15000);
 
-  //     toast.success(
-  //       `Password reset successfully! New password: ${newPassword}`
-  //     );
-  //   } catch (error) {
-  //     console.error("Failed to reset password:", error);
-  //     toast.error("Failed to reset password. Please try again.");
-  //   } finally {
-  //     setResettingPasswords((prev) => ({ ...prev, [staffId]: false }));
-  //   }
-  // };
+      toast.success(
+        `Password reset successfully! New password: ${newPassword}`,
+      );
+    } catch (error: any) {
+      console.error("Failed to reset password:", error);
+      toast.error("Failed to reset password. Please try again.");
+    } finally {
+      setResettingPasswords((prev) => ({ ...prev, [staffId]: false }));
+    }
+  };
 
-  // const handleResetPasswordClick = (staffId: number) => {
-  //   setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: true }));
-  // };
+  const handleResetPasswordClick = (staffId: number) => {
+    setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: true }));
+  };
 
-  // const handleResetPasswordConfirm = async (staffId: number) => {
-  //   setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: false }));
-  //   await handleResetPassword(staffId);
-  // };
+  const handleResetPasswordConfirm = async (staffId: number, email: string) => {
+    setShowResetPasswordConfirm((prev) => ({ ...prev, [staffId]: false }));
+    await handleResetPassword(staffId, email);
+  };
 
   const handleDeleteStaff = async (staffId: number) => {
     setDeletingStaff((prev) => ({ ...prev, [staffId]: true }));
@@ -140,7 +168,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       } else {
         throw new Error("No response received");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete staff:", error);
       toast.error("Failed to delete staff. Please try again.");
       throw error; // Re-throw the error so the modal stays open
@@ -160,7 +188,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       } else {
         throw new Error("No response received");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to restore staff:", error);
       toast.error("Failed to restore staff. Please try again.");
       throw error; // Re-throw the error so the modal stays open
@@ -178,11 +206,13 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       ) : (
         <>
           {/* Header */}
-          <div className="flex flex-col px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h2 className="text-lg font-normal text-[#101828]">Users</h2>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <div className="flex flex-col px-4 sm:px-6 py-4 sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h2 className="text-base sm:text-lg font-normal text-[#101828]">
+              Users
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <SearchWithIcon
-                className="w-[478px]"
+                className="w-full sm:w-[300px] md:w-[478px]"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -329,15 +359,14 @@ export default function UsersTable({ businessId }: { businessId: string }) {
 
           <Divider className="mb-4" />
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
             <Table>
               <Thead>
                 <Tr>
                   <Th withIcon>Employee Name</Th>
                   <Th withIcon>Email Address</Th>
                   <Th withIcon>Phone Number</Th>
-                  <Th withIcon>Department</Th>
-                  {/* <Th withIcon>Password</Th> */}
+                  <Th withIcon>Password</Th>
                   <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
                     Employee Status
                   </Th>
@@ -347,7 +376,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
               <Tbody>
                 {staff.length === 0 ? (
                   <Tr>
-                    <Td colSpan={6} className="text-center py-12">
+                    <Td colSpan={7} className="text-center py-12">
                       <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                           <svg
@@ -410,7 +439,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                               row?.profileImage ||
                               `https://ui-avatars.com/api/?name=${row.fullName?.replaceAll(
                                 " ",
-                                "-"
+                                "-",
                               )}`
                             }
                             alt={row.fullName}
@@ -425,67 +454,66 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                       <Td>{row.email}</Td>
                       <Td>{row.phoneNumber || "N/A"}</Td>
                       <Td>{row.department?.name || "N/A"}</Td>
-                      {/* <Td>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <Key size={14} className="text-gray-500" />
-                          <span className="text-xs text-gray-600">
-                            {showPasswords[row.id] ? (
-                              <span className="font-mono text-red-600">
-                                {plainTextPasswords[row.id]
-                                  ? plainTextPasswords[row.id]
-                                  : row.password
-                                  ? row.password.substring(0, 20) + "..."
-                                  : "No password"}
-                              </span>
-                            ) : (
-                              <span className="font-mono">
-                                ••••••••••••••••••••
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                        {!row.deletedAt && (
+                      <Td>
+                        <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() =>
-                                setShowPasswords((prev) => ({
-                                  ...prev,
-                                  [row.id]: !prev[row.id],
-                                }))
-                              }
-                              className="p-1 hover:bg-gray-100 rounded"
-                              title={
-                                showPasswords[row.id]
-                                  ? "Hide password"
-                                  : "Show password"
-                              }
-                            >
+                            <Key size={14} className="text-gray-500" />
+                            <span className="text-xs text-gray-600">
                               {showPasswords[row.id] ? (
-                                <EyeOff size={12} className="text-gray-500" />
+                                <span className="font-mono text-red-600">
+                                  {plainTextPasswords[row.id]
+                                    ? plainTextPasswords[row.id]
+                                    : "••••••••"}
+                                </span>
                               ) : (
-                                <Eye size={12} className="text-gray-500" />
+                                <span className="font-mono">••••••••</span>
                               )}
-                            </button>
-                            <button
-                              onClick={() => handleResetPasswordClick(row.id)}
-                              disabled={resettingPasswords[row.id]}
-                              className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
-                              title="Reset password"
-                            >
-                              {resettingPasswords[row.id] ? (
-                                <Spinner size="sm" className="text-gray-500" />
-                              ) : (
-                                <RefreshCw
-                                  size={12}
-                                  className="text-gray-500"
-                                />
-                              )}
-                            </button>
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </Td> */}
+                          {!row.deletedAt && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() =>
+                                  setShowPasswords((prev) => ({
+                                    ...prev,
+                                    [row.id]: !prev[row.id],
+                                  }))
+                                }
+                                className="p-1 hover:bg-gray-100 rounded"
+                                title={
+                                  showPasswords[row.id]
+                                    ? "Hide password"
+                                    : "Show password"
+                                }
+                              >
+                                {showPasswords[row.id] ? (
+                                  <EyeOff size={12} className="text-gray-500" />
+                                ) : (
+                                  <Eye size={12} className="text-gray-500" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleResetPasswordClick(row.id)}
+                                disabled={resettingPasswords[row.id]}
+                                className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                                title="Reset password"
+                              >
+                                {resettingPasswords[row.id] ? (
+                                  <Spinner
+                                    size="sm"
+                                    className="text-gray-500"
+                                  />
+                                ) : (
+                                  <RefreshCw
+                                    size={12}
+                                    className="text-gray-500"
+                                  />
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </Td>
                       <Td>
                         {row.deletedAt ? (
                           <StatusBadge
@@ -528,7 +556,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       )}
 
       {/* Reset Password Confirmation Modals */}
-      {/* {staff.map((row) => (
+      {staff.map((row) => (
         <ConfirmationModal
           key={`reset-${row.id}`}
           isOpen={showResetPasswordConfirm[row.id] || false}
@@ -538,7 +566,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
               [row.id]: false,
             }))
           }
-          onConfirm={() => handleResetPasswordConfirm(row.id)}
+          onConfirm={() => handleResetPasswordConfirm(row.id, row.email)}
           title="Reset Password"
           description={`Are you sure you want to reset the password for ${row.fullName}? A new password will be generated and shown to you.`}
           confirmText="Reset Password"
@@ -546,7 +574,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
           confirmVariant="default"
           isLoading={resettingPasswords[row.id]}
         />
-      ))} */}
+      ))}
     </div>
   );
 }

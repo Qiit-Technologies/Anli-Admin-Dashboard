@@ -20,4 +20,15 @@ export interface BusinessDTO {
   boardingToken: string | null;
   services: string | null; // Replace 'any' with proper type if services structure is known
   disbursementType: DisbursementType;
+  images?: string[] | null;
+  restaurantLogo?: string | null;
+  owner: {
+    phoneNumber: string | null;
+  };
+  subscription?: {
+    status: string;
+    endDate: string | null;
+    isExpired: boolean;
+  } | null;
 }
+

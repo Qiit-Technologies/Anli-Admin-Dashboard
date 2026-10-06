@@ -20,13 +20,7 @@ export interface Permission {
 export interface ModuleActivityChartData {
   month?: string;
   date?: string;
-  front_office: number;
-  housekeeping: number;
-  stock: number;
-  membership: number;
-  restaurant: number;
-  account: number;
-  employee: number;
+  [module: string]: string | number | undefined;
 }
 
 //GENERAL REQUESTS -> RESPONSE TYPES

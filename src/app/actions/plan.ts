@@ -1,34 +1,136 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosPost, isRedirectError } from "../lib/api";
+import { axiosDelete, axiosPost, isRedirectError } from "../lib/api";
 import { ErrorResponseData } from "../lib/types";
-import { getAuthToken } from "../lib/auth";
 
 export async function selectPlan(payload: { planId: string }, hotelId: number) {
   try {
-    const authToken = await getAuthToken();
-    if (!authToken) {
-      return { message: "Authentication token not found." };
-    }
     const url = `/super-admin/${hotelId}/billing/select-plan`;
     const response = await axiosPost(url, payload, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
+      currentPath: "/dashboard/plan",
     });
 
     return response;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
     const axiosError = error as AxiosError;
     const message =
       (axiosError.response?.data as ErrorResponseData)?.message ||
       "An unexpected error occurred";
+    throw new Error(message);
+  }
+}
+
+export async function startWarningTimer(
+  hotelId: number,
+  payload: {
+    durationHours?: number;
+    reason?: string;
+    warningStartedAt?: string;
+    warningExpiresAt?: string;
+  },
+) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/warning-timer`;
+    const response = await axiosPost(url, payload, {
+      currentPath: "/dashboard/plan",
+    });
+
+    return response;
+  } catch (error: any) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to start warning timer";
+    throw new Error(message);
+  }
+}
+
+export async function cancelWarningTimer(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/warning-timer`;
+    const response = await axiosDelete(url, {
+      currentPath: "/dashboard/plan",
+    });
+
+    return response;
+  } catch (error: any) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to clear warning timer";
+    throw new Error(message);
+  }
+}
+
+export async function switchBillingCycle(
+  hotelId: number,
+  billingCycle: "monthly" | "yearly",
+) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/switch-billing-cycle`;
+    const response = await axiosPost(
+      url,
+      { billingCycle },
+      {
+        currentPath: "/dashboard/plan",
+      },
+    );
+
+    return response;
+  } catch (error: any) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to switch billing cycle";
+    throw new Error(message);
+  }
+}
+
+export async function sendPaymentReminder(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/payment-reminder`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/dashboard",
+      },
+    );
+
+    return response;
+  } catch (error: any) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to send payment reminder";
+    throw new Error(message);
+  }
+}
+
+export async function reactivateBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/reactivate`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/dashboard",
+      },
+    );
+
+    return response;
+  } catch (error: any) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to reactivate business";
     throw new Error(message);
   }
 }

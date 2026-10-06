@@ -7,8 +7,9 @@ import { useBusiness } from "@/context/businessContext";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import useSWR, { useSWRConfig } from "swr";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-export const SelectPlanBtn = () => {
+export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
   const { mutate } = useSWRConfig();
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -16,7 +17,7 @@ export const SelectPlanBtn = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const { data: response, isLoading: planLoading } = useSWR(
     "/super-admin/subscription-plan",
-    (url: string) => fetcher<getSubscriptionPlansResponse>(url)
+    (url: string) => fetcher<getSubscriptionPlansResponse>(url),
   );
 
   const handleSelectPlan = async () => {
@@ -32,12 +33,14 @@ export const SelectPlanBtn = () => {
       }
 
       const payload = { planId: selectedPlan };
-      await selectPlan(payload, business?.id);
+      console.log(payload, business?.id);
+      const response = await selectPlan(payload, business?.id);
+      console.log(response);
 
       toast.success("Plan has been changed successfully");
       mutate(`/super-admin/${business.id}/billing/current-plan`);
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
@@ -51,6 +54,50 @@ export const SelectPlanBtn = () => {
       value: String(plan.id),
       label: `${plan.name} - ${"₦" + Number(plan.price).toLocaleString()}`,
     })) || [];
+
+  if (asMenuItem) {
+    return (
+      <CustomDialog
+        open={isDialogOpen}
+        onSubmit={handleSelectPlan}
+        onOpenChange={setIsDialogOpen}
+        title="Select Subscription Plan"
+        loading={loading || businessLoading || planLoading}
+        trigger={
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              setIsDialogOpen(true);
+            }}
+            className="cursor-pointer"
+          >
+            Select Plan
+          </DropdownMenuItem>
+        }
+      >
+        <SearchSelect
+          id="plans"
+          label="Subscription Plans"
+          placeholder="Select a Plan"
+          items={plans}
+          disabled={false}
+          value={
+            selectedPlan
+              ? (plans?.find(
+                  (plan: { value: string; label: string }) =>
+                    plan.value === selectedPlan,
+                ) ?? null)
+              : null
+          }
+          className="w-full min-w-0 h-10"
+          onChange={(plan: { value: string; label: string }) =>
+            setSelectedPlan(String(plan.value))
+          }
+          displayValue={(plan: { value: string; label: string }) => plan.label}
+        />
+      </CustomDialog>
+    );
+  }
 
   return (
     <CustomDialog
@@ -73,10 +120,10 @@ export const SelectPlanBtn = () => {
         disabled={false}
         value={
           selectedPlan
-            ? plans?.find(
+            ? (plans?.find(
                 (plan: { value: string; label: string }) =>
-                  plan.value === selectedPlan
-              ) ?? null
+                  plan.value === selectedPlan,
+              ) ?? null)
             : null
         }
         className="w-full min-w-0 h-10"

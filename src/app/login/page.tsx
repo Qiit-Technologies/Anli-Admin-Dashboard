@@ -13,6 +13,7 @@ import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
 import { axiosPost } from "../lib/api";
 import { useUser } from "@/context/userContext";
+import { setAuthCookie } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,17 +42,27 @@ export default function LoginPage() {
         },
         {
           currentPath: "/login",
-        }
+        },
       );
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log(response);
       if (response?.data && response?.access_token) {
         toast.success(response?.message || "Login successful");
-        // Store token in localStorage
+        // Store token in localStorage for client-side access
         localStorage.setItem("access_token", response.access_token);
-        // Store token in cookie for SSR
-        document.cookie = `access_token=${response.access_token}; path=/; secure; samesite=lax`;
+
+        // Store token in cookie via server action for server-side access
+        try {
+          await setAuthCookie(response.access_token);
+        } catch (error: any) {
+          console.warn("Failed to set auth cookie:", error);
+          // Fallback: set cookie via document.cookie
+          document.cookie = `access_token=${
+            response.access_token
+          }; path=/; secure; samesite=lax; max-age=${60 * 60 * 24 * 7}`;
+        }
+
         setUser({
           id: response.data.id,
           email: response.data.email,
@@ -60,10 +71,14 @@ export default function LoginPage() {
           status: response.data.status,
           roleId: response.data.roleId,
         });
-        router.push("/business-list");
+
+        // Small delay to ensure cookie is set before navigation
+        setTimeout(() => {
+          router.push("/business-list");
+        }, 100);
       } else {
         toast.error(
-          response?.message || "Login failed. Please check your credentials."
+          response?.message || "Login failed. Please check your credentials.",
         );
       }
     },
@@ -133,13 +148,13 @@ export default function LoginPage() {
           />
         </div>
 
-        <div className="bg-[#F9ECE1] p-6 sm:p-8 rounded-2xl shadow-md border border-app-secondary w-full max-w-md">
+        <div className="bg-[#F9ECE1] p-4 sm:p-6 md:p-8 rounded-2xl shadow-md border border-app-secondary w-full max-w-md mx-4">
           <form onSubmit={handleSubmit}>
             {/* Email Field */}
             <div className="mb-4">
               <label
                 htmlFor="email"
-                className="block mb-1 text-[14px] font-medium text-[#070707]"
+                className="block mb-1 text-sm sm:text-[14px] font-medium text-[#070707]"
               >
                 Email address
               </label>
@@ -149,7 +164,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 placeholder="Frank@Hotellagrand.com"
-                className="h-[50px] sm:h-[53px]"
+                className="h-[48px] sm:h-[50px] md:h-[53px] text-sm sm:text-base"
                 onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -163,7 +178,7 @@ export default function LoginPage() {
             <div className="mb-6">
               <label
                 htmlFor="password"
-                className="block mb-1 text-[14px] font-medium text-[#070707]"
+                className="block mb-1 text-sm sm:text-[14px] font-medium text-[#070707]"
               >
                 Password
               </label>
@@ -174,7 +189,7 @@ export default function LoginPage() {
                   required
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className="h-[50px] sm:h-[53px]"
+                  className="h-[48px] sm:h-[50px] md:h-[53px] text-sm sm:text-base pr-10"
                   onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -185,7 +200,8 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <EyeOffIcon size={18} />
@@ -199,7 +215,7 @@ export default function LoginPage() {
             {/* Submit Button */}
             <Button
               disabled={isPending}
-              className="w-full bg-app-primary hover:bg-app-primary text-white text-base font-medium rounded-md h-11"
+              className="w-full bg-app-primary hover:bg-app-primary text-white text-sm sm:text-base font-medium rounded-md h-10 sm:h-11"
             >
               {isPending ? "Please wait" : "Continue"}
             </Button>
