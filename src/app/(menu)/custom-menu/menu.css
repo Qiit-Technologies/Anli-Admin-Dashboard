@@ -1,7 +1,6 @@
-/* NOTE: @tailwind directives intentionally omitted here — the root
-   app/layout.tsx already injects Tailwind's base/components/utilities
-   via src/app/globals.css (route groups render inside the root layout).
-   Duplicating the directives in this file breaks the Turbopack build. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
     :root {
