@@ -609,3 +609,131 @@ export async function getBudgetYear(year: number) {
     }
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Phase 5 — FRD §16: 6 additional reports to reach 18 total          */
+/* ------------------------------------------------------------------ */
+
+export interface ProteinStockReportData {
+    itemName: string;
+    piecesPerPortion: number;
+    openingPieces: number;
+    inPieces: number;
+    outPieces: number;
+    closingPieces: number;
+    openingDisplay: string;
+    closingDisplay: string;
+    unitCost: number;
+    value: number;
+}
+
+export interface ProductionReportData {
+    batchNo: string;
+    date: string;
+    recipe: string;
+    outputQuantity: number;
+    outputUnit: string;
+    totalCost: number;
+    costPerUnit: number;
+    producedBy: string;
+}
+
+export interface BarStockReportData {
+    item: string;
+    category: string;
+    opening: number;
+    issued: number;
+    returned: number;
+    sold: number;
+    closing: number;
+    unit: string;
+    value: number;
+}
+
+export interface RecipeCostingData {
+    recipeName: string;
+    outputItem: string;
+    outputQuantity: number;
+    ingredientCount: number;
+    totalCost: number;
+    costPerUnit: number;
+}
+
+export interface ReturnVoucherReportData {
+    rtvNo: string;
+    date: string;
+    fromDepartment: string;
+    items: number;
+    totalValue: number;
+    receivedBy: string;
+}
+
+export interface StoreIssueReportData {
+    sivNo: string;
+    date: string;
+    department: string;
+    receivingOfficer: string;
+    items: number;
+    totalValue: number;
+}
+
+async function fetchFrdReport<T>(
+    endpoint: string,
+    filters?: ReportFilters,
+): Promise<ReportResponse<T>> {
+    const headers = await getAuthHeaders();
+    const params = filters
+        ? {
+              startDate: filters.startDate,
+              endDate: filters.endDate,
+              department: filters.department,
+              category: filters.category,
+          }
+        : {};
+
+    const response = await api.get(endpoint, { headers, params });
+    return {
+        data: response.data,
+        totalCount: response.data.length,
+        dateRange: {
+            start: filters?.startDate || new Date().toISOString().split('T')[0],
+            end: filters?.endDate || new Date().toISOString().split('T')[0],
+        },
+    };
+}
+
+export async function fetchProteinStockReport(
+    filters?: ReportFilters,
+): Promise<ReportResponse<ProteinStockReportData>> {
+    return fetchFrdReport('/stock/report/protein-stock', filters);
+}
+
+export async function fetchProductionReport(
+    filters?: ReportFilters,
+): Promise<ReportResponse<ProductionReportData>> {
+    return fetchFrdReport('/stock/report/production', filters);
+}
+
+export async function fetchBarStockReport(
+    filters?: ReportFilters,
+): Promise<ReportResponse<BarStockReportData>> {
+    return fetchFrdReport('/stock/report/bar-stock', filters);
+}
+
+export async function fetchRecipeCostingReport(
+    filters?: ReportFilters,
+): Promise<ReportResponse<RecipeCostingData>> {
+    return fetchFrdReport('/stock/report/recipe-costing', filters);
+}
+
+export async function fetchReturnVoucherReport(
+    filters?: ReportFilters,
+): Promise<ReportResponse<ReturnVoucherReportData>> {
+    return fetchFrdReport('/stock/report/return-voucher', filters);
+}
+
+export async function fetchStoreIssueReport(
+    filters?: ReportFilters,
+): Promise<ReportResponse<StoreIssueReportData>> {
+    return fetchFrdReport('/stock/report/store-issue', filters);
+}

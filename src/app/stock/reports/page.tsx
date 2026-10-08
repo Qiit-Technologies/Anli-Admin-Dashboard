@@ -30,6 +30,12 @@ import {
     fetchProfitMarginReport,
     fetchSalesSummaryReport,
     fetchStockValueReport,
+    fetchProteinStockReport,
+    fetchProductionReport,
+    fetchBarStockReport,
+    fetchRecipeCostingReport,
+    fetchReturnVoucherReport,
+    fetchStoreIssueReport,
 } from '@/app/actions/reports';
 import { Download } from 'lucide-react';
 import { DatePicker } from '@/components/common/DatePicker';
@@ -53,6 +59,12 @@ const REPORT_TYPES = [
     { value: 'profit-margin', label: 'Profit Margin Report' },
     { value: 'sales-summary', label: 'Sales Summary Report' },
     { value: 'stock-value', label: 'Stock Value Report' },
+    { value: 'protein-stock', label: 'Protein Stock Report' },
+    { value: 'production', label: 'Production Report' },
+    { value: 'bar-stock', label: 'Bar Stock Report' },
+    { value: 'recipe-costing', label: 'Recipe Costing Report' },
+    { value: 'return-voucher', label: 'Return Voucher Report' },
+    { value: 'store-issue', label: 'Store Issue Report' },
 ];
 
 const ReportsPage = () => {
@@ -191,6 +203,66 @@ const ReportsPage = () => {
         () => fetchStockValueReport(filters),
     );
 
+    const {
+        data: proteinStockData,
+        error: proteinStockError,
+        isLoading: proteinStockLoading,
+    } = useSWR(
+        selectedReport === 'protein-stock'
+            ? ['protein-stock', filters]
+            : null,
+        () => fetchProteinStockReport(filters),
+    );
+
+    const {
+        data: productionData,
+        error: productionError,
+        isLoading: productionLoading,
+    } = useSWR(
+        selectedReport === 'production' ? ['production', filters] : null,
+        () => fetchProductionReport(filters),
+    );
+
+    const {
+        data: barStockData,
+        error: barStockError,
+        isLoading: barStockLoading,
+    } = useSWR(
+        selectedReport === 'bar-stock' ? ['bar-stock', filters] : null,
+        () => fetchBarStockReport(filters),
+    );
+
+    const {
+        data: recipeCostingData,
+        error: recipeCostingError,
+        isLoading: recipeCostingLoading,
+    } = useSWR(
+        selectedReport === 'recipe-costing'
+            ? ['recipe-costing', filters]
+            : null,
+        () => fetchRecipeCostingReport(filters),
+    );
+
+    const {
+        data: returnVoucherData,
+        error: returnVoucherError,
+        isLoading: returnVoucherLoading,
+    } = useSWR(
+        selectedReport === 'return-voucher'
+            ? ['return-voucher', filters]
+            : null,
+        () => fetchReturnVoucherReport(filters),
+    );
+
+    const {
+        data: storeIssueData,
+        error: storeIssueError,
+        isLoading: storeIssueLoading,
+    } = useSWR(
+        selectedReport === 'store-issue' ? ['store-issue', filters] : null,
+        () => fetchStoreIssueReport(filters),
+    );
+
     // Helper function to extract the actual data array from different report structures
     const getReportDataArray = (data: unknown): unknown[] => {
         if (!data) return [];
@@ -295,6 +367,42 @@ const ReportsPage = () => {
                     data: stockValueData,
                     loading: stockValueLoading,
                     error: stockValueError,
+                };
+            case 'protein-stock':
+                return {
+                    data: proteinStockData,
+                    loading: proteinStockLoading,
+                    error: proteinStockError,
+                };
+            case 'production':
+                return {
+                    data: productionData,
+                    loading: productionLoading,
+                    error: productionError,
+                };
+            case 'bar-stock':
+                return {
+                    data: barStockData,
+                    loading: barStockLoading,
+                    error: barStockError,
+                };
+            case 'recipe-costing':
+                return {
+                    data: recipeCostingData,
+                    loading: recipeCostingLoading,
+                    error: recipeCostingError,
+                };
+            case 'return-voucher':
+                return {
+                    data: returnVoucherData,
+                    loading: returnVoucherLoading,
+                    error: returnVoucherError,
+                };
+            case 'store-issue':
+                return {
+                    data: storeIssueData,
+                    loading: storeIssueLoading,
+                    error: storeIssueError,
                 };
             default:
                 return { data: null, loading: false, error: null };
@@ -427,6 +535,59 @@ const ReportsPage = () => {
                         row['Revenue'] = item.revenue || '';
                         row['Profit'] = item.profit || '';
                         row['Score'] = item.score || '';
+                        break;
+                    case 'protein-stock':
+                        row['Item Name'] = item.itemName || '';
+                        row['PPP'] = item.piecesPerPortion || '';
+                        row['Opening'] = item.openingDisplay || '';
+                        row['Received'] = item.inPieces || '';
+                        row['Issued'] = item.outPieces || '';
+                        row['Closing'] = item.closingDisplay || '';
+                        row['Unit Cost'] = item.unitCost || '';
+                        row['Value'] = item.value || '';
+                        break;
+                    case 'production':
+                        row['Batch No.'] = item.batchNo || '';
+                        row['Date'] = item.date || '';
+                        row['Recipe'] = item.recipe || '';
+                        row['Output Qty'] = item.outputQuantity || '';
+                        row['Total Cost'] = item.totalCost || '';
+                        row['Cost/Unit'] = item.costPerUnit || '';
+                        row['Produced By'] = item.producedBy || '';
+                        break;
+                    case 'bar-stock':
+                        row['Item'] = item.item || '';
+                        row['Category'] = item.category || '';
+                        row['Opening'] = item.opening || '';
+                        row['Issued'] = item.issued || '';
+                        row['Sold'] = item.sold || '';
+                        row['Closing'] = item.closing || '';
+                        row['Value'] = item.value || '';
+                        break;
+                    case 'recipe-costing':
+                        row['Recipe'] = item.recipeName || '';
+                        row['Output Item'] = item.outputItem || '';
+                        row['Output Qty'] = item.outputQuantity || '';
+                        row['Ingredients'] = item.ingredientCount || '';
+                        row['Total Cost'] = item.totalCost || '';
+                        row['Cost/Unit'] = item.costPerUnit || '';
+                        break;
+                    case 'return-voucher':
+                        row['RTV No.'] = item.rtvNo || '';
+                        row['Date'] = item.date || '';
+                        row['From Department'] = item.fromDepartment || '';
+                        row['Items'] = item.items || '';
+                        row['Value'] = item.totalValue || '';
+                        row['Received By'] = item.receivedBy || '';
+                        break;
+                    case 'store-issue':
+                        row['SIV No.'] = item.sivNo || '';
+                        row['Date'] = item.date || '';
+                        row['Department'] = item.department || '';
+                        row['Receiving Officer'] =
+                            item.receivingOfficer || '';
+                        row['Items'] = item.items || '';
+                        row['Value'] = item.totalValue || '';
                         break;
                     default:
                         // Fallback: try to extract all available data
@@ -586,6 +747,64 @@ const ReportsPage = () => {
                     'Item Count',
                     'Avg Item Value',
                 ];
+            case 'protein-stock':
+                return [
+                    'Item Name',
+                    'PPP',
+                    'Opening',
+                    'Received',
+                    'Issued',
+                    'Closing',
+                    'Unit Cost',
+                    'Value',
+                ];
+            case 'production':
+                return [
+                    'Batch No.',
+                    'Date',
+                    'Recipe',
+                    'Output Qty',
+                    'Total Cost',
+                    'Cost/Unit',
+                    'Produced By',
+                ];
+            case 'bar-stock':
+                return [
+                    'Item',
+                    'Category',
+                    'Opening',
+                    'Issued',
+                    'Sold',
+                    'Closing',
+                    'Value',
+                ];
+            case 'recipe-costing':
+                return [
+                    'Recipe',
+                    'Output Item',
+                    'Output Qty',
+                    'Ingredients',
+                    'Total Cost',
+                    'Cost/Unit',
+                ];
+            case 'return-voucher':
+                return [
+                    'RTV No.',
+                    'Date',
+                    'From Department',
+                    'Items',
+                    'Value',
+                    'Received By',
+                ];
+            case 'store-issue':
+                return [
+                    'SIV No.',
+                    'Date',
+                    'Department',
+                    'Receiving Officer',
+                    'Items',
+                    'Value',
+                ];
             default:
                 return [
                     'Item Name',
@@ -698,6 +917,50 @@ const ReportsPage = () => {
                 return row.itemCount || 0;
             case 'Avg Item Value':
                 return formatCurrency(row.avgItemValue || 0);
+            case 'PPP':
+                return row.piecesPerPortion || '-';
+            case 'Opening':
+                return row.openingDisplay || row.opening || '-';
+            case 'Received':
+                return row.inPieces ?? row.received ?? '-';
+            case 'Issued':
+                return row.outPieces ?? row.issued ?? '-';
+            case 'Closing':
+                return row.closingDisplay || row.closing || '-';
+            case 'Unit Cost':
+                return formatCurrency(row.unitCost || 0);
+            case 'Batch No.':
+                return row.batchNo || '-';
+            case 'Recipe':
+                return row.recipe || row.recipeName || '-';
+            case 'Output Qty':
+                return (
+                    row.outputQuantity ??
+                    row.outputQty ??
+                    '-'
+                );
+            case 'Total Cost':
+                return formatCurrency(row.totalCost || 0);
+            case 'Cost/Unit':
+                return formatCurrency(row.costPerUnit || 0);
+            case 'Produced By':
+                return row.producedBy || '-';
+            case 'Sold':
+                return row.sold || 0;
+            case 'Output Item':
+                return row.outputItem || '-';
+            case 'Ingredients':
+                return row.ingredientCount || row.ingredients || 0;
+            case 'RTV No.':
+                return row.rtvNo || '-';
+            case 'From Department':
+                return row.fromDepartment || '-';
+            case 'Received By':
+                return row.receivedBy || '-';
+            case 'SIV No.':
+                return row.sivNo || '-';
+            case 'Receiving Officer':
+                return row.receivingOfficer || '-';
             default:
                 return '-';
         }
