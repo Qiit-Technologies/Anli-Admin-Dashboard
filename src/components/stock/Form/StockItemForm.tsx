@@ -47,7 +47,16 @@ export type StockItemSubmitPayload = ItemProps & {
     expiryDate: string;
     image: string;
     meta: string;
+    /** FRD §6 — stock classification */
+    itemType: ItemType;
+    trackingMode: TrackingMode;
+    piecesPerPortion: number;
+    store: StockStore;
 };
+
+export type ItemType = 'Dry' | 'Protein' | 'Prepared';
+export type TrackingMode = 'Standard' | 'Portioned' | 'Measured';
+export type StockStore = 'Dry' | 'Protein';
 
 export type StockItemFormValues = {
     itemLocation: string;
@@ -65,6 +74,11 @@ export type StockItemFormValues = {
     stockDate: string;
     expiringDate: string;
     isActive: boolean;
+    /** FRD §6 — stock classification */
+    itemType: ItemType;
+    trackingMode: TrackingMode;
+    piecesPerPortion: number;
+    store: StockStore;
 };
 
 const OUTER_UOM_OPTIONS = [
@@ -92,6 +106,16 @@ const BASE_UOM_OPTIONS = [
     'package',
 ] as const;
 
+const ITEM_TYPE_OPTIONS: ItemType[] = ['Dry', 'Protein', 'Prepared'];
+
+const TRACKING_MODE_OPTIONS: TrackingMode[] = [
+    'Standard',
+    'Portioned',
+    'Measured',
+];
+
+const STORE_OPTIONS: StockStore[] = ['Dry', 'Protein'];
+
 const emptyForm = (): StockItemFormValues => ({
     itemLocation: '',
     itemName: '',
@@ -108,6 +132,10 @@ const emptyForm = (): StockItemFormValues => ({
     stockDate: new Date().toISOString().split('T')[0],
     expiringDate: new Date().toISOString().split('T')[0],
     isActive: true,
+    itemType: 'Dry',
+    trackingMode: 'Standard',
+    piecesPerPortion: 1,
+    store: 'Dry',
 });
 
 function RequiredMark() {
@@ -173,6 +201,18 @@ function mapItemToForm(item: Record<string, unknown>): {
                 String(item.expiryDate || '').slice(0, 10) ||
                 new Date().toISOString().split('T')[0],
             isActive: item.isActive !== false,
+            itemType: (['Dry', 'Protein', 'Prepared'] as const).includes(
+                item.itemType as ItemType,
+            )
+                ? (item.itemType as ItemType)
+                : 'Dry',
+            trackingMode: (
+                ['Standard', 'Portioned', 'Measured'] as const
+            ).includes(item.trackingMode as TrackingMode)
+                ? (item.trackingMode as TrackingMode)
+                : 'Standard',
+            piecesPerPortion: Number(item.piecesPerPortion) > 0 ? Number(item.piecesPerPortion) : 1,
+            store: item.store === 'Protein' ? 'Protein' : 'Dry',
         },
     };
 }
@@ -319,6 +359,10 @@ export function StockItemForm({
         minStock: String(form.minStock),
         image: '',
         meta: '',
+        itemType: form.itemType,
+        trackingMode: form.trackingMode,
+        piecesPerPortion: Number(form.piecesPerPortion) || 1,
+        store: form.store,
     });
 
     const handleSubmit = async (e: FormEvent) => {
@@ -384,6 +428,10 @@ export function StockItemForm({
                         expiryDate: payload.expiryDate,
                         minStock: Number(form.minStock),
                         isActive: form.isActive,
+                        itemType: payload.itemType,
+                        trackingMode: payload.trackingMode,
+                        piecesPerPortion: payload.piecesPerPortion,
+                        store: payload.store,
                     },
                     itemId,
                 );
@@ -580,6 +628,129 @@ export function StockItemForm({
                                 updateForm('vendorEmail', e.target.value)
                             }
                         />
+                    </div>
+                </div>
+            </section>
+
+            <section className="space-y-4">
+                <h2 className={sectionTitleClass}>Stock Classification</h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="space-y-1.5">
+                        <Label className={labelClass}>
+                            Item Type
+                            <RequiredMark />
+                        </Label>
+                        <Select
+                            value={form.itemType}
+                            onValueChange={(val) => {
+                                const next = val as ItemType;
+                                setForm((prev) => ({
+                                    ...prev,
+                                    itemType: next,
+                                    // Protein items default to the Protein store + Portioned tracking
+                                    store:
+                                        next === 'Protein'
+                                            ? 'Protein'
+                                            : prev.store,
+                                    trackingMode:
+                                        next === 'Protein' &&
+                                        prev.trackingMode === 'Standard'
+                                            ? 'Portioned'
+                                            : prev.trackingMode,
+                                }));
+                            }}
+                        >
+                            <SelectTrigger className={inputClass}>
+                                <SelectValue placeholder="Select item type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ITEM_TYPE_OPTIONS.map((t) => (
+                                    <SelectItem key={t} value={t}>
+                                        {t}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className={labelClass}>
+                            Tracking Mode
+                            <RequiredMark />
+                        </Label>
+                        <Select
+                            value={form.trackingMode}
+                            onValueChange={(val) =>
+                                updateForm('trackingMode', val as TrackingMode)
+                            }
+                        >
+                            <SelectTrigger className={inputClass}>
+                                <SelectValue placeholder="Select tracking mode" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {TRACKING_MODE_OPTIONS.map((m) => (
+                                    <SelectItem key={m} value={m}>
+                                        {m}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {form.trackingMode === 'Portioned'
+                                ? 'Counted in pieces and portions (e.g. proteins)'
+                                : form.trackingMode === 'Measured'
+                                  ? 'Measured with a custom measure (bowl, cup, mudu)'
+                                  : 'Standard outer/base unit tracking'}
+                        </p>
+                    </div>
+                    {form.trackingMode === 'Portioned' ? (
+                        <div className="space-y-1.5">
+                            <Label className={labelClass}>
+                                Pieces per Portion
+                                <RequiredMark />
+                            </Label>
+                            <Input
+                                className={inputClass}
+                                type="number"
+                                min={1}
+                                step={1}
+                                value={form.piecesPerPortion}
+                                onChange={(e) =>
+                                    updateForm(
+                                        'piecesPerPortion',
+                                        Math.max(
+                                            1,
+                                            Number(e.target.value) || 1,
+                                        ),
+                                    )
+                                }
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                                e.g. 10 pieces of shaki = 1 portion
+                            </p>
+                        </div>
+                    ) : null}
+                    <div className="space-y-1.5">
+                        <Label className={labelClass}>
+                            Store
+                            <RequiredMark />
+                        </Label>
+                        <Select
+                            value={form.store}
+                            onValueChange={(val) =>
+                                updateForm('store', val as StockStore)
+                            }
+                        >
+                            <SelectTrigger className={inputClass}>
+                                <SelectValue placeholder="Select store" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {STORE_OPTIONS.map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                        {s === 'Dry' ? 'Dry Stock' : 'Protein Stock'}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </section>

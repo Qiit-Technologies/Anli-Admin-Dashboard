@@ -912,6 +912,75 @@ export async function submitStockMovements(payload: {
     }
 }
 
+/**
+ * Protein Stock ledger — FRD §8. Pieces-and-portions tracking for counted
+ * proteins. Backend: GET/POST /items/protein-stock.
+ */
+export async function getProteinStock(params: { date?: string; month?: string }) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const search = new URLSearchParams();
+        if (params.date) search.set('date', params.date);
+        if (params.month) search.set('month', params.month);
+        const response = await api.get(
+            `/items/protein-stock?${search.toString()}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+        return { data: response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load protein stock.'),
+        };
+    }
+}
+
+export async function submitProteinStock(payload: {
+    date: string;
+    lines: Array<{
+        itemId: number;
+        inPtn: number;
+        inPcs: number;
+        outPtn: number;
+        outPcs: number;
+        rtnPtn: number;
+        rtnPcs: number;
+        bdPtn: number;
+        bdPcs: number;
+        bdReason?: string;
+        unitCost?: number;
+    }>;
+}) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.post(
+            '/items/protein-stock',
+            payload,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+        return { data: response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to save protein stock.'),
+        };
+    }
+}
+
 export async function getSalesLogs() {
     try {
         const authToken = await getAuthToken();

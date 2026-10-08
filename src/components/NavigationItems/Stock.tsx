@@ -42,6 +42,12 @@ const stockNavItems: Array<SidebarNavItemProps> = [
         permissions: [PERMISSIONS.VIEW_ALL_PAGE, PERMISSIONS.VIEW_STOCK_ITEMS],
     },
     {
+        title: 'Protein Stock',
+        path: '/protein-stock',
+        icon: LuArrowUpDown,
+        permissions: [PERMISSIONS.VIEW_ALL_PAGE, PERMISSIONS.VIEW_STOCK_ITEMS],
+    },
+    {
         title: 'Purchase Log',
         path: '/purchase-log',
         icon: LuHistory,
