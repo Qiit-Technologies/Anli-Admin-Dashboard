@@ -2,7 +2,11 @@
 
 import { AxiosError } from "axios";
 import { axiosGet, axiosPost, axiosPatch, axiosDelete } from "../lib/api";
+// Preserved from base: legacy token helper (superseded by ./auth/auth-token on this branch)
+import { getAuthToken as getBaseAuthToken } from "../lib/auth";
 import { ErrorResponseData } from "../lib/types";
+import { getAuthToken } from "./auth/auth-token";
+import api from "@/lib/axios";
 
 export interface Module {
   id: number;
@@ -114,4 +118,23 @@ export async function deleteModule(id: number): Promise<void> {
 
     throw new Error(message);
   }
+}
+
+// From feature/loyalty-admin: public modules fetch used by role management UI
+export async function getModules() {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.get('/modules/public-modules', {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return { data: response.data };
+    } catch (error: any) {
+        return { error: error.message || 'Failed to fetch modules.' };
+    }
 }

@@ -1,0 +1,61 @@
+export interface MenuPackageWizardState {
+    packageName: string;
+    mealType: string;
+    serviceStyleDropdown: string;
+    guestMin: string;
+    guestMax: string;
+    priceMin: string;
+    priceMax: string;
+    portionSize: string;
+    proteinQuantity: string;
+    ricePortion: string;
+    soupServing: string;
+    saladServing: string;
+    dessertPortion: string;
+    eventDescription: string;
+    eventSuitable: string;
+    serviceStyle: string;
+    specialAddOns: string[];
+    additionalItem: string;
+    imageFileName: string;
+    selectedMenuItemIds: number[];
+    pricePerGuest: string;
+    minGuestCount: string;
+    maxGuestCount: string;
+    serviceChargeEnabled: boolean;
+    serviceChargePercent: string;
+    vatEnabled: boolean;
+    vatPercent: string;
+    kidMenuEnabled: boolean;
+}
+
+export const defaultMenuPackageWizardState = (): MenuPackageWizardState => ({
+    packageName: '',
+    mealType: '',
+    serviceStyleDropdown: '',
+    guestMin: '100',
+    guestMax: '500',
+    priceMin: '450.00',
+    priceMax: '450.00',
+    portionSize: '',
+    proteinQuantity: '',
+    ricePortion: '',
+    soupServing: '',
+    saladServing: '',
+    dessertPortion: '',
+    eventDescription: '',
+    eventSuitable: 'Wedding',
+    serviceStyle: 'Buffet',
+    specialAddOns: [],
+    additionalItem: 'Water',
+    imageFileName: '',
+    selectedMenuItemIds: [],
+    pricePerGuest: '2500.00',
+    minGuestCount: '',
+    maxGuestCount: '',
+    serviceChargeEnabled: true,
+    serviceChargePercent: '1',
+    vatEnabled: true,
+    vatPercent: '7.5',
+    kidMenuEnabled: false,
+});

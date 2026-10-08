@@ -41,6 +41,7 @@ export const SelectPlanBtn = ({ asMenuItem }: { asMenuItem?: boolean }) => {
       mutate(`/super-admin/${business.id}/billing/current-plan`);
       setIsDialogOpen(false);
     } catch (error: any) {
+      console.log(error);
       if (typeof error === "string") toast.error(error);
       else toast.error("An unexpected error occurred");
     } finally {

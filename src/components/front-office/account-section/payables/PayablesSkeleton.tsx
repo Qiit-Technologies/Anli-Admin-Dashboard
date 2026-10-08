@@ -1,0 +1,89 @@
+'use client';
+
+import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
+
+export default function PayablesSkeleton() {
+    return (
+        <div className="flex flex-col h-full overflow-auto bg-gray-50/50">
+            {/* Header skeleton */}
+            <div className="w-full bg-white border-b border-gray-100 px-4 lg:px-8 pt-8 pb-5 sticky top-0 z-40 flex items-center justify-between">
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="relative w-72 mr-2">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex items-center gap-2 border border-[#D0D5DD] rounded-full pl-1 pr-3 py-1">
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="p-4 lg:p-8">
+                {/* Options toolbar skeleton */}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-10 w-24" />
+                        <Skeleton className="h-10 w-24" />
+                        <Skeleton className="h-10 w-24" />
+                        <Skeleton className="h-10 w-24" />
+                        <Skeleton className="h-10 w-24" />
+                    </div>
+                    <Skeleton className="h-10 w-32" />
+                </div>
+
+                {/* Loading state skeleton */}
+                <div className="w-full h-[200px] flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                        <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto"></div>
+                        <Skeleton className="h-4 w-32 mx-auto" />
+                    </div>
+                </div>
+
+                {/* Table skeleton */}
+                <div className="mt-6 space-y-4">
+                    {/* Table header */}
+                    <div className="flex gap-4 pb-2 border-b border-gray-200">
+                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-16" />
+                    </div>
+
+                    {/* Table rows */}
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="flex gap-4 py-3 border-b border-gray-100"
+                        >
+                            <Skeleton className="h-4 w-12" />
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <Skeleton className="h-4 w-32" />
+                            </div>
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-16" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}

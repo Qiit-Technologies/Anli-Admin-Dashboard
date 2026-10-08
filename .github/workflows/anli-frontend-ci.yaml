@@ -1,0 +1,47 @@
+name: Anli Frontend Build
+
+on:
+    push:
+        branches: ['main', 'dev']
+    pull_request:
+        branches: ['main', 'dev']
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        env:
+            NPM_CONFIG_LEGACY_PEER_DEPS: true
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Show workspace info
+              run: |
+                  pwd
+                  ls -la
+                  node -v || true
+                  npm -v || true
+                  echo "--- package.json ---"
+                  cat package.json || true
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  # Remove caching to avoid lockfile requirement errors
+
+            - name: Install dependencies
+              run: npm install --legacy-peer-deps
+
+            - name: Build
+              run: npm run build
+
+            - name: Upload build artifacts
+              if: success()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: anli-frontend-build
+                  path: |
+                      .next
+                      out
+                  if-no-files-found: ignore

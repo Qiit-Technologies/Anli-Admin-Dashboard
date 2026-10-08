@@ -2,8 +2,26 @@
 
 import { AxiosError } from "axios";
 import { axiosGet, axiosPost, axiosPatch, axiosDelete } from "../lib/api";
-import { Permission, GetPermissionsListOptions } from "./types";
+// Aliased: this module also exports its own Permission interface (feature branch),
+// used by the role-management UI. The ./types Permission keeps its shape here.
+import { Permission as TypesPermission, GetPermissionsListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
+import api from "@/lib/axios";
+import { getAuthToken } from "./auth/auth-token";
+
+// From feature/loyalty-admin: shapes used by role management UI (EditModal, CreateRole)
+export interface Module {
+    id: number;
+    name: string;
+    description?: string;
+}
+
+export interface Permission {
+    id: number;
+    name: string;
+    description?: string;
+    module?: Module;
+}
 
 export interface CreatePermissionDto {
   name: string;
@@ -19,13 +37,13 @@ export interface UpdatePermissionDto {
 
 export type permissionResponse = {
   message: string;
-  data: Permission;
+  data: TypesPermission;
 };
 
 // Get all permissions
 export default async function getPermissionsList(
   options: GetPermissionsListOptions = {}
-): Promise<{ permissions: Permission[] }> {
+): Promise<{ permissions: TypesPermission[] }> {
   const { page = 1, limit = 10, searchTerm } = options;
 
   try {
@@ -35,7 +53,7 @@ export default async function getPermissionsList(
 
     const url = `${baseUrl}?page=${page}&limit=${limit}`;
 
-    const response = await axiosGet<{ permissions: Permission[] }>(url);
+    const response = await axiosGet<{ permissions: TypesPermission[] }>(url);
 
     if (!response) {
       return { permissions: [] };
@@ -114,7 +132,28 @@ export async function deletePermission(id: string): Promise<void> {
   }
 }
 
+// From feature/loyalty-admin: { data } shape expected by role management UI
 export async function getPermissions() {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.get('/permissions/public-permissions', {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return { data: response.data };
+    } catch (error: any) {
+        return { error: error.message || 'Failed to fetch permissions.' };
+    }
+}
+
+// From main branch: interceptor-auth variant of getPermissions (no explicit
+// auth header). Preserved for union — no current callers.
+export async function getPublicPermissions() {
   try {
     const response = await axiosGet("/permissions/public-permissions");
 

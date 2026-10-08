@@ -1,0 +1,304 @@
+import { BASE_URL } from '@/constants/api';
+import api from '@/lib/axios';
+import { getAuthToken } from './auth/auth-token';
+import { safeResponseJson, safeResponseJsonOrNull, safeErrorJson } from '@/lib/api';
+
+export type LinkedDepartment = 'Bar' | 'Kitchen' | 'Restaurant' | 'Others';
+
+export interface InventoryItemMapping {
+    inventoryItemId: number;
+    quantityPerSale: number;
+}
+
+export interface CreateMenuItemMappingBatchPayload {
+    menuItemId: number;
+    salesUoM: string;
+    conversionFactor?: number;
+    linkedDepartment?: LinkedDepartment;
+    autoDeduct?: boolean;
+    notes?: string;
+    inventoryItems: InventoryItemMapping[];
+}
+
+export interface UpdateMenuItemMappingPayload {
+    quantityPerSale?: number;
+    salesUoM?: string;
+    conversionFactor?: number;
+    linkedDepartment?: LinkedDepartment;
+    autoDeduct?: boolean;
+    notes?: string;
+}
+
+export interface MenuItemMapping {
+    id: number;
+    menuItem: {
+        id: number;
+        name: string;
+        price: number;
+        category?: {
+            id: number;
+            name: string;
+        };
+        subCategory?: {
+            id: number;
+            name: string;
+        };
+    };
+    inventoryItem: {
+        id: number;
+        name: string;
+        baseUnit?: string;
+        unitOfMeasurement?: string;
+        costPrice?: number;
+        quantity?: number;
+        minStock?: number;
+        stockDate?: string;
+        expiryDate?: string;
+    };
+    quantityPerSale: number;
+    salesUoM: string;
+    conversionFactor?: number;
+    linkedDepartment: LinkedDepartment;
+    autoDeduct: boolean;
+    notes?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export async function createMenuItemMapping(
+    payload: CreateMenuItemMappingBatchPayload,
+) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { message: 'Authentication token not found.' };
+        }
+
+        const apiUrl = new URL(
+            '/items/menu-item-mappings',
+            BASE_URL,
+        ).toString();
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(payload),
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const error = await safeErrorJson(response);
+            return {
+                message:
+                    error.message ||
+                    'Failed to create menu item mapping. Please try again.',
+            };
+        }
+
+        return {
+            message: 'Menu item mapping created successfully!',
+            data: await safeResponseJson(response),
+        };
+    } catch (error: any) {
+        return { message: 'An unexpected error occurred. Please try again.' };
+    }
+}
+
+export async function getAllMenuItemMappings() {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+
+        const response = await api.get('/items/menu-item-mappings', {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+
+        if (response.status >= 500) {
+            return {
+                error:
+                    response.data?.message ??
+                    'Failed to fetch menu item mappings. Try again.',
+            };
+        }
+
+        return { data: response.data };
+    } catch (error: any) {
+        return { error: 'An unexpected error occurred. Please try again.' };
+    }
+}
+
+export async function getMenuItemMappings(menuItemId: number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+
+        // Validate menuItemId is a valid number
+        if (
+            !menuItemId ||
+            Number.isNaN(Number(menuItemId)) ||
+            Number(menuItemId) <= 0
+        ) {
+            return { error: 'Invalid menu item ID.' };
+        }
+
+        const response = await api.get(
+            `/items/menu-item-mappings/menu-item/${Number(menuItemId)}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+
+        if (response.status >= 500) {
+            return {
+                error:
+                    response.data?.message ??
+                    'Failed to fetch menu item mappings. Try again.',
+            };
+        }
+
+        return { data: response.data };
+    } catch (err: unknown) {
+        // Handle validation errors from ParseIntPipe
+        if (
+            err &&
+            typeof err === 'object' &&
+            'response' in err &&
+            err.response &&
+            typeof err.response === 'object' &&
+            'status' in err.response &&
+            err.response.status === 400
+        ) {
+            const errorResponse = err.response as {
+                status: number;
+                data?: { message?: string };
+            };
+            return {
+                error:
+                    errorResponse.data?.message ||
+                    'Invalid menu item ID. Please check the URL parameter.',
+            };
+        }
+        return { error: 'An unexpected error occurred. Please try again.' };
+    }
+}
+
+export async function updateMenuItemMapping(
+    id: number,
+    payload: UpdateMenuItemMappingPayload,
+) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { message: 'Authentication token not found.' };
+        }
+
+        const apiUrl = new URL(
+            `/items/menu-item-mappings/${id}`,
+            BASE_URL,
+        ).toString();
+        const response = await fetch(apiUrl, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(payload),
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const error = await safeErrorJson(response);
+            return {
+                message:
+                    error.message ||
+                    'Failed to update menu item mapping. Please try again.',
+            };
+        }
+
+        return { message: 'Menu item mapping updated successfully!' };
+    } catch (error: any) {
+        return { message: 'An unexpected error occurred. Please try again.' };
+    }
+}
+
+export async function deleteMenuItemMapping(id: number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { message: 'Authentication token not found.' };
+        }
+
+        const apiUrl = new URL(
+            `/items/menu-item-mappings/${id}`,
+            BASE_URL,
+        ).toString();
+        const response = await fetch(apiUrl, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const error = await safeErrorJson(response);
+            return {
+                message:
+                    error.message ||
+                    'Failed to delete menu item mapping. Please try again.',
+            };
+        }
+
+        return { message: 'Menu item mapping deleted successfully!' };
+    } catch (error: any) {
+        return { message: 'An unexpected error occurred. Please try again.' };
+    }
+}
+
+export async function deleteMenuItemMappingsByMenuItem(menuItemId: number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { message: 'Authentication token not found.' };
+        }
+
+        const apiUrl = new URL(
+            `/items/menu-item-mappings/menu-item/${menuItemId}`,
+            BASE_URL,
+        ).toString();
+        const response = await fetch(apiUrl, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const error = await safeErrorJson(response);
+            return {
+                message:
+                    error.message ||
+                    'Failed to delete menu item mappings. Please try again.',
+            };
+        }
+
+        return { message: 'Menu item mappings deleted successfully!' };
+    } catch (error: any) {
+        return { message: 'An unexpected error occurred. Please try again.' };
+    }
+}

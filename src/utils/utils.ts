@@ -18,9 +18,11 @@ export function getInitials(fullName: string): string {
   return initials;
 }
 
-export function capitalize(str: string) {
-  console.log(str);
+export function capitalize(str: string): string {
+  if (str.trim() == "") return str;
+
   const strArr = str.split("");
+
   strArr[0] = strArr[0].toUpperCase();
 
   return strArr.join("");
@@ -54,7 +56,9 @@ export function formatPlanRenewalDate(renewal_date: string): string {
 
   // Decide whether it's in the future or past
   if (diffInDays > 0) {
-    return `${formattedDate}, ${diffInDays} day${diffInDays > 1 ? "s" : ""} left`;
+    return `${formattedDate}, ${diffInDays} day${
+      diffInDays > 1 ? "s" : ""
+    } left`;
   } else if (diffInDays === 0) {
     return `${formattedDate}, today`;
   } else {

@@ -1,5 +1,5 @@
 import React from "react";
-import { CircleQuestionMark } from "lucide-react"; // Adjust import path as needed
+import { CircleHelp } from "lucide-react"; // Adjust import path as needed
 
 interface TableProps extends React.TableHTMLAttributes<HTMLTableElement> {
   children: React.ReactNode;
@@ -63,7 +63,7 @@ const Th = ({
     <th className={`py-3 px-4 bg-[#EAECF0] ${className}`} {...props}>
       <div className="flex items-center gap-2 font-medium text-[#667085]">
         {children}
-        {withIcon && (icon || <CircleQuestionMark size={16} color="#667085" />)}
+        {withIcon && (icon || <CircleHelp size={16} color="#667085" />)}
       </div>
     </th>
   );

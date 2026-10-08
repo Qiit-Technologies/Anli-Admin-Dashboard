@@ -213,6 +213,7 @@ export default function CurrentPlanPage() {
       }
     },
     {
+      revalidateOnFocus: false,
       onErrorRetry: (error, _key, _config, revalidate, { retryCount }) => {
         const axiosError = error as { response?: { status?: number }; status?: number };
         const status = axiosError?.response?.status || axiosError?.status;

@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --radius: 0.625rem;
+        --font-family: 'DM Sans', sans-serif;
+        --menu-brand: #ff6f00;
+        --menu-background: #ffffff;
+        --menu-foreground: #1a1a1a;
+        --menu-card: #f9f9f9;
+        --menu-card-foreground: #1a1a1a;
+        --menu-popover: #ffffff;
+        --menu-popover-foreground: #1a1a1a;
+        --menu-primary: #ff6f00;
+        --menu-primary-foreground: #ffffff;
+        --menu-secondary: #f3f4f6;
+        --menu-secondary-foreground: #1a1a1a;
+        --menu-muted: #f3f4f6;
+        --menu-muted-foreground: #6b7280;
+        --menu-accent: #f3f4f6;
+        --menu-accent-foreground: #1a1a1a;
+        --menu-destructive: #ef4444;
+        --menu-border: #e5e7eb;
+        --menu-input: #e5e7eb;
+        --menu-ring: #ff6f00;
+        --menu-sidebar: #ffffff;
+        --menu-sidebar-foreground: #1a1a1a;
+        --menu-sidebar-primary: #ff6f00;
+        --menu-sidebar-primary-foreground: #ffffff;
+        --menu-sidebar-accent: #f3f4f6;
+        --menu-sidebar-accent-foreground: #1a1a1a;
+        --menu-sidebar-border: #e5e7eb;
+        --menu-sidebar-ring: #ff6f00;
+    }
+
+    * {
+        border-color: var(--menu-border);
+    }
+
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    body {
+        background-color: var(--menu-background);
+        color: var(--menu-foreground);
+        font-family: var(--font-family);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}
