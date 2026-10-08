@@ -3,17 +3,87 @@
 import { PageHeader, PageHeadertitle } from '@/components/common/layout/Header';
 import PageWrapper from '@/components/common/PageWrapper';
 import { Button } from '@/components/ui/button';
+import { downloadHtmlDocumentAsPdf } from '@/lib/download-html-pdf';
 import { formatCurrency } from '@/lib/utils';
-import { ChevronLeft, Printer } from 'lucide-react';
+import { ChevronLeft, Printer, Download } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
+import { useState } from 'react';
 import useSWR from 'swr';
 import { getPurchaseLog } from '@/app/actions/stock';
 import { format } from 'date-fns';
+
+const escapeHtml = (value: string | number | null | undefined) =>
+    String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+
+const buildGrnPdfHtml = (log: any, items: any[]) => {
+    const rows = items
+        .map((item: any, index: number) => {
+            return `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(item.item?.name || item.name || 'Item')}<br><small>${escapeHtml(item.outerUnit || 'Outer')} → ${escapeHtml(item.baseUnit || 'Base')}</small></td>
+        <td>${escapeHtml(item.itemLocation || '—')}</td>
+        <td>${escapeHtml(item.supplierName || log.supplierName || '—')}</td>
+        <td class="num">${Number(item.quantityOuter || 0).toLocaleString()}</td>
+        <td class="num">${Number(item.quantityBase || 0).toLocaleString()}</td>
+        <td class="num">₦${Number(item.costPerOuter || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+        <td class="num">₦${Number(item.totalCost || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+      </tr>`;
+        })
+        .join('');
+    const itemsSubtotal = items.reduce(
+        (s: number, i: any) => s + Number(i.totalCost || 0),
+        0,
+    );
+    const misc = Number(log?.miscellaneousExpense || 0);
+    const grandTotal = Number(log?.totalCost ?? itemsSubtotal + misc);
+    return `
+<!DOCTYPE html>
+<html><head><title>GRN ${escapeHtml(log.logId || log.id)}</title>
+<style>
+body{font-family:Arial,sans-serif;padding:24px;color:#111}
+h1{font-size:20px;margin-bottom:2px;text-align:center}
+.sub{text-align:center;font-size:13px;color:#555;margin-bottom:16px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:12px;margin-bottom:16px}
+.meta span{color:#555}.meta b{color:#111}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
+th{background:#f5f5f5}.num{text-align:right}
+.total{text-align:right;font-size:13px;margin-top:8px}
+.sign{margin-top:36px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;font-size:12px}
+.sign div{border-top:1px solid #999;padding-top:4px}
+</style></head>
+<body>
+<h1>GOODS RECEIVED NOTE</h1>
+<p class="sub">Purchase Log Receipt — ${escapeHtml(log.logId || '')}</p>
+<div class="meta">
+<p><span>GRN No.:</span> <b>${escapeHtml(log.logId || `#${log.id}`)}</b></p>
+<p><span>Purchase Date:</span> <b>${log.purchaseDate || log.createdAt ? format(new Date(log.purchaseDate || log.createdAt), 'dd MMM yyyy') : '—'}</b></p>
+<p><span>Supplier:</span> <b>${escapeHtml(log.supplierName || items[0]?.supplierName || '—')}</b></p>
+<p><span>Invoice No.:</span> <b>${escapeHtml(log.invoiceNumber || log.invoiceNo || '—')}</b></p>
+<p><span>Receiving Dept:</span> <b>${escapeHtml(log.receivingDepartment || log.department || '—')}</b></p>
+<p><span>Receiving Officer:</span> <b>${escapeHtml(log.receivingOfficer?.fullName || log.receivingOfficer || log.receivedBy?.fullName || log.receivedBy || '—')}</b></p>
+<p><span>Total Items:</span> <b>${log.totalItems ?? items.length}</b></p>
+<p><span>Received By:</span> <b>${escapeHtml(log.receivedBy?.fullName || log.receivedBy || '—')}</b></p>
+</div>
+<table><thead><tr><th>#</th><th>Item</th><th>Dept</th><th>Supplier</th><th class="num">Qty (outer)</th><th class="num">Qty (base)</th><th class="num">Cost/outer</th><th class="num">Line total</th></tr></thead>
+<tbody>${rows || '<tr><td colspan="8">No items</td></tr>'}</tbody></table>
+<p class="total">Items subtotal: ₦${itemsSubtotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}<br>
+Miscellaneous: ₦${misc.toLocaleString(undefined, { maximumFractionDigits: 2 })}<br>
+<b>Grand total: ₦${grandTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</b></p>
+${log.remarks ? `<p style="font-size:12px;color:#555"><b>Remarks:</b> ${escapeHtml(log.remarks)}</p>` : ''}
+<div class="sign"><div>Received By</div><div>Checked By</div><div>Approved By</div></div>
+</body></html>`;
+};
 
 const PurchaseLogDetailPage = () => {
     const router = useRouter();
     const params = useParams();
     const id = params.id as string;
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const { data: logResponse, isLoading } = useSWR(
         id ? `/items/purchase-logs/${id}` : null,
@@ -28,6 +98,19 @@ const PurchaseLogDetailPage = () => {
     );
     const misc = Number(log?.miscellaneousExpense || 0);
     const grandTotal = Number(log?.totalCost ?? itemsSubtotal + misc);
+
+    const handleDownloadPdf = async () => {
+        if (!log) return;
+        setIsDownloading(true);
+        try {
+            await downloadHtmlDocumentAsPdf(
+                buildGrnPdfHtml(log, items),
+                `GRN-${log.logId || id}.pdf`,
+            );
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -85,7 +168,7 @@ const PurchaseLogDetailPage = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div className="space-y-1">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Log ID
+                                GRN No.
                             </p>
                             <p className="font-medium text-foreground">
                                 {log.logId}
@@ -102,6 +185,46 @@ const PurchaseLogDetailPage = () => {
                                     ),
                                     'dd MMMM yyyy',
                                 )}
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Supplier
+                            </p>
+                            <p className="font-medium text-foreground">
+                                {log.supplierName ||
+                                    items[0]?.supplierName ||
+                                    '—'}
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Invoice No.
+                            </p>
+                            <p className="font-medium text-foreground">
+                                {log.invoiceNumber || log.invoiceNo || '—'}
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Receiving Department
+                            </p>
+                            <p className="font-medium text-foreground capitalize">
+                                {log.receivingDepartment ||
+                                    log.department ||
+                                    '—'}
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Receiving Officer
+                            </p>
+                            <p className="font-medium text-foreground">
+                                {log.receivingOfficer?.fullName ||
+                                    log.receivingOfficer ||
+                                    log.receivedBy?.fullName ||
+                                    log.receivedBy ||
+                                    '—'}
                             </p>
                         </div>
                         <div className="space-y-1">
@@ -272,6 +395,15 @@ const PurchaseLogDetailPage = () => {
                     >
                         <Printer className="h-4 w-4" />
                         Print Receipt
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="flex-1 h-12 font-semibold gap-2 rounded-lg"
+                        onClick={handleDownloadPdf}
+                        disabled={isDownloading}
+                    >
+                        <Download className="h-4 w-4" />
+                        {isDownloading ? 'Preparing…' : 'Download PDF'}
                     </Button>
                     <Button
                         variant="secondary"

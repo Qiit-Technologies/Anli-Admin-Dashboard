@@ -1506,3 +1506,309 @@ export async function deletePurchaseLogItem(itemId: string | number) {
         };
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Phase 2 — SIV / B&D / Transfer send-receive (FRD §10/§11/§12/§17)    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Fetch a single Store Issue Voucher (SIV) by id.
+ * Tries the dedicated SIV endpoint first; falls back to the approved
+ * requisition endpoints when the SIV backend isn't ready yet.
+ */
+export async function getIssuedStockDetail(id: string | number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const headers = { Authorization: `Bearer ${authToken}` };
+        // Primary: dedicated SIV endpoint
+        try {
+            const res = await api.get(`/items/siv/${id}`, { headers });
+            return { data: res.data?.data ?? res.data };
+        } catch {
+            // Fallback: approved requisition detail
+            const res = await api.get(`/items/approved/${id}`, { headers });
+            return { data: res.data?.data ?? res.data };
+        }
+    } catch (error: any) {
+        return {
+            error:
+                error.response?.data?.message ||
+                'Failed to fetch issue voucher details.',
+        };
+    }
+}
+
+/**
+ * Fetch a single stock transfer by id.
+ */
+export async function getTransfer(id: string | number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.get(`/items/transfers/${id}`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+        });
+        return { data: response.data?.data ?? response.data };
+    } catch (error: any) {
+        return {
+            error:
+                error.response?.data?.message ||
+                'Failed to fetch transfer details.',
+        };
+    }
+}
+
+/**
+ * Mark a transfer as SENT (moves it to In Transit).
+ * FRD §17: send → receive flow.
+ */
+export async function sendTransfer(id: string | number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.patch(
+            `/items/transfers/${id}/send`,
+            {},
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+        return {
+            data: response.data?.data ?? response.data,
+            message: 'Transfer marked as sent.',
+        };
+    } catch (error: any) {
+        return {
+            error:
+                error.response?.data?.message ||
+                'Failed to mark transfer as sent.',
+        };
+    }
+}
+
+export interface TransferReceiveLine {
+    itemId: string | number;
+    sentQuantity: number;
+    receivedQuantity: number;
+    discrepancyReason?: string;
+}
+
+/**
+ * Confirm receipt of a transfer.
+ * The receiving user confirms received quantities per line; when received
+ * differs from sent, a discrepancy reason is required.
+ * FRD §17: the receiving user confirms received quantities per line.
+ */
+export async function receiveTransfer(
+    id: string | number,
+    payload: {
+        receivedById?: number;
+        lines: TransferReceiveLine[];
+        remarks?: string;
+    },
+) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.patch(
+            `/items/transfers/${id}/receive`,
+            payload,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+        return {
+            data: response.data?.data ?? response.data,
+            message: 'Transfer received successfully.',
+        };
+    } catch (error: any) {
+        return {
+            error:
+                error.response?.data?.message ||
+                'Failed to confirm transfer receipt.',
+        };
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Recipes — FRD §14. Backend: /items/recipes                          */
+/* ------------------------------------------------------------------ */
+
+export interface RecipeIngredientInput {
+    itemId: number;
+    quantity: number;
+    unit?: string;
+}
+
+export interface RecipeInput {
+    name: string;
+    description?: string;
+    outputItemId: number;
+    outputQuantity: number;
+    outputUnit?: string;
+    instructions?: string;
+    isActive?: boolean;
+    ingredients: RecipeIngredientInput[];
+}
+
+export async function getRecipes() {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.get('/items/recipes', {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return { data: response.data?.data ?? response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load recipes.'),
+        };
+    }
+}
+
+export async function getRecipe(id: string | number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.get(`/items/recipes/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return { data: response.data?.data ?? response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load recipe.'),
+        };
+    }
+}
+
+export async function createRecipe(payload: RecipeInput) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.post('/items/recipes', payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return {
+            data: response.data?.data ?? response.data,
+            message: 'Recipe created successfully.',
+        };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to create recipe.'),
+        };
+    }
+}
+
+export async function updateRecipe(id: string | number, payload: Partial<RecipeInput>) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.patch(`/items/recipes/${id}`, payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return {
+            data: response.data?.data ?? response.data,
+            message: 'Recipe updated successfully.',
+        };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to update recipe.'),
+        };
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Kitchen Production — FRD §9. Backend: /items/production             */
+/* ------------------------------------------------------------------ */
+
+export interface ProductionBatchInput {
+    recipeId: number;
+    outputQuantity: number;
+    productionDate?: string;
+    notes?: string;
+}
+
+export async function getProductionBatches(params?: { from?: string; to?: string }) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const search = new URLSearchParams();
+        if (params?.from) search.set('from', params.from);
+        if (params?.to) search.set('to', params.to);
+        const qs = search.toString();
+        const response = await api.get(
+            `/items/production${qs ? `?${qs}` : ''}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+        return { data: response.data?.data ?? response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load production batches.'),
+        };
+    }
+}
+
+export async function createProductionBatch(payload: ProductionBatchInput) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.post('/items/production', payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return {
+            data: response.data?.data ?? response.data,
+            message: 'Production batch posted successfully.',
+        };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to post production batch.'),
+        };
+    }
+}

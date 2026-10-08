@@ -29,13 +29,22 @@ export interface StockTransfer {
     fromSubUnit?: string;
     toSubUnit?: string;
     totalValue: number;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    /** FRD §17 lifecycle: PENDING → APPROVED → SENT/IN_TRANSIT → RECEIVED (or REJECTED) */
+    status:
+        | 'PENDING'
+        | 'APPROVED'
+        | 'SENT'
+        | 'IN_TRANSIT'
+        | 'RECEIVED'
+        | 'REJECTED';
     remarks?: string;
     rejectionReason?: string;
     transferredBy: Staff;
     receivedBy?: Staff;
     approvedBy?: Staff;
     approvedAt?: string;
+    sentAt?: string;
+    receivedAt?: string;
     items: StockTransferItem[];
     createdAt: string;
     updatedAt: string;
@@ -60,6 +69,8 @@ export interface TransferStats {
     pending: number;
     approved: number;
     rejected: number;
+    inTransit?: number;
+    received?: number;
 }
 
 export interface GetTransfersResponse {

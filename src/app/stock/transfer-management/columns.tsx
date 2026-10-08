@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 import {
     DropdownMenu,
@@ -21,8 +22,18 @@ interface CustomTableMeta {
         onApprove?: (_transfer: StockTransfer) => void;
         onReject?: (_transfer: StockTransfer) => void;
         onPrint?: (_transfer: StockTransfer) => void;
+        onSend?: (_transfer: StockTransfer) => void;
     };
 }
+
+const TRANSFER_STATUS_STYLES: Record<string, string> = {
+    APPROVED: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
+    PENDING: 'bg-amber-50 text-amber-700 hover:bg-amber-50',
+    SENT: 'bg-blue-50 text-blue-700 hover:bg-blue-50',
+    IN_TRANSIT: 'bg-blue-50 text-blue-700 hover:bg-blue-50',
+    RECEIVED: 'bg-green-50 text-green-700 hover:bg-green-50',
+    REJECTED: 'bg-rose-50 text-rose-700 hover:bg-rose-50',
+};
 
 export const transferColumns: ColumnDef<StockTransfer>[] = [
     {
@@ -112,20 +123,16 @@ export const transferColumns: ColumnDef<StockTransfer>[] = [
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
-            const status = row.original.status;
+            const status = String(row.original.status || '').toUpperCase();
             return (
                 <Badge
                     className={cn(
                         'capitalize font-normal rounded-full px-3 py-1 shadow-none border-none text-xs font-semibold',
-                        status === 'APPROVED' &&
-                            'bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
-                        status === 'PENDING' &&
-                            'bg-amber-50 text-amber-700 hover:bg-amber-50',
-                        status === 'REJECTED' &&
-                            'bg-rose-50 text-rose-700 hover:bg-rose-50',
+                        TRANSFER_STATUS_STYLES[status] ||
+                            'bg-gray-100 text-gray-700',
                     )}
                 >
-                    {status?.toLowerCase()}
+                    {status.replace('_', ' ').toLowerCase()}
                 </Badge>
             );
         },
@@ -144,8 +151,12 @@ export const transferColumns: ColumnDef<StockTransfer>[] = [
         header: 'Action',
         cell: ({ row, table }) => {
             const transfer = row.original;
-            const { onApprove, onReject, onPrint } =
+            const { onApprove, onReject, onPrint, onSend } =
                 (table.options.meta as CustomTableMeta)?.actionHandlers || {};
+            const status = String(transfer.status || '').toUpperCase();
+            const canReceive = ['APPROVED', 'SENT', 'IN_TRANSIT'].includes(
+                status,
+            );
 
             return (
                 <DropdownMenu>
@@ -154,8 +165,8 @@ export const transferColumns: ColumnDef<StockTransfer>[] = [
                             <MoreVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
-                        {transfer.status === 'PENDING' && onApprove && (
+                    <DropdownMenuContent align="end" className="w-44">
+                        {status === 'PENDING' && onApprove && (
                             <DropdownMenuItem
                                 className="text-emerald-600 font-medium py-3"
                                 onClick={() => onApprove(transfer)}
@@ -163,12 +174,29 @@ export const transferColumns: ColumnDef<StockTransfer>[] = [
                                 Approve
                             </DropdownMenuItem>
                         )}
-                        {transfer.status === 'PENDING' && onReject && (
+                        {status === 'PENDING' && onReject && (
                             <DropdownMenuItem
                                 className="text-red-600 font-medium py-3"
                                 onClick={() => onReject(transfer)}
                             >
                                 Reject
+                            </DropdownMenuItem>
+                        )}
+                        {status === 'APPROVED' && onSend && (
+                            <DropdownMenuItem
+                                className="text-blue-600 font-medium py-3"
+                                onClick={() => onSend(transfer)}
+                            >
+                                Mark as Sent
+                            </DropdownMenuItem>
+                        )}
+                        {canReceive && (
+                            <DropdownMenuItem className="py-3 font-medium" asChild>
+                                <Link
+                                    href={`/stock/transfer-management/${transfer.id}/receive`}
+                                >
+                                    Receive
+                                </Link>
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuItem

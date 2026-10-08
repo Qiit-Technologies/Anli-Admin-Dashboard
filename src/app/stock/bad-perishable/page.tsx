@@ -38,6 +38,7 @@ import {
     approveBadStockRecord,
 } from '@/app/actions/stock';
 import { format } from 'date-fns';
+import Link from 'next/link';
 import { OTPInput } from '@/components/front-of-house/tables/OTPInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -172,7 +173,6 @@ const BadPerishablePage = () => {
     const [isLogModalOpen, setIsLogModalOpen] = useState(false);
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-    const [isViewOpen, setIsViewOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -336,12 +336,13 @@ const BadPerishablePage = () => {
                         )}
                         <DropdownMenuItem
                             className="h-10 rounded-lg font-medium cursor-pointer"
-                            onClick={() => {
-                                setSelectedRecord(row.original);
-                                setIsViewOpen(true);
-                            }}
+                            asChild
                         >
-                            View
+                            <Link
+                                href={`/stock/bad-perishable/${row.original.id}`}
+                            >
+                                View
+                            </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="h-10 rounded-lg font-medium cursor-pointer"
@@ -786,122 +787,6 @@ const BadPerishablePage = () => {
                 </div>
             </CustomDialog>
 
-            <CustomDialog
-                open={isViewOpen}
-                onOpenChange={setIsViewOpen}
-                title={`Spoilage ${selectedRecord?.transactionNumber || ''}`}
-                maxWidth="md"
-                confirmText="Close"
-                cancelText=""
-                onConfirm={() => setIsViewOpen(false)}
-                onCancel={() => setIsViewOpen(false)}
-            >
-                <div className="space-y-3 py-2 text-sm">
-                    <div className="flex justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-9 gap-2"
-                            onClick={() =>
-                                printSpoilageTransaction(selectedRecord)
-                            }
-                        >
-                            <Printer className="h-4 w-4" />
-                            Print
-                        </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                        <p>
-                            Date:{' '}
-                            <span className="text-foreground font-medium">
-                                {selectedRecord?.date
-                                    ? format(
-                                          new Date(selectedRecord.date),
-                                          'dd MMM yyyy',
-                                      )
-                                    : '—'}
-                            </span>
-                        </p>
-                        <p>
-                            Department:{' '}
-                            <span className="text-foreground font-medium">
-                                {selectedRecord?.department}
-                            </span>
-                        </p>
-                        <p>
-                            Reason:{' '}
-                            <span className="text-foreground font-medium">
-                                {formatSpoilageReason(selectedRecord)}
-                            </span>
-                        </p>
-                        <p>
-                            Status:{' '}
-                            <span className="text-foreground font-medium">
-                                {selectedRecord?.status}
-                            </span>
-                        </p>
-                        <p>
-                            Discovered by:{' '}
-                            <span className="text-foreground font-medium">
-                                {selectedRecord?.discoveredBy?.fullName || '—'}
-                            </span>
-                        </p>
-                        <p>
-                            Approved by:{' '}
-                            <span className="text-foreground font-medium">
-                                {selectedRecord?.approvedBy?.fullName || '—'}
-                            </span>
-                        </p>
-                    </div>
-                    {selectedRecord?.remarks ? (
-                        <p className="text-muted-foreground">
-                            Remarks:{' '}
-                            <span className="text-foreground">
-                                {selectedRecord.remarks}
-                            </span>
-                        </p>
-                    ) : null}
-                    {selectedRecord?.rejectionReason ? (
-                        <p className="text-muted-foreground">
-                            Rejection reason:{' '}
-                            <span className="text-red-600">
-                                {selectedRecord.rejectionReason}
-                            </span>
-                        </p>
-                    ) : null}
-                    <div className="rounded-md border divide-y">
-                        {(selectedRecord?.items || []).map((line: any) => (
-                            <div
-                                key={line.id}
-                                className="px-3 py-2.5 flex justify-between gap-3"
-                            >
-                                <div>
-                                    <p className="font-medium">
-                                        {line.item?.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {line.quantityAffected} {line.unit}
-                                    </p>
-                                </div>
-                                <span className="tabular-nums font-medium">
-                                    ₦
-                                    {Number(line.valueLost || 0).toLocaleString()}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between font-semibold pt-1">
-                        <span>Total value lost</span>
-                        <span>
-                            ₦
-                            {Number(
-                                selectedRecord?.valueLost || 0,
-                            ).toLocaleString()}
-                        </span>
-                    </div>
-                </div>
-            </CustomDialog>
 
             <CustomDialog
                 open={isRejectModalOpen}

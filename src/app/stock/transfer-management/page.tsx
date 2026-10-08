@@ -15,6 +15,7 @@ import {
     getTransfers,
     approveTransfer,
     rejectTransfer,
+    sendTransfer,
 } from '@/app/actions/stock';
 import { Card } from '@/components/ui/card';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -41,6 +42,7 @@ const StockTransferMgtPage = () => {
         useState<StockTransfer | null>(null);
     const [showApproveDialog, setShowApproveDialog] = useState(false);
     const [showRejectDialog, setShowRejectDialog] = useState(false);
+    const [showSendDialog, setShowSendDialog] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -118,6 +120,30 @@ const StockTransferMgtPage = () => {
     const openRejectDialog = (transfer: StockTransfer) => {
         setSelectedTransfer(transfer);
         setShowRejectDialog(true);
+    };
+
+    const openSendDialog = (transfer: StockTransfer) => {
+        setSelectedTransfer(transfer);
+        setShowSendDialog(true);
+    };
+
+    const handleSend = async () => {
+        if (!selectedTransfer) return;
+        setIsProcessing(true);
+        try {
+            const result = await sendTransfer(selectedTransfer.id);
+            if (result.error) {
+                console.error('Failed to send transfer:', result.error);
+            } else {
+                setShowSendDialog(false);
+                setSelectedTransfer(null);
+                mutateTransfers();
+            }
+        } catch (error: any) {
+            console.error('Error sending transfer:', error);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const handlePrint = (transfer: StockTransfer) => {
@@ -279,7 +305,7 @@ const StockTransferMgtPage = () => {
                     ) : null}
 
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                         {(
                             [
                                 {
@@ -296,6 +322,16 @@ const StockTransferMgtPage = () => {
                                     title: 'Approved',
                                     value: stats.approved,
                                     className: 'text-green-500',
+                                },
+                                {
+                                    title: 'In Transit',
+                                    value: stats.inTransit ?? 0,
+                                    className: 'text-blue-500',
+                                },
+                                {
+                                    title: 'Received',
+                                    value: stats.received ?? 0,
+                                    className: 'text-emerald-600',
                                 },
                                 {
                                     title: 'Rejected',
@@ -363,6 +399,7 @@ const StockTransferMgtPage = () => {
                                     onApprove: openApproveDialog,
                                     onReject: openRejectDialog,
                                     onPrint: handlePrint,
+                                    onSend: openSendDialog,
                                 },
                             }}
                         />
@@ -423,6 +460,58 @@ const StockTransferMgtPage = () => {
                             className="bg-emerald-600 hover:bg-emerald-700"
                         >
                             {isProcessing ? 'Approving...' : 'Approve Transfer'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Send Confirmation Dialog (FRD §17: approved → in transit) */}
+            <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Mark Transfer as Sent</DialogTitle>
+                        <DialogDescription>
+                            This moves the transfer to <strong>In Transit</strong>.
+                            The receiving department can then confirm receipt
+                            with actual quantities.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        {selectedTransfer && (
+                            <div className="space-y-2 text-sm">
+                                <p>
+                                    <strong>Transfer ID:</strong>{' '}
+                                    {selectedTransfer.transferId}
+                                </p>
+                                <p>
+                                    <strong>From:</strong>{' '}
+                                    {selectedTransfer.fromDepartment}
+                                </p>
+                                <p>
+                                    <strong>To:</strong>{' '}
+                                    {selectedTransfer.toDepartment}
+                                </p>
+                                <p>
+                                    <strong>Items:</strong>{' '}
+                                    {selectedTransfer.items.length} items
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowSendDialog(false)}
+                            disabled={isProcessing}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSend}
+                            disabled={isProcessing}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {isProcessing ? 'Sending...' : 'Mark as Sent'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

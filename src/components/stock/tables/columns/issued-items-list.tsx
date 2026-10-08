@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip } from '@heroui/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowDown, CircleHelp, Printer } from 'lucide-react';
-import { ApprovalDrawer } from '../ApprovalDrawer';
-import { RequestInfoPanel } from '../InfoPanel';
+import Link from 'next/link';
 
 type IssuedLine = {
     id?: number;
@@ -248,78 +247,25 @@ export const issuedItemsColumn: ColumnDef<IssuedItemProps>[] = [
         header: 'Action',
         cell: ({ row }) => {
             const data = row.original;
-            const issueNo =
-                data.issueNo || data.requestNumber || String(data.id);
-            const fields = [
-                { label: 'Issue No.', value: issueNo },
-                { label: 'Department', value: data.department },
-                { label: 'Issuing Officer', value: data.issuingOfficer },
-                { label: 'Requested By', value: data.requestedBy },
-                { label: 'Date Issued', value: data.date },
-                { label: 'Status', value: data.status },
-            ];
-            const lines = data.item ?? [];
 
             return (
                 <div className="flex items-center gap-2">
-                    <ApprovalDrawer
-                        trigger={<button className="font-normal">View</button>}
+                    <Link
+                        href={`/stock/issued-stock/${data.id}`}
+                        className="font-normal hover:underline"
                     >
-                        <div className="py-4 flex items-center justify-between gap-2">
-                            <h2 className="text-xl font-semibold">
-                                Issued Stock Transaction
-                            </h2>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="gap-1.5"
-                                onClick={() => printIssueVoucher(data)}
-                            >
-                                <Printer className="h-3.5 w-3.5" />
-                                Print Voucher
-                            </Button>
-                        </div>
-                        <div className="bg-hexbrand/10 p-4 rounded-lg grid grid-cols-2 mb-4">
-                            <RequestInfoPanel
-                                fields={fields}
-                                status={data.status}
-                                statusStyles={statusStyles}
-                            />
-                        </div>
-                        <div className="rounded-md border overflow-hidden">
-                            <div className="px-3 py-2 bg-gray-50 border-b text-sm font-medium">
-                                Issued items ({lines.length || 1})
-                            </div>
-                            <div className="divide-y">
-                                {lines.length > 0 ? (
-                                    lines.map((line, idx) => (
-                                        <div
-                                            key={`${line.id ?? idx}-${line.name}`}
-                                            className="flex items-center justify-between px-3 py-2 text-sm"
-                                        >
-                                            <div>
-                                                <p className="font-medium">
-                                                    {line.name}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {line.unitOfMeasurement ||
-                                                        '—'}
-                                                </p>
-                                            </div>
-                                            <span className="tabular-nums">
-                                                Qty {line.quantity}
-                                            </span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="px-3 py-2 text-sm">
-                                        {data.itemName} — Qty {data.quantity}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </ApprovalDrawer>
+                        View
+                    </Link>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 h-8 px-2"
+                        onClick={() => printIssueVoucher(data)}
+                        title="Print voucher"
+                    >
+                        <Printer className="h-3.5 w-3.5" />
+                    </Button>
                 </div>
             );
         },

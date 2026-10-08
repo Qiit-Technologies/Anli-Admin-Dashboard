@@ -85,5 +85,8 @@ export const TRANSFER_STAT_HREFS: Record<string, string> = {
     'Total Transfers': '/stock/transfer-management',
     Pending: '/stock/transfer-management?status=PENDING',
     Approved: '/stock/transfer-management?status=APPROVED',
+    'In Transit':
+        '/stock/transfer-management?status=IN_TRANSIT',
+    Received: '/stock/transfer-management?status=RECEIVED',
     Rejected: '/stock/transfer-management?status=REJECTED',
 };
