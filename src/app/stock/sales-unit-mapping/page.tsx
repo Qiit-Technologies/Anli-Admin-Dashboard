@@ -1,6 +1,6 @@
 'use client';
 
-import { getAllMenuItemMappings } from '@/app/actions/sales-unit-mapping';
+import { getAllMenuItemMappings, syncMenuMappings } from '@/app/actions/sales-unit-mapping';
 import {
     HeaderActions,
     PageHeader,
@@ -16,15 +16,59 @@ import {
 } from '@/components/stock/tables/columns/ssales-unit-mapping';
 import StockItemTable from '@/components/stock/tables/StockItemTable';
 import { Button } from '@/components/ui/button';
+import Toast from '@/components/toast';
 import Link from 'next/link';
-import { useMemo } from 'react';
-import useSWR from 'swr';
+import { useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import useSWR, { mutate } from 'swr';
+import { RefreshCw } from 'lucide-react';
 
 const SalesUnitMapping = () => {
     const { data: mappingsResponse } = useSWR(
         '/items/menu-item-mappings',
         getAllMenuItemMappings,
     );
+    const [syncing, setSyncing] = useState(false);
+
+    const handleSync = async () => {
+        setSyncing(true);
+        try {
+            const result = await syncMenuMappings();
+            if ('error' in result && result.error) {
+                toast.custom(() => (
+                    <Toast
+                        title="Sync not completed"
+                        description={result.error as string}
+                        type="error"
+                    />
+                ));
+                return;
+            }
+            await mutate('/items/menu-item-mappings');
+            toast.custom(() => (
+                <Toast
+                    title="Menu synced"
+                    description={
+                        (result as { message?: string }).message ||
+                        'Mappings were auto-populated from the POS menu. Auto rows are flagged and can still be edited manually.'
+                    }
+                    type="success"
+                />
+            ));
+        } catch (err) {
+            toast.custom(() => (
+                <Toast
+                    title="Sync failed"
+                    description={
+                        err instanceof Error ? err.message : 'Please try again.'
+                    }
+                    type="error"
+                />
+            ));
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     // Group mappings by menuItemId to show all inventory items in one row
     const groupedMappings = useMemo(() => {
@@ -101,6 +145,17 @@ const SalesUnitMapping = () => {
             </PageHeader>
             <PageWrapper>
                 <div className="flex w-full gap-3">
+                    <Button
+                        variant={'outline'}
+                        className="border-orion-blue text-orion-blue"
+                        onClick={handleSync}
+                        disabled={syncing}
+                    >
+                        <RefreshCw
+                            className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`}
+                        />
+                        {syncing ? 'Syncing…' : 'Sync from POS Menu'}
+                    </Button>
                     <Link href={'/stock/sales-unit-mapping/create'}>
                         <Button
                             variant={'outline'}

@@ -9,6 +9,7 @@ import {
     LuHeadphones,
     LuHistory,
     LuLayoutDashboard,
+    LuMartini,
     LuSettings,
     LuTriangleAlert,
     LuArrowUpDown,
@@ -48,6 +49,12 @@ const stockNavItems: Array<SidebarNavItemProps> = [
         permissions: [PERMISSIONS.VIEW_ALL_PAGE, PERMISSIONS.VIEW_STOCK_ITEMS],
     },
     {
+        title: 'Bar Stock',
+        path: '/bar-stock',
+        icon: LuMartini,
+        permissions: [PERMISSIONS.VIEW_ALL_PAGE, PERMISSIONS.VIEW_STOCK_ITEMS],
+    },
+    {
         title: 'Recipes',
         path: '/recipes',
         icon: LuClipboardCheck,
@@ -76,6 +83,12 @@ const stockNavItems: Array<SidebarNavItemProps> = [
         path: '/issued-stock',
         icon: LuClipboardCheck,
         permissions: [PERMISSIONS.VIEW_ALL_PAGE, PERMISSIONS.VIEW_ISSUED_STOCK],
+    },
+    {
+        title: 'Return Voucher',
+        path: '/return-voucher',
+        icon: LuArrowUpDown,
+        permissions: [PERMISSIONS.VIEW_ALL_PAGE, PERMISSIONS.VIEW_STOCK_ITEMS],
     },
     {
         title: 'Purchase Order',

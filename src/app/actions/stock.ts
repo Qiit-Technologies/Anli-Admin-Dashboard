@@ -1867,3 +1867,93 @@ export async function createProductionBatch(payload: ProductionBatchInput) {
         };
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Return Voucher — FRD §10. Backend: /items/return-vouchers           */
+/* ------------------------------------------------------------------ */
+
+export interface ReturnVoucherLineInput {
+    itemId: number;
+    quantity: number;
+    unit?: string;
+    unitCost?: number;
+    reason?: string;
+}
+
+export interface ReturnVoucherInput {
+    returnDate: string;
+    fromDepartment: string;
+    receivedById?: number;
+    remarks?: string;
+    items: ReturnVoucherLineInput[];
+}
+
+export async function getReturnVouchers(params?: { from?: string; to?: string }) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const search = new URLSearchParams();
+        if (params?.from) search.set('from', params.from);
+        if (params?.to) search.set('to', params.to);
+        const qs = search.toString();
+        const response = await api.get(
+            `/items/return-vouchers${qs ? `?${qs}` : ''}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+            },
+        );
+        return { data: response.data?.data ?? response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load return vouchers.'),
+        };
+    }
+}
+
+export async function getReturnVoucher(id: string | number) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.get(`/items/return-vouchers/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return { data: response.data?.data ?? response.data };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load return voucher.'),
+        };
+    }
+}
+
+export async function createReturnVoucher(payload: ReturnVoucherInput) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const response = await api.post('/items/return-vouchers', payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+        return {
+            data: response.data?.data ?? response.data,
+            message: 'Return voucher created successfully.',
+        };
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to create return voucher.'),
+        };
+    }
+}
