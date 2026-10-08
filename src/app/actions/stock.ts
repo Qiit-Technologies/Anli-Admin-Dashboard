@@ -981,6 +981,61 @@ export async function submitProteinStock(payload: {
     }
 }
 
+/**
+ * Bar Stock balance — FRD §15. Per-department stock balance: opening,
+ * received, sold, transferred, wastage, closing per item.
+ * Backend: GET /items/bar-stock?date=YYYY-MM-DD&department=bar.
+ * Falls back to the daily stock register for the date when the dedicated
+ * endpoint isn't deployed yet (register items carry barOpening/barClosing
+ * etc. per the existing DailyStockRegisterItem model).
+ */
+export async function getBarStock(params: {
+    date: string;
+    department?: string;
+}) {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { error: 'Authentication token not found.' };
+        }
+        const search = new URLSearchParams();
+        search.set('date', params.date);
+        if (params.department) search.set('department', params.department);
+        try {
+            const response = await api.get(
+                `/items/bar-stock?${search.toString()}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                },
+            );
+            return { data: response.data, source: 'bar-stock' as const };
+        } catch (inner: any) {
+            // Dedicated endpoint not deployed yet — derive from the daily
+            // stock register, which tracks per-department opening/closing.
+            const register = await api.get(
+                `/items/daily-registers/date/${params.date}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                },
+            );
+            return {
+                data: register.data,
+                source: 'daily-register' as const,
+            };
+        }
+    } catch (error: any) {
+        return {
+            error: toErrorMessage(error, 'Failed to load bar stock.'),
+        };
+    }
+}
+
 export async function getSalesLogs() {
     try {
         const authToken = await getAuthToken();
