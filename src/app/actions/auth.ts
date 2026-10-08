@@ -9,6 +9,6 @@ export async function setAuthCookie(token: string) {
     httpOnly: false, // Needs to be accessible from client-side JS
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7, // 7 daysss
   });
 }
