@@ -1,16 +1,39 @@
 "use client";
+
 import {
+  Building2,
   ChartNoAxesColumn,
   CreditCard,
   Handshake,
   Layers,
+  LayoutDashboard,
+  LifeBuoy,
   SquareCheckBig,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+const navItems = [
+  { name: "Command Center", icon: LayoutDashboard, href: "/dashboard" },
+  { name: "Businesses", icon: Building2, href: "/business-list" },
+  { name: "Support Tickets", icon: LifeBuoy, href: "/dashboard/support" },
+  { name: "Billing", icon: Wallet, href: "/dashboard/billing" },
+  { name: "Users", icon: Users, href: "/dashboard/users" },
+  { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
+  {
+    name: "Business Overview",
+    icon: ChartNoAxesColumn,
+    href: "/dashboard/business-overview",
+  },
+  { name: "Issues", icon: Layers, href: "/dashboard/issues" },
+  { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
+  { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
+  { name: "Staffs", icon: Users, href: "/dashboard/staffs" },
+];
 
 const Sidebar = ({
   isOpen,
@@ -19,16 +42,7 @@ const Sidebar = ({
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
 }) => {
-  const pathname = usePathname(); // make sure this is imported
-
-  const navItems = [
-    { name: "General Info", icon: ChartNoAxesColumn, href: "/dashboard" },
-    { name: "Issues", icon: Layers, href: "/dashboard/issues" },
-    { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
-    { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
-    { name: "Staffs", icon: Users, href: "/dashboard/staffs" },
-    { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
-  ];
+  const pathname = usePathname();
 
   return (
     <>
@@ -40,10 +54,11 @@ const Sidebar = ({
       )}
 
       <aside
-        className={`fixed sm:static inset-y-0 left-0 bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0
-    ${isOpen ? "translate-x-0" : "-translate-x-full"} w-full sm:w-60 px-4 py-6`}
+        className={`fixed sm:static inset-y-0 left-0 bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } w-full sm:w-60 px-4 py-6`}
       >
-        <div className="flex relative justify-center items-center mb-12">
+        <div className="flex relative justify-center items-center mb-8">
           <Image
             src="/logo-white.svg"
             alt="Logo"
@@ -54,28 +69,31 @@ const Sidebar = ({
           <button
             onClick={() => setIsOpen(false)}
             className="absolute right-0 text-white sm:hidden"
+            aria-label="Close navigation"
           >
             <X size={20} />
           </button>
         </div>
 
-        <nav className="space-y-4">
+        <nav className="space-y-2 overflow-y-auto">
           {navItems.map(({ name, icon: Icon, href }) => {
             const isActive =
               pathname === href ||
-              (name === "General Info" && pathname === "/dashboard/details");
+              (href !== "/dashboard" && pathname.startsWith(`${href}/`)) ||
+              (name === "Business Overview" &&
+                pathname === "/dashboard/details");
             return (
               <Link
                 key={name}
                 href={href}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 text-base font-medium transition-all duration-200 ease-in-out py-[13px] px-3 rounded-md ${
+                className={`flex items-center gap-3 text-sm font-medium transition-colors py-3 px-3 rounded-md ${
                   isActive
                     ? "bg-[#FDEFE5] text-[#FF6F00]"
-                    : "hover:bg-[#FDEFE5] hover:text-[#FF6F00]"
+                    : "text-gray-300 hover:bg-[#FDEFE5] hover:text-[#FF6F00]"
                 }`}
               >
-                <Icon size={24} />
+                <Icon size={20} />
                 {name}
               </Link>
             );

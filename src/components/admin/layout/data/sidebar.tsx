@@ -7,7 +7,6 @@ import {
     Users,
     AlertTriangle,
     MessageSquare,
-    LifeBuoy,
     Globe,
     LineChart,
     Award,
@@ -84,12 +83,6 @@ export const adminNavItems: Array<SidebarNavItemProps> = [
         title: 'Feedback',
         path: '/feedback',
         icon: MessageSquare,
-        roles: ['administrator', 'manager', 'general manager', 'supervisor'],
-    },
-    {
-        title: 'Support Tickets',
-        path: '/support',
-        icon: LifeBuoy,
         roles: ['administrator', 'manager', 'general manager', 'supervisor'],
     },
     {
