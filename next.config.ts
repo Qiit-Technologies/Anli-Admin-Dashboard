@@ -8,16 +8,6 @@ const nextConfig: NextConfig = {
         return [];
     },
 
-    // Proxy backend API through same origin to bypass CORS.
-    // Client-side code uses /be-api/... which Next.js proxies to the backend.
-    async rewrites() {
-        return [
-            {
-                source: '/be-api/:path*',
-                destination: 'https://be.weareanli.com/:path*',
-            },
-        ];
-    },
 
     images: {
         remotePatterns: [
