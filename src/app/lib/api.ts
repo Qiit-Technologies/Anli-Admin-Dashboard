@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { getAuthToken } from "./auth";
 
 const instance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  baseURL:
+    typeof window !== "undefined"
+      ? "/be-api"
+      : process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
   },
