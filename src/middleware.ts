@@ -137,11 +137,16 @@ export function middleware(request: NextRequest) {
 }
 
 function checkRoleAccess(role: string, path: string): boolean {
-    if (!role || !ROLE_ACCESS_MAP[role]) {
+    if (!role) {
         return false;
     }
-
-    const allowedPaths = ROLE_ACCESS_MAP[role];
+    // Normalize: 'super-admin' (JWT) -> 'super admin' (ROLE_PATHS key)
+    const normalizedRole = role.toLowerCase().replace(/[-_]/g, ' ');
+    const allowedPaths =
+        ROLE_ACCESS_MAP[role] || ROLE_ACCESS_MAP[normalizedRole];
+    if (!allowedPaths) {
+        return false;
+    }
 
     if (allowedPaths.includes('*')) {
         return true;
