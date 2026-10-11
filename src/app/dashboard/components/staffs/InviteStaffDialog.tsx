@@ -112,14 +112,24 @@ export default function InviteStaffDialog({
     }
     setSaving(true);
     try {
-      await inviteStaffByEmail({
+      const res = await inviteStaffByEmail({
         email: email.trim().toLowerCase(),
         fullName: fullName.trim(),
         businessId: effectiveBusinessId,
         moduleIds: selectedModules.map((m) => Number(m.id)),
         permissionIds: selectedPermissions.map((p) => Number(p.id)),
       });
-      toast.success(`Invite sent to ${email.trim().toLowerCase()}`);
+      // Backend #605: the invite is created best-effort — the email may not
+      // have been delivered. Report honestly instead of claiming it was sent.
+      const delivered = res?.data?.emailDelivered !== false;
+      if (delivered) {
+        toast.success(`Invite sent to ${email.trim().toLowerCase()}`);
+      } else {
+        toast(
+          "Invite created, but the email could not be delivered. Resend it from the staff list.",
+          { icon: "⚠️" },
+        );
+      }
       onInvited();
       close();
     } catch (e) {

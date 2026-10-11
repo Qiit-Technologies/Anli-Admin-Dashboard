@@ -114,8 +114,16 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const handleResetPassword = async (staffId: number, email: string) => {
     setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
     try {
-      await requestStaffPasswordReset(staffId);
-      toast.success(`Password reset link sent to ${email}`);
+      const res = await requestStaffPasswordReset(staffId);
+      const delivered = res?.data?.emailDelivered !== false;
+      if (delivered) {
+        toast.success(`Password reset link sent to ${email}`);
+      } else {
+        toast(
+          "Reset link created, but the email could not be delivered. Please try again.",
+          { icon: "⚠️" },
+        );
+      }
       mutate();
     } catch (error: unknown) {
       console.error("Failed to request password reset:", error);
@@ -139,8 +147,16 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const handleResendInvite = async (staffId: number, email: string) => {
     setBusyInvite((prev) => ({ ...prev, [staffId]: true }));
     try {
-      await resendStaffInvite(staffId);
-      toast.success(`Invite re-sent to ${email}`);
+      const res = await resendStaffInvite(staffId);
+      const delivered = res?.data?.emailDelivered !== false;
+      if (delivered) {
+        toast.success(`Invite re-sent to ${email}`);
+      } else {
+        toast(
+          "Invite renewed, but the email could not be delivered. Try resending again.",
+          { icon: "⚠️" },
+        );
+      }
       mutate();
     } catch (error: unknown) {
       toast.error(apiErrorMessage(error, "Failed to re-send invite."));
