@@ -2,10 +2,9 @@
 
 import { AxiosError } from "axios";
 import { axiosGet, axiosPatch, axiosPost, isRedirectError } from "../lib/api";
-import { getAuthToken } from "../lib/auth";
 import { getBusinessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
-import type { BusinessDTO } from "@/types/business";
+import { BusinessDTO } from "@/types/business";
 
 export default async function getBusinessList(
   options: GetBusinessListOptions = {}
@@ -13,22 +12,13 @@ export default async function getBusinessList(
   const { page = 1, limit = 10, searchTerm } = options;
 
   try {
-    const authToken = await getAuthToken();
-
     const baseUrl = searchTerm
       ? `/super-admin/hotels/search/${encodeURIComponent(searchTerm)}`
       : `/super-admin/hotels`;
 
     const url = `${baseUrl}?page=${page}&limit=${limit}`;
 
-    console.log(authToken);
     const response = await axiosGet<getBusinessListResponse>(url, {
-      config: {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      },
       currentPath: "/business-list",
     });
 
@@ -49,6 +39,13 @@ export default async function getBusinessList(
     if (isRedirectError(error)) throw error;
 
     const axiosError = error as AxiosError;
+
+    // Don't return empty data on 401 - let the error propagate so the UI can handle it
+    // This prevents the redirect from happening in the error handler
+    if (axiosError.response?.status === 401) {
+      throw error; // Re-throw 401 so it can be handled by the component
+    }
+
     const message =
       (axiosError.response?.data as ErrorResponseData)?.message ||
       "An unexpected error occurred";
@@ -64,6 +61,7 @@ export default async function getBusinessList(
     };
   }
 }
+
 export async function updateHotelServices(hotelId: string, services: string) {
   try {
     const url = `/super-admin/hotels/${hotelId}`;
@@ -139,10 +137,7 @@ export async function createBusiness(data: {
   }
 }
 
-export async function updateBusiness(
-  hotelId: string,
-  data: Partial<BusinessDTO>,
-) {
+export async function updateBusiness(hotelId: string, data: any) {
   try {
     const url = `/super-admin/hotels/${hotelId}`;
     const response = await axiosPatch(
@@ -236,6 +231,101 @@ export async function getBusinessDetails(hotelId: string): Promise<{ success: bo
     const message =
       (axiosError.response?.data as ErrorResponseData)?.message ||
       "Failed to fetch business details";
+    throw new Error(message);
+  }
+}
+
+
+
+
+export async function suspendBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/suspend`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to suspend business";
+    throw new Error(message);
+  }
+}
+
+export async function unsuspendBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/unsuspend`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to re-activate business";
+    throw new Error(message);
+  }
+}
+
+export async function archiveBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/archive`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to archive business";
+    throw new Error(message);
+  }
+}
+
+export async function unarchiveBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/unarchive`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to restore business from archive";
     throw new Error(message);
   }
 }

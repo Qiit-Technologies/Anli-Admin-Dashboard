@@ -5,6 +5,7 @@ export interface BusinessDTO {
   id: number;
   name: string;
   isActive: boolean;
+  isArchived?: boolean;
   address: string;
   businessType: BusinessType;
   registrationNumber: string | null;
