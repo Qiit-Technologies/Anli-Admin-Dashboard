@@ -71,6 +71,7 @@ import {
     stageLabel,
     BUSINESS_TYPE_OPTIONS,
     LEAD_SOURCE_OPTIONS,
+    WON_STAGE,
 } from '@/components/admin/crm/crm-shared';
 
 const ACTIVITY_TYPES = [
@@ -1052,7 +1053,11 @@ export default function LeadDetailPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {CRM_STAGES.filter(
-                                (s) => s.value !== normalizeStatus(lead.status),
+                                (s) =>
+                                    s.value !== normalizeStatus(lead.status) &&
+                                    // WON is never a direct move: leads become
+                                    // Won only through the Convert dialog.
+                                    s.value !== WON_STAGE,
                             ).map((stage) => (
                                 <DropdownMenuItem
                                     key={stage.value}
