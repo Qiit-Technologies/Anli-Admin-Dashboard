@@ -1,10 +1,11 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, isRedirectError } from "../lib/api";
+import { axiosGet, axiosPatch, axiosPost, isRedirectError } from "../lib/api";
 import { getAuthToken } from "../lib/auth";
 import { getBusinessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
+import type { BusinessDTO } from "@/types/business";
 
 export default async function getBusinessList(
   options: GetBusinessListOptions = {}
@@ -61,5 +62,180 @@ export default async function getBusinessList(
       limit,
       total: 0,
     };
+  }
+}
+export async function updateHotelServices(hotelId: string, services: string) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}`;
+    const response = await axiosPatch(
+      url,
+      { services },
+      {
+        currentPath: "/dashboard/details",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "An unexpected error occurred";
+    throw new Error(message);
+  }
+}
+
+export async function reactivateBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/${hotelId}/billing/reactivate`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "An unexpected error occurred";
+    throw new Error(message);
+  }
+}
+
+export async function createBusiness(data: {
+  name: string;
+  address: string;
+  businessType: string;
+  country: string;
+  state: string;
+  ownerEmail: string;
+  ownerFirstName: string;
+  ownerLastName: string;
+  ownerPhoneNumber: string;
+}) {
+  try {
+    const url = `/super-admin/hotels`;
+    const response = await axiosPost(url, data, {
+      currentPath: "/business-list",
+    });
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to create business";
+    throw new Error(message);
+  }
+}
+
+export async function updateBusiness(
+  hotelId: string,
+  data: Partial<BusinessDTO>,
+) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}`;
+    const response = await axiosPatch(
+      url,
+      data,
+      {
+        currentPath: "/dashboard/details",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "An unexpected error occurred";
+    throw new Error(message);
+  }
+}
+
+export async function uploadBusinessCoverImage(hotelId: string, formData: FormData): Promise<{ url: string } | undefined> {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/cover-image`;
+    const response = await axiosPost<{ url: string }>(
+      url,
+      formData,
+      {
+        config: {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+        currentPath: "/dashboard/details",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to upload cover image";
+    throw new Error(message);
+  }
+}
+
+export async function uploadBusinessGalleryImage(hotelId: string, formData: FormData): Promise<{ url: string; images: string[] } | undefined> {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/gallery-image`;
+    const response = await axiosPost<{ url: string; images: string[] }>(
+      url,
+      formData,
+      {
+        config: {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+        currentPath: "/dashboard/details",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to upload gallery image";
+    throw new Error(message);
+  }
+}
+
+export async function getBusinessDetails(hotelId: string): Promise<{ success: boolean; data: { hotel: BusinessDTO }; message: string } | undefined> {
+  try {
+    const url = `/super-admin/hotels/${hotelId}`;
+    const response = await axiosGet<{ success: boolean; data: { hotel: BusinessDTO }; message: string }>(url, {
+      currentPath: "/dashboard/details",
+    });
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to fetch business details";
+    throw new Error(message);
   }
 }

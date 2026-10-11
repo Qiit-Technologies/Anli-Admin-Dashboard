@@ -8,6 +8,7 @@ import {
   Layers,
   LayoutDashboard,
   LifeBuoy,
+  Settings,
   SquareCheckBig,
   Users,
   Wallet,
@@ -24,6 +25,7 @@ const navItems = [
   { name: "Billing", icon: Wallet, href: "/dashboard/billing" },
   { name: "Users", icon: Users, href: "/dashboard/users" },
   { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
+  { name: "Settings", icon: Settings, href: "/dashboard/settings" },
   {
     name: "Business Overview",
     icon: ChartNoAxesColumn,
