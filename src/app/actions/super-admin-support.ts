@@ -119,6 +119,53 @@ export async function getSupportTicket(
   }
 }
 
+export interface CreateTicketInput {
+  subject: string;
+  category: string;
+  priority?: string;
+  description: string;
+  hotelId: string | number;
+}
+
+/**
+ * Create a ticket from the super-admin HQ. The business context is explicit
+ * (a super-admin session carries no hotel), validated by the backend.
+ */
+export async function createSupportTicket(
+  input: CreateTicketInput,
+): Promise<SupportTicket> {
+  try {
+    const response = await axiosPost<{
+      success: boolean;
+      data: SupportTicket;
+      message?: string;
+    }>(
+      "/super-admin/support/tickets",
+      {
+        subject: input.subject,
+        category: input.category,
+        priority: input.priority,
+        description: input.description,
+        hotelId: Number(input.hotelId),
+      },
+      { currentPath: "/admin/support" },
+    );
+
+    if (!response?.data) {
+      throw new Error("Ticket could not be created");
+    }
+
+    return response.data;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError;
+    if (axiosError.response?.status === 401) {
+      throw error;
+    }
+    throw new Error(toErrorMessage(error, "Failed to create ticket"));
+  }
+}
+
 export async function updateTicketStatus(
   id: string | number,
   status: TicketStatus,
