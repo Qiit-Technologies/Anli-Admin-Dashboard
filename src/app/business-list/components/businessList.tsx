@@ -14,21 +14,22 @@ import { BusinessDTO } from "@/types/business";
 import { useRouter } from "next13-progressbar";
 import { Button } from "@/components/ui/button";
 import {
-  Plus,
-  Shield,
-  Layers,
-  Gift,
-  RefreshCw,
-  Menu,
-  X,
-  UtensilsCrossed,
-  MoreVertical,
-  Eye,
-  Pencil,
-  Ban,
-  Play,
   Archive,
   ArchiveRestore,
+  Ban,
+  Eye,
+  Gift,
+  Layers,
+  Menu,
+  MoreVertical,
+  Pencil,
+  Play,
+  Plus,
+  RefreshCw,
+  Shield,
+  Trash2,
+  UtensilsCrossed,
+  X,
 } from "lucide-react";
 import {
   createBusiness,
@@ -36,6 +37,7 @@ import {
   suspendBusiness,
   unsuspendBusiness,
   archiveBusiness,
+  deleteBusiness,
   unarchiveBusiness,
 } from "@/app/actions/business";
 import {
@@ -68,6 +70,9 @@ export default function BusinessList() {
   const [actionLoading, setActionLoading] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<BusinessDTO | null>(null);
   const [archiveConfirmText, setArchiveConfirmText] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<BusinessDTO | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [unarchiveTarget, setUnarchiveTarget] = useState<BusinessDTO | null>(
     null
@@ -186,7 +191,7 @@ export default function BusinessList() {
         toast.success("Business reactivated successfully!");
       } else if (action === "suspend") {
         await suspendBusiness(business.id);
-        toast.success("Business suspended successfully!");
+        toast.success("Business deactivated successfully!");
       } else {
         await unsuspendBusiness(business.id);
         toast.success("Business re-activated successfully!");
@@ -212,9 +217,9 @@ export default function BusinessList() {
           confirmLabel: "Reactivate",
         },
         suspend: {
-          title: "Suspend Business",
-          description: `Are you sure you want to suspend ${confirmTarget.business.name}? The business will be deactivated immediately.`,
-          confirmLabel: "Suspend",
+          title: "Deactivate Business",
+          description: `Are you sure you want to deactivate ${confirmTarget.business.name}? The business will be deactivated immediately.`,
+          confirmLabel: "Deactivate",
         },
         unsuspend: {
           title: "Re-activate Business",
@@ -521,7 +526,7 @@ export default function BusinessList() {
                           }
                         >
                           <Ban size={14} className="mr-2" />
-                          Suspend
+                          Deactivate
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
@@ -545,6 +550,17 @@ export default function BusinessList() {
                           Archive
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-600"
+                        onClick={() => {
+                          setDeleteTarget(b);
+                          setDeleteConfirmText("");
+                        }}
+                      >
+                        <Trash2 size={14} className="mr-2" />
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -784,6 +800,64 @@ export default function BusinessList() {
           isLoading={actionLoading}
         />
       )}
+
+      {/* Delete — typed confirmation (IRREVERSIBLE, no data retained) */}
+      <CustomDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteConfirmText("");
+          }
+        }}
+        title="Delete business permanently?"
+        description={`This will permanently delete ${deleteTarget?.name ?? "this business"} and its subscription record. This cannot be undone. Type the business name below to confirm.`}
+      >
+        <div className="space-y-4">
+          <Input
+            placeholder={deleteTarget?.name ?? "Business name"}
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            className="w-full"
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteTarget(null);
+                setDeleteConfirmText("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={
+                deleting || deleteConfirmText.trim() !== deleteTarget?.name?.trim()
+              }
+              onClick={async () => {
+                if (!deleteTarget) return;
+                setDeleting(true);
+                try {
+                  await deleteBusiness(deleteTarget.id);
+                  toast.success("Business deleted permanently.");
+                  setDeleteTarget(null);
+                  setDeleteConfirmText("");
+                  router.refresh();
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error ? err.message : "Failed to delete business"
+                  );
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+            >
+              {deleting ? "Deleting…" : "Delete permanently"}
+            </Button>
+          </div>
+        </div>
+      </CustomDialog>
 
       {/* H4: archive — typed confirmation (reversible, no data deleted) */}
       <CustomDialog
