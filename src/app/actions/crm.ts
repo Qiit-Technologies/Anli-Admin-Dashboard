@@ -254,7 +254,9 @@ export async function getPipelineCounts(): Promise<Record<string, number>> {
             const counts: Record<string, number> = {};
             for (const [key, value] of Object.entries(obj)) {
                 if (typeof value === 'number')
-                    counts[key.toLowerCase()] = value;
+                    // Backend returns UPPERCASE stage keys (NEW, NEGOTIATION, ...);
+                    // keep them uppercase so lookups via CRM_STAGES values hit.
+                    counts[key.toUpperCase()] = value;
             }
             return counts;
         }
@@ -263,7 +265,7 @@ export async function getPipelineCounts(): Promise<Record<string, number>> {
             for (const row of result as Array<Record<string, unknown>>) {
                 const status = String(
                     row.status ?? row.stage ?? '',
-                ).toLowerCase();
+                ).toUpperCase();
                 const count = Number(row.count ?? row.total ?? 0);
                 if (status) counts[status] = count;
             }

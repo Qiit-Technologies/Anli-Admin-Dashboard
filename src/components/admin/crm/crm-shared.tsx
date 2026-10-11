@@ -46,7 +46,34 @@ export const BUSINESS_TYPE_OPTIONS = [
 ];
 
 export function normalizeStatus(status?: string): string {
-    return (status ?? 'NEW').toUpperCase().replace(/\s+/g, '_');
+    const upper = (status ?? 'NEW').toUpperCase().replace(/\s+/g, '_');
+    return upper || 'NEW';
+}
+
+/**
+ * Mirrors the backend's ALLOWED_LEAD_TRANSITIONS (Oreon src/crm/entities/lead.entity.ts).
+ * Used for client-side validation so disallowed moves fail fast with a clear
+ * message instead of hitting the API.
+ */
+export const ALLOWED_LEAD_TRANSITIONS: Record<string, string[]> = {
+    NEW: ['CONTACTED', 'LOST', 'DORMANT'],
+    CONTACTED: ['NEW', 'QUALIFIED', 'LOST', 'DORMANT'],
+    QUALIFIED: ['CONTACTED', 'PROPOSAL', 'LOST', 'DORMANT'],
+    PROPOSAL: ['QUALIFIED', 'NEGOTIATION', 'LOST', 'DORMANT'],
+    NEGOTIATION: ['PROPOSAL', 'WON', 'LOST', 'DORMANT'],
+    WON: [],
+    LOST: ['NEW'],
+    DORMANT: ['NEW', 'CONTACTED'],
+};
+
+export function canTransitionLead(
+    fromStatus: unknown,
+    toStatus: string,
+): boolean {
+    const from = normalizeStatus(fromStatus as string | undefined);
+    const to = normalizeStatus(toStatus);
+    const allowed = ALLOWED_LEAD_TRANSITIONS[from];
+    return !!allowed && allowed.includes(to);
 }
 
 export function stageLabel(status?: string): string {
