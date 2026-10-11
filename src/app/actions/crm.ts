@@ -129,13 +129,20 @@ export interface ConvertLeadInput {
 
 export interface InvoiceLineItem {
     description: string;
-    quantity: number;
+    /* Backend InvoiceLineItemDto expects `qty` (@IsInt @Min(1)) — `quantity`
+       is stripped by the validation whitelist and fails. */
+    qty: number;
     unitPrice: number;
 }
 
 export interface GeneratedDocument {
+    /* Backend returns the CrmDocument entity wrapped as { document }.
+       We unwrap it here: `id` is the entity PK, and the download URL is
+       constructed from it (there is no stored downloadUrl). */
     documentId: string | number;
-    downloadUrl?: string;
+    kind?: string;
+    number?: string;
+    downloadUrl: string;
 }
 
 /* ------------------------------------------------------------ internals */
@@ -286,16 +293,24 @@ export async function getLead(id: string | number): Promise<CrmLeadDetail> {
             currentPath: CRM_PATH,
         });
         const data = unwrapData<Record<string, unknown>>(result);
-        const activities = Array.isArray(data?.activities)
-            ? (data.activities as CrmActivity[])
+        /* Backend wraps as { success, data: { lead } } where the Lead entity
+           itself carries .activities and .documents (attached by the
+           service). They are NOT top-level siblings of `lead`. */
+        const leadData =
+            data && typeof data === 'object' && 'lead' in data
+                ? (data.lead as Record<string, unknown>)
+                : (data as Record<string, unknown>);
+        const activities = Array.isArray(leadData?.activities)
+            ? (leadData.activities as CrmActivity[])
             : [];
-        const documents = Array.isArray(data?.documents)
-            ? (data.documents as CrmDocument[])
+        const documents = Array.isArray(leadData?.documents)
+            ? (leadData.documents as CrmDocument[])
             : [];
-        if (data && typeof data === 'object' && 'lead' in data) {
-            return { lead: data.lead as CrmLead, activities, documents };
-        }
-        return { lead: data as unknown as CrmLead, activities, documents };
+        return {
+            lead: leadData as unknown as CrmLead,
+            activities,
+            documents,
+        };
     } catch (error: unknown) {
         throw crmError(error, 'Failed to load lead.');
     }
@@ -416,6 +431,31 @@ export async function convertLead(
     }
 }
 
+/* Backend returns { success, data: { document }, message } where document
+   is the CrmDocument entity ({ id, kind, number, ... }). Unwrap it and
+   shape it into GeneratedDocument. */
+function toGeneratedDocument(json: unknown): GeneratedDocument {
+    const data = unwrapData<Record<string, unknown>>(json);
+    const doc =
+        data && typeof data === 'object' && 'document' in data
+            ? (data.document as Record<string, unknown>)
+            : (data as Record<string, unknown>);
+    const id = doc?.id ?? doc?.documentId;
+    if (id === undefined || id === null) {
+        throw new Error('Document generation returned no document id.');
+    }
+    return {
+        documentId: id as string | number,
+        kind:
+            typeof doc?.kind === 'string' ? (doc.kind as string) : undefined,
+        number:
+            typeof doc?.number === 'string'
+                ? (doc.number as string)
+                : undefined,
+        downloadUrl: `/super-admin/crm/documents/${id}/download`,
+    };
+}
+
 /* ------------------------------------------------------- documents */
 
 export async function generateContract(
@@ -427,7 +467,7 @@ export async function generateContract(
             {},
             { currentPath: CRM_PATH },
         );
-        return unwrapData<GeneratedDocument>(result);
+        return toGeneratedDocument(result);
     } catch (error: unknown) {
         throw crmError(error, 'Failed to generate contract.');
     }
@@ -443,7 +483,7 @@ export async function generateInvoice(
             items ? { items } : {},
             { currentPath: CRM_PATH },
         );
-        return unwrapData<GeneratedDocument>(result);
+        return toGeneratedDocument(result);
     } catch (error: unknown) {
         throw crmError(error, 'Failed to generate invoice.');
     }
