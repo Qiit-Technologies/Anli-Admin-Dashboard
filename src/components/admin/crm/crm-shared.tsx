@@ -60,11 +60,20 @@ export const ALLOWED_LEAD_TRANSITIONS: Record<string, string[]> = {
     CONTACTED: ['NEW', 'QUALIFIED', 'LOST', 'DORMANT'],
     QUALIFIED: ['CONTACTED', 'PROPOSAL', 'LOST', 'DORMANT'],
     PROPOSAL: ['QUALIFIED', 'NEGOTIATION', 'LOST', 'DORMANT'],
-    NEGOTIATION: ['PROPOSAL', 'WON', 'LOST', 'DORMANT'],
+    // NOTE: WON is intentionally absent here. The backend only marks leads
+    // WON through the convert endpoint (POST /leads/:id/convert) and rejects
+    // direct PATCH transitions to WON — see Oreon lead.entity.ts.
+    NEGOTIATION: ['PROPOSAL', 'LOST', 'DORMANT'],
     WON: [],
-    LOST: ['NEW'],
+    LOST: [],
     DORMANT: ['NEW', 'CONTACTED'],
 };
+
+/**
+ * WON can never be a direct move target: the backend marks leads WON only
+ * through conversion. Move menus filter it out and offer conversion instead.
+ */
+export const WON_STAGE = 'WON';
 
 export function canTransitionLead(
     fromStatus: unknown,
