@@ -53,6 +53,7 @@ import {
     BUSINESS_TYPE_OPTIONS,
     CRM_STAGES,
     LEAD_SOURCE_OPTIONS,
+    canTransitionLead,
     formatDate,
     formatMoney,
     isOverdue,
@@ -518,6 +519,14 @@ export default function CrmPipelinePage() {
     }, [leads]);
 
     const handleMove = async (lead: CrmLead, status: string) => {
+        // Fail fast on disallowed transitions (mirrors backend ALLOWED_LEAD_TRANSITIONS)
+        // so users get a clear message instead of an API round-trip.
+        if (!canTransitionLead(lead.status, status)) {
+            toast.error(
+                `Cannot move lead from ${stageLabel(lead.status)} to ${stageLabel(status)}.`,
+            );
+            return;
+        }
         setMovingId(lead.id);
         try {
             await updateLead(lead.id, { status });

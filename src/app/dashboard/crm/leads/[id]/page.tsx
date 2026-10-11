@@ -61,6 +61,7 @@ import { axiosGet } from '@/app/lib/api';
 import {
     ACTIVITY_BADGE,
     CRM_STAGES,
+    canTransitionLead,
     formatDate,
     formatDateTime,
     formatMoney,
@@ -912,6 +913,13 @@ export default function LeadDetailPage() {
 
     const handleStatusChange = async (status: string) => {
         if (!lead) return;
+        // Fail fast on disallowed transitions (mirrors backend ALLOWED_LEAD_TRANSITIONS).
+        if (!canTransitionLead(lead.status, status)) {
+            toast.error(
+                `Cannot move lead from ${stageLabel(lead.status)} to ${stageLabel(status)}.`,
+            );
+            return;
+        }
         try {
             await updateLead(lead.id, { status });
             toast.success(`Status changed to ${stageLabel(status)}.`);
