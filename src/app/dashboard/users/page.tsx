@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
+import { AxiosError } from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -31,14 +31,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, KeyRound, Loader2 } from "lucide-react";
+import { Search, KeyRound, Loader2, UserPlus, Send, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import HqShell from "../components/layout/hq-shell";
 import { useBusinessDirectory } from "../components/hq/useHqData";
-import getStaffByOptions from "@/app/actions/staff";
-import { resetStaffPassword } from "@/app/actions/staff";
+import getStaffByOptions, {
+  cancelStaffInvite,
+  requestStaffPasswordReset,
+  resendStaffInvite,
+} from "@/app/actions/staff";
+import InviteStaffDialog, {
+  type InviteBusiness,
+} from "../components/staffs/InviteStaffDialog";
 import type { StaffDTO } from "@/types/staff";
+import { ErrorResponseData } from "@/hooks/types";
+
+type StaffRow = StaffDTO & { invitePending?: boolean };
 
 function fmtDate(v?: string | null): string {
   if (!v) return "—";
@@ -53,50 +62,40 @@ function fmtDate(v?: string | null): string {
   }
 }
 
+function apiErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof AxiosError) {
+    const message = (error.response?.data as ErrorResponseData)?.message;
+    if (typeof message === "string" && message) return message;
+  }
+  return fallback;
+}
+
+// C3: the old dialog let a super-admin type a new password and post it.
+// Resets now email a single-use link — nothing is typed, generated, or
+// displayed in plaintext.
 function ResetPasswordDialog({
   staff,
-  hotelId,
   open,
   onOpenChange,
   onDone,
 }: {
-  staff: StaffDTO | null;
-  hotelId: number | null;
+  staff: StaffRow | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onDone: () => void;
 }) {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const close = () => {
-    setPassword("");
-    setConfirm("");
-    onOpenChange(false);
-  };
-
   const submit = async () => {
-    if (!staff || hotelId === null) return;
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-    if (password !== confirm) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    if (!staff) return;
     setSaving(true);
     try {
-      await resetStaffPassword(hotelId, staff.id, {
-        password,
-        email: staff.email,
-      });
-      toast.success(`Password reset for ${staff.fullName || staff.email}`);
+      await requestStaffPasswordReset(staff.id);
+      toast.success(`Password reset link sent to ${staff.email}`);
       onDone();
-      close();
+      onOpenChange(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Reset failed");
+      toast.error(apiErrorMessage(e, "Failed to send reset link"));
     } finally {
       setSaving(false);
     }
@@ -108,41 +107,22 @@ function ResetPasswordDialog({
         <DialogHeader>
           <DialogTitle>Reset password</DialogTitle>
           <DialogDescription>
-            Set a new password for {staff?.fullName || staff?.email}. They will
-            need to sign in with it next time.
+            Are you sure you want to reset the password for{" "}
+            {staff?.fullName || staff?.email}? A single-use reset link will be
+            emailed to {staff?.email}.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="new-password">New password</Label>
-            <Input
-              id="new-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimum 8 characters"
-              autoComplete="new-password"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm password</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Repeat the password"
-              autoComplete="new-password"
-            />
-          </div>
-        </div>
         <DialogFooter>
-          <Button variant="outline" onClick={close} disabled={saving}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={saving}
+          >
             Cancel
           </Button>
           <Button onClick={submit} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Reset password
+            Send reset link
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -158,9 +138,12 @@ export default function UsersPage() {
   );
   const [hotelId, setHotelId] = useState<string>("");
   const [search, setSearch] = useState("");
-  const [resetTarget, setResetTarget] = useState<StaffDTO | null>(null);
+  const [resetTarget, setResetTarget] = useState<StaffRow | null>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [busyInvite, setBusyInvite] = useState<Record<number, boolean>>({});
 
   const selectedHotelId = hotelId ? Number(hotelId) : null;
+  const selectedHotel = hotels.find((h) => h.id === selectedHotelId) ?? null;
 
   const { data, isLoading, mutate } = useSWR(
     selectedHotelId ? ["hq-staff", selectedHotelId, search] : null,
@@ -176,7 +159,38 @@ export default function UsersPage() {
     { revalidateOnFocus: false },
   );
 
-  const staff: StaffDTO[] = data ?? [];
+  const staff: StaffRow[] = data ?? [];
+
+  const businesses: InviteBusiness[] = useMemo(
+    () => hotels.map((h) => ({ id: h.id, name: h.name })),
+    [hotels],
+  );
+
+  const handleResendInvite = async (s: StaffRow) => {
+    setBusyInvite((prev) => ({ ...prev, [s.id]: true }));
+    try {
+      await resendStaffInvite(s.id);
+      toast.success(`Invite re-sent to ${s.email}`);
+      mutate();
+    } catch (e) {
+      toast.error(apiErrorMessage(e, "Failed to re-send invite."));
+    } finally {
+      setBusyInvite((prev) => ({ ...prev, [s.id]: false }));
+    }
+  };
+
+  const handleCancelInvite = async (s: StaffRow) => {
+    setBusyInvite((prev) => ({ ...prev, [s.id]: true }));
+    try {
+      await cancelStaffInvite(s.id);
+      toast.success("Invite cancelled");
+      mutate();
+    } catch (e) {
+      toast.error(apiErrorMessage(e, "Failed to cancel invite."));
+    } finally {
+      setBusyInvite((prev) => ({ ...prev, [s.id]: false }));
+    }
+  };
 
   return (
     <HqShell title="Users">
@@ -216,6 +230,14 @@ export default function UsersPage() {
                 disabled={!selectedHotelId}
               />
             </div>
+            <Button
+              className="gap-1.5"
+              disabled={!selectedHotelId}
+              onClick={() => setShowInviteDialog(true)}
+            >
+              <UserPlus className="h-4 w-4" />
+              Invite staff
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
@@ -262,31 +284,64 @@ export default function UsersPage() {
                           variant="outline"
                           className={cn(
                             "text-[11px]",
-                            deleted
-                              ? "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800"
-                              : s.isActive
-                                ? "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800"
-                                : "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
+                            s.invitePending
+                              ? "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800"
+                              : deleted
+                                ? "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800"
+                                : s.isActive
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800"
+                                  : "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
                           )}
                         >
-                          {deleted ? "Deleted" : s.isActive ? "Active" : "Inactive"}
+                          {s.invitePending
+                            ? "Invite pending"
+                            : deleted
+                              ? "Deleted"
+                              : s.isActive
+                                ? "Active"
+                                : "Inactive"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm">
                         {fmtDate(s.lastLoginAt)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1.5"
-                          disabled={deleted}
-                          onClick={() => setResetTarget(s)}
-                          aria-label={`Reset password for ${s.fullName || s.email}`}
-                        >
-                          <KeyRound className="h-3.5 w-3.5" />
-                          Reset password
-                        </Button>
+                        {s.invitePending ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5"
+                              disabled={busyInvite[s.id]}
+                              onClick={() => handleResendInvite(s)}
+                            >
+                              <Send className="h-3.5 w-3.5" />
+                              Resend
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 text-red-700"
+                              disabled={busyInvite[s.id]}
+                              onClick={() => handleCancelInvite(s)}
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            disabled={deleted}
+                            onClick={() => setResetTarget(s)}
+                            aria-label={`Reset password for ${s.fullName || s.email}`}
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                            Reset password
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
@@ -299,12 +354,20 @@ export default function UsersPage() {
 
       <ResetPasswordDialog
         staff={resetTarget}
-        hotelId={selectedHotelId}
         open={!!resetTarget}
         onOpenChange={(v) => {
           if (!v) setResetTarget(null);
         }}
         onDone={() => mutate()}
+      />
+
+      <InviteStaffDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
+        businessId={selectedHotelId}
+        businessName={selectedHotel?.name ?? null}
+        businesses={businesses}
+        onInvited={() => mutate()}
       />
     </HqShell>
   );
