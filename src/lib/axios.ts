@@ -1,5 +1,10 @@
 import axios from 'axios';
 
+// Must mirror basePath in next.config.ts — window.location.pathname includes
+// it, so strip it before the startsWith checks below and prefix it on the
+// logout redirect (the hotel app owns the bare /logout on weareanli.com).
+const BASE_PATH = '/superadmin';
+
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BE_URL || 'http://localhost:3001',
     withCredentials: true,
@@ -27,7 +32,13 @@ api.interceptors.response.use(
         const status = error?.response?.status;
 
         if (typeof window !== 'undefined') {
-            const path = window.location.pathname;
+            const rawPath = window.location.pathname;
+            const path =
+                rawPath === BASE_PATH
+                    ? '/'
+                    : rawPath.startsWith(`${BASE_PATH}/`)
+                      ? rawPath.slice(BASE_PATH.length)
+                      : rawPath;
             const isAuthPage =
                 path.startsWith('/signin') ||
                 path.startsWith('/signup') ||
@@ -46,7 +57,7 @@ api.interceptors.response.use(
 
             if (status === 401 && !isAuthPage && !isPublicPage && !redirectLock) {
                 redirectLock = true;
-                window.location.href = '/logout';
+                window.location.href = `${BASE_PATH}/logout`;
                 setTimeout(() => {
                     redirectLock = false;
                 }, 1500);

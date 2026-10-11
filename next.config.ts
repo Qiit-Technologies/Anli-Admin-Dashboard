@@ -4,6 +4,14 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
     output: 'standalone',
 
+    // Single-domain consolidation: this app is served from the hotel app at
+    // https://weareanli.com/superadmin/* (reverse-proxied to this service).
+    // basePath is applied automatically to next/link, next/router,
+    // next/image and server `redirect()` — only middleware matchers,
+    // raw `window.location` navigations and the /be-api proxy prefix
+    // need manual basePath handling (see those files).
+    basePath: '/superadmin',
+
     async redirects() {
         return [];
     },

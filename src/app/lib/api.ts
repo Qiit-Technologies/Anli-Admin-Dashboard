@@ -3,9 +3,11 @@ import { redirect } from "next/navigation";
 import { getAuthToken } from "./auth";
 
 const instance: AxiosInstance = axios.create({
+  // Client-side calls go through the in-app proxy route, which lives at
+  // /superadmin/be-api/* once basePath ('/superadmin') is applied.
   baseURL:
     typeof window !== "undefined"
-      ? "/be-api"
+      ? "/superadmin/be-api"
       : process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
@@ -61,13 +63,15 @@ function handleError(error: AxiosError, currentPath?: string) {
     console.error("API Error:", status, error.message);
   }
 
-  // Only redirect on 401 if we're not already on login page or business-list
+  // Only redirect on 401 if we're not already on login page or the
+  // post-login landing (/dashboard)
   // And only if we're in a server context (not client-side)
-  // Don't redirect from business-list - let the component handle it (cookie might not be set yet)
+  // Don't redirect from the post-login landing - let the component handle it
+  // (cookie might not be set yet)
   if (
     status === 401 &&
     currentPath !== "/login" &&
-    currentPath !== "/business-list"
+    currentPath !== "/dashboard"
   ) {
     if (typeof window === "undefined") {
       // Server-side: use redirect
