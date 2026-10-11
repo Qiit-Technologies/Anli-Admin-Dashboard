@@ -132,6 +132,11 @@ export const PlanCard = ({
   // Always show warning panel
   const showWarningPanel = true;
 
+  // H6: the panel used to read "Plan expired" for every subscription without
+  // a running warning timer — including active ones. Only label it expired
+  // when the plan really is expired.
+  const isPlanExpired = status === "expired" || isExpired;
+
   const handleStartWarning = async (options?: {
     reason?: string;
     warningStartedAt?: string;
@@ -292,12 +297,16 @@ export const PlanCard = ({
                 <p className="font-semibold text-[#B45309]">
                   {warningInfo?.isActive
                     ? "Warning timer is running"
-                    : "Plan expired"}
+                    : isPlanExpired
+                      ? "Plan expired"
+                      : "Plan active"}
                 </p>
                 <p className="text-sm text-[#6B7280]">
                   {warningInfo?.isActive
                     ? "This account will be deactivated automatically when the countdown ends."
-                    : "Start a 24-hour warning timer before the system deactivates this account."}
+                    : isPlanExpired
+                      ? "Start a 24-hour warning timer before the system deactivates this account."
+                      : "This subscription is active. A warning timer is only needed before deactivation."}
                 </p>
               </div>
             </div>
