@@ -20,6 +20,15 @@ import { useBusiness } from "@/context/businessContext";
 import type { BusinessDTO } from "@/types/business";
 import type { BusinessOverviewRow } from "@/app/actions/hq-overview";
 
+/** Canonical tier id -> display name (mirrors the plan catalog). */
+const TIER_LABELS: Record<string, string> = {
+  flex: "Flex",
+  "basic-hotel": "Basic (Hotel)",
+  "basic-restaurant": "Basic (Restaurant)",
+  advanced: "Advanced",
+  custom: "Custom",
+};
+
 /* Health vocabulary matches the single documented backend definition
    (Oreon docs/business-health.md): healthy | at_risk | critical | inactive. */
 const HEALTH_META: Record<
@@ -124,6 +133,9 @@ export default function BusinessDirectory({
       healthStatus: o.healthStatus,
       healthScore: o.healthScore,
       planName: o.subscription?.planName ?? "—",
+      // H6: display the canonical tier so the directory agrees with the
+      // plan page (which labels from the subscription's plan_tier).
+      planTier: o.subscription?.planTier ?? null,
       mrr: o.subscription?.mrr ?? null,
       subStatus: o.subscription?.status ?? "no_subscription",
       users: o.users,
@@ -206,7 +218,11 @@ export default function BusinessDirectory({
                   <TableCell>
                     <HealthBadge status={r.healthStatus} score={r.healthScore} />
                   </TableCell>
-                  <TableCell className="text-sm">{r.planName}</TableCell>
+                  <TableCell className="text-sm">
+                    {r.planTier && TIER_LABELS[r.planTier]
+                      ? TIER_LABELS[r.planTier]
+                      : r.planName}
+                  </TableCell>
                   <TableCell className="text-sm">
                     {r.mrr !== null ? `₦${Number(r.mrr).toLocaleString()}` : "—"}
                   </TableCell>
