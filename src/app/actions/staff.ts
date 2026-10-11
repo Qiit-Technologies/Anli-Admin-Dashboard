@@ -114,6 +114,79 @@ export async function resetStaffPassword(
   return response;
 }
 
+/**
+ * Phase 1 (C2/C3) — invite-by-email for staff accounts.
+ * Creates an inactive staff record and emails a single-use invite link.
+ */
+export async function inviteStaffByEmail(input: {
+  email: string;
+  fullName: string;
+  businessId: number;
+  roleId?: number;
+  moduleIds?: number[];
+  permissionIds?: number[];
+}) {
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/users/invite`,
+    input
+  );
+
+  return response;
+}
+
+/** Re-sends a pending staff invite (invalidates the previous token). */
+export async function resendStaffInvite(staffId: number) {
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/users/${staffId}/resend-invite`
+  );
+
+  return response;
+}
+
+/** Cancels a pending staff invite. */
+export async function cancelStaffInvite(staffId: number) {
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/users/${staffId}/cancel-invite`
+  );
+
+  return response;
+}
+
+/**
+ * Phase 1 (C3) — emailed password-reset link.
+ * Replaces flows that generated/displayed plaintext passwords.
+ */
+export async function requestStaffPasswordReset(staffId: number) {
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/users/${staffId}/request-password-reset`
+  );
+
+  return response;
+}
+
+/** Accepts an invite from the emailed link (public). */
+export async function acceptStaffInvite(token: string, password: string) {
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/auth/accept-invite`,
+    { token, password }
+  );
+
+  return response;
+}
+
+/** Sets a new password from the emailed reset link (public). */
+export async function resetStaffPasswordWithToken(
+  token: string,
+  newPassword: string
+) {
+  const response = await axiosPost<ApiResponse<any>>(
+    `/super-admin/auth/reset-password`,
+    { token, newPassword }
+  );
+
+  return response;
+}
+
 export async function deleteStaff(businessId: number, staffId: number) {
   const response = await axiosDelete<ApiResponse<any>>(
     `/super-admin/${businessId}/staff/${staffId}`
