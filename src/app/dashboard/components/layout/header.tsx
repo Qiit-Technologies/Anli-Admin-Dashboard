@@ -2,9 +2,10 @@
 
 import { useUser } from "@/context/userContext";
 import { getInitials } from "@/utils/utils";
-import { Bell, Menu, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import HqAlertsBell from "../hq/HqAlertsBell";
 
 const Header = ({
   title,
@@ -57,13 +58,7 @@ const Header = ({
           >
             <Search size={20} className="text-gray-500" />
           </button>
-          <button
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors relative"
-            aria-label="Notifications"
-          >
-            <Bell size={20} className="text-gray-500" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
+          <HqAlertsBell />
         </div>
 
         {/* Profile Avatar */}
