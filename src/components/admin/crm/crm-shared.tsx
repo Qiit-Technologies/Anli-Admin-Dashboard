@@ -4,15 +4,21 @@ import { format } from 'date-fns';
 
 /* ---------------------------------------------------------- stages */
 
+/*
+ * Stage values MUST match the backend LeadStatus enum exactly (UPPERCASE).
+ * The API validates status changes with @IsEnum(LeadStatus) and rejects
+ * anything else — including the lowercase values used here previously,
+ * which made every stage move fail with a 400.
+ */
 export const CRM_STAGES = [
-    { value: 'new', label: 'New' },
-    { value: 'contacted', label: 'Contacted' },
-    { value: 'qualified', label: 'Qualified' },
-    { value: 'proposal', label: 'Proposal' },
-    { value: 'negotiation', label: 'Negotiation' },
-    { value: 'won', label: 'Won' },
-    { value: 'lost', label: 'Lost' },
-    { value: 'dormant', label: 'Dormant' },
+    { value: 'NEW', label: 'New' },
+    { value: 'CONTACTED', label: 'Contacted' },
+    { value: 'QUALIFIED', label: 'Qualified' },
+    { value: 'PROPOSAL', label: 'Proposal' },
+    { value: 'NEGOTIATION', label: 'Negotiation' },
+    { value: 'WON', label: 'Won' },
+    { value: 'LOST', label: 'Lost' },
+    { value: 'DORMANT', label: 'Dormant' },
 ] as const;
 
 /* ------------------------------------------- lead form options */
@@ -21,6 +27,7 @@ export const CRM_STAGES = [
  * The API validates with @IsEnum and rejects anything else, including ''.
  *  - LeadSource: DEMO_REQUEST/FREE_TRIAL/NEWSLETTER/WEBSITE/REFERRAL/COLD_OUTREACH/OTHER
  *  - HotelBusinessType: HOTEL/RESORT/RESTAURANT
+ *  - LeadStatus: NEW/CONTACTED/QUALIFIED/PROPOSAL/NEGOTIATION/WON/LOST/DORMANT
  */
 export const LEAD_SOURCE_OPTIONS = [
     { value: 'WEBSITE', label: 'Website' },
@@ -39,30 +46,30 @@ export const BUSINESS_TYPE_OPTIONS = [
 ];
 
 export function normalizeStatus(status?: string): string {
-    return (status ?? 'new').toLowerCase().replace(/\s+/g, '_');
+    return (status ?? 'NEW').toUpperCase().replace(/\s+/g, '_');
 }
 
 export function stageLabel(status?: string): string {
     const value = normalizeStatus(status);
     return (
         CRM_STAGES.find((s) => s.value === value)?.label ??
-        value.charAt(0).toUpperCase() + value.slice(1)
+        value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
     );
 }
 
 export const STAGE_BADGE: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-    contacted:
+    NEW: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+    CONTACTED:
         'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
-    qualified:
+    QUALIFIED:
         'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
-    proposal:
+    PROPOSAL:
         'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-    negotiation:
+    NEGOTIATION:
         'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-    won: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-    lost: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-    dormant:
+    WON: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+    LOST: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    DORMANT:
         'bg-gray-200 text-gray-700 dark:bg-gray-700/40 dark:text-gray-300',
 };
 
