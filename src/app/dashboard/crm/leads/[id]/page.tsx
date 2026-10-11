@@ -364,7 +364,7 @@ function InvoiceDialog({
     const defaultItems: InvoiceLineItem[] = [
         {
             description: `Anli subscription — ${lead.companyName}`,
-            quantity: 1,
+            qty: 1,
             unitPrice:
                 lead.estimatedValue !== undefined &&
                 lead.estimatedValue !== null
@@ -404,7 +404,7 @@ function InvoiceDialog({
         );
 
     const total = items.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
+        (sum, item) => sum + item.qty * item.unitPrice,
         0,
     );
 
@@ -485,15 +485,15 @@ function InvoiceDialog({
                             <div className="col-span-4 sm:col-span-2">
                                 <InputField
                                     id={`inv-qty-${index}`}
-                                    name={`quantity-${index}`}
+                                    name={`qty-${index}`}
                                     label="Qty"
                                     type="number"
                                     min="1"
-                                    value={String(item.quantity)}
+                                    value={String(item.qty)}
                                     onChange={(e) =>
                                         updateItem(
                                             index,
-                                            'quantity',
+                                            'qty',
                                             e.target.value,
                                         )
                                     }
@@ -525,7 +525,7 @@ function InvoiceDialog({
                         onClick={() =>
                             setItems((prev) => [
                                 ...prev,
-                                { description: '', quantity: 1, unitPrice: 0 },
+                                { description: '', qty: 1, unitPrice: 0 },
                             ])
                         }
                     >
@@ -623,7 +623,7 @@ function ConvertDialog({
         setConverting(true);
         try {
             const result = await convertLead(lead.id, {
-                planId,
+                planId: Number(planId),
                 phoneNumber: phone || undefined,
                 address: address || undefined,
                 state: state || undefined,
