@@ -11,7 +11,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!loading && (!user || Object.keys(user).length < 1)) {
-      router.replace("/login");
+      router.replace("/signin");
     }
   }, [user, loading, router]);
 
