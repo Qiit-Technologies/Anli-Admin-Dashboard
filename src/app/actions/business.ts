@@ -1,7 +1,13 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, axiosPatch, axiosPost, isRedirectError } from "../lib/api";
+import {
+  axiosDelete,
+  axiosGet,
+  axiosPatch,
+  axiosPost,
+  isRedirectError,
+} from "../lib/api";
 import { getBusinessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
 import { BusinessDTO } from "@/types/business";
@@ -327,5 +333,28 @@ export async function unarchiveBusiness(hotelId: number) {
       (axiosError.response?.data as ErrorResponseData)?.message ||
       "Failed to restore business from archive";
     throw new Error(message);
+  }
+}
+
+/**
+ * Permanently deletes a business. IRREVERSIBLE.
+ * The backend blocks deletion while the subscription is active.
+ */
+export async function deleteBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}`;
+    const response = await axiosDelete(url, {
+      currentPath: "/business-list",
+    });
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+    const axiosError = error as AxiosError<{ message?: string }>;
+    throw new Error(
+      axiosError.response?.data?.message ||
+        axiosError.message ||
+        "Failed to delete business"
+    );
   }
 }
