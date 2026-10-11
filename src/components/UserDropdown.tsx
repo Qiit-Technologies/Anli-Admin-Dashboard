@@ -39,7 +39,12 @@ const UserDropdown = ({ role }: { role: string }) => {
         router.push(path);
     };
 
-    const userMenuItems: Array<{
+    const isSuperAdmin = /super[\s-]?admin/i.test(role ?? '');
+    const profilePath = isSuperAdmin
+        ? '/dashboard/settings?tab=profile'
+        : '/profile';
+
+    type MenuItem = {
         key: string;
         label: string;
         description?: string;
@@ -47,7 +52,27 @@ const UserDropdown = ({ role }: { role: string }) => {
         color?: MenuItemColor;
         onClick?: () => void;
         icon?: ReactNode;
-    }> = [
+    };
+
+    // Super-admin HQ menu: hotel-context items don't exist here, and the old
+    // raw anchors escaped the /superadmin basePath, which dropped users onto
+    // /logout. Router navigation applies the basePath automatically.
+    const superAdminMenuItems: MenuItem[] = [
+        {
+            key: 'My Profile',
+            label: 'My Profile',
+            path: '/dashboard/settings?tab=profile',
+            icon: <FaUser className="h-4 w-4" />,
+        },
+        {
+            key: 'contact',
+            label: 'Contact Support',
+            path: '/dashboard/support',
+            icon: <FaEnvelope className="h-4 w-4" />,
+        },
+    ];
+
+    const hotelMenuItems: MenuItem[] = [
         {
             key: 'My Profile',
             label: 'My Profile',
@@ -79,6 +104,8 @@ const UserDropdown = ({ role }: { role: string }) => {
             icon: <FaEnvelope className="h-4 w-4" />,
         },
     ];
+
+    const userMenuItems = isSuperAdmin ? superAdminMenuItems : hotelMenuItems;
 
     return (
         <Dropdown
@@ -127,7 +154,7 @@ const UserDropdown = ({ role }: { role: string }) => {
                     <DropdownItem
                         key="profile"
                         isReadOnly
-                        onPress={() => handleNavigation('/profile')}
+                        onPress={() => handleNavigation(profilePath)}
                     >
                         <UserComponent
                             avatarProps={{
@@ -150,8 +177,7 @@ const UserDropdown = ({ role }: { role: string }) => {
                     {userMenuItems.map((item) => (
                         <DropdownItem
                             key={item.key}
-                            as="a"
-                            href={item.path}
+                            onPress={() => handleNavigation(item.path)}
                             startContent={item.icon}
                             description={item.description}
                         >
@@ -161,8 +187,7 @@ const UserDropdown = ({ role }: { role: string }) => {
                 </DropdownSection>
                 <DropdownItem
                     key={'logout'}
-                    as="a"
-                    href="/logout"
+                    onPress={() => handleNavigation('/logout')}
                     className="bg-danger text-white data-[hover=true]:bg-danger"
                     classNames={{
                         base: ['text-white'],

@@ -6,12 +6,32 @@ function Profile({
     toggleDropdown,
     headerStyles,
     linkStyles,
+    role,
 }: {
     expandedDropdown: string;
     toggleDropdown: (section: string) => void;
     headerStyles: (section: string) => string;
     linkStyles: (section: string) => string;
+    role?: string;
 }) {
+    const isSuperAdmin = /super[\s-]?admin/i.test(role ?? '');
+
+    // In the super-admin HQ, Settings is a real route — the legacy
+    // `?profile=settings` query target and the dead "Staffing" sub-link
+    // rendered the wrong page here.
+    if (isSuperAdmin) {
+        return (
+            <div className="flex flex-col mt-6">
+                <Link href="/dashboard/settings">
+                    <button className={headerStyles('profile')}>
+                        <FaCog className="w-5 h-5" />
+                        <span className="font-semibold text-lg">Settings</span>
+                    </button>
+                </Link>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col mt-6">
             <Link shallow href="?profile=settings">

@@ -32,7 +32,7 @@ import toast from "react-hot-toast";
 export default function BusinessList() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query);
+  const debouncedQuery = useDebounce(query, 400);
   const limit = 6;
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
@@ -40,10 +40,13 @@ export default function BusinessList() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAddBusinessOpen, setIsAddBusinessOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [newBusiness, setNewBusiness] = useState({
     name: "",
     address: "",
     businessType: "HOTEL",
+    country: "Nigeria",
+    state: "",
     ownerFirstName: "",
     ownerLastName: "",
     ownerEmail: "",
@@ -118,20 +121,55 @@ export default function BusinessList() {
     }
   };
 
+  const validateBusinessForm = () => {
+    const errors: Record<string, string> = {};
+    if (!newBusiness.name.trim()) errors.name = "Business name is required";
+    if (!newBusiness.address.trim()) errors.address = "Address is required";
+    if (!newBusiness.businessType.trim())
+      errors.businessType = "Business type is required";
+    if (!newBusiness.country.trim()) errors.country = "Country is required";
+    if (!newBusiness.state.trim()) errors.state = "State is required";
+    if (!newBusiness.ownerFirstName.trim())
+      errors.ownerFirstName = "Owner first name is required";
+    if (!newBusiness.ownerEmail.trim()) {
+      errors.ownerEmail = "Owner email is required";
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newBusiness.ownerEmail.trim())
+    ) {
+      errors.ownerEmail = "Enter a valid email address";
+    }
+    if (!newBusiness.ownerPhoneNumber.trim())
+      errors.ownerPhoneNumber = "Owner phone number is required";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAddBusiness = async () => {
-    if (!newBusiness.name || !newBusiness.ownerEmail) {
-      toast.error("Please fill in required fields");
+    if (!validateBusinessForm()) {
+      toast.error("Please fix the highlighted fields");
       return;
     }
     setCreating(true);
     try {
-      await createBusiness(newBusiness);
-      toast.success("Business created successfully!");
+      const response = (await createBusiness({
+        ...newBusiness,
+        ownerEmail: newBusiness.ownerEmail.trim(),
+      })) as any;
+      const newId =
+        response?.data?.hotelId ?? response?.data?.id ?? response?.hotelId;
+      toast.success(
+        newId
+          ? `Business created successfully! ID: ${newId}`
+          : "Business created successfully!",
+      );
       setIsAddBusinessOpen(false);
+      setFieldErrors({});
       setNewBusiness({
         name: "",
         address: "",
         businessType: "HOTEL",
+        country: "Nigeria",
+        state: "",
         ownerFirstName: "",
         ownerLastName: "",
         ownerEmail: "",
@@ -363,9 +401,9 @@ export default function BusinessList() {
         open={isAddBusinessOpen}
         onOpenChange={setIsAddBusinessOpen}
         title="Add New Business"
-        subTitle="Enter the business and owner details to onboarding a new business."
-        onSubmit={handleAddBusiness}
-        loading={creating}
+        description="Enter the business and owner details to onboarding a new business."
+        onConfirm={handleAddBusiness}
+        isLoading={creating}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -379,9 +417,12 @@ export default function BusinessList() {
               }
               required
             />
+            {fieldErrors.name && (
+              <p className="text-xs text-red-600">{fieldErrors.name}</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="businessType">Business Type</Label>
+            <Label htmlFor="businessType">Business Type *</Label>
             <Input
               id="businessType"
               placeholder="e.g. HOTEL"
@@ -390,9 +431,40 @@ export default function BusinessList() {
                 setNewBusiness({ ...newBusiness, businessType: e.target.value })
               }
             />
+            {fieldErrors.businessType && (
+              <p className="text-xs text-red-600">{fieldErrors.businessType}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="country">Country *</Label>
+            <Input
+              id="country"
+              placeholder="e.g. Nigeria"
+              value={newBusiness.country}
+              onChange={(e) =>
+                setNewBusiness({ ...newBusiness, country: e.target.value })
+              }
+            />
+            {fieldErrors.country && (
+              <p className="text-xs text-red-600">{fieldErrors.country}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="state">State *</Label>
+            <Input
+              id="state"
+              placeholder="e.g. Lagos"
+              value={newBusiness.state}
+              onChange={(e) =>
+                setNewBusiness({ ...newBusiness, state: e.target.value })
+              }
+            />
+            {fieldErrors.state && (
+              <p className="text-xs text-red-600">{fieldErrors.state}</p>
+            )}
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">Address *</Label>
             <Input
               id="address"
               placeholder="Address"
@@ -401,9 +473,12 @@ export default function BusinessList() {
                 setNewBusiness({ ...newBusiness, address: e.target.value })
               }
             />
+            {fieldErrors.address && (
+              <p className="text-xs text-red-600">{fieldErrors.address}</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ownerFirstName">Owner First Name</Label>
+            <Label htmlFor="ownerFirstName">Owner First Name *</Label>
             <Input
               id="ownerFirstName"
               placeholder="First Name"
@@ -415,6 +490,9 @@ export default function BusinessList() {
                 })
               }
             />
+            {fieldErrors.ownerFirstName && (
+              <p className="text-xs text-red-600">{fieldErrors.ownerFirstName}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="ownerLastName">Owner Last Name</Label>
@@ -442,9 +520,12 @@ export default function BusinessList() {
               }
               required
             />
+            {fieldErrors.ownerEmail && (
+              <p className="text-xs text-red-600">{fieldErrors.ownerEmail}</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ownerPhoneNumber">Owner Phone Number</Label>
+            <Label htmlFor="ownerPhoneNumber">Owner Phone Number *</Label>
             <Input
               id="ownerPhoneNumber"
               placeholder="Phone Number"
@@ -456,6 +537,11 @@ export default function BusinessList() {
                 })
               }
             />
+            {fieldErrors.ownerPhoneNumber && (
+              <p className="text-xs text-red-600">
+                {fieldErrors.ownerPhoneNumber}
+              </p>
+            )}
           </div>
         </div>
       </CustomDialog>

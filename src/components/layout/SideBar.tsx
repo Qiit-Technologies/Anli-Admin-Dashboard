@@ -126,6 +126,7 @@ const Sidebar: React.FC<{ role: string }> = ({ role }: { role: string }) => {
                         toggleDropdown={toggleDropdown}
                         headerStyles={headerStyles}
                         linkStyles={linkStyles}
+                        role={role}
                     />
                 </div>
 
