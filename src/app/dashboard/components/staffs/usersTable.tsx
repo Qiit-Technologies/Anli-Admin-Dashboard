@@ -51,7 +51,7 @@ function apiErrorMessage(error: unknown, fallback: string): string {
 export default function UsersTable({ businessId }: { businessId: string }) {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 400);
+  const debouncedQuery = useDebounce(query, 300);
   const limit = 10;
   const [showFilters, setShowFilters] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -80,6 +80,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const {
     data: response,
     isLoading,
+    error,
     mutate,
   } = useSWR(
     [
@@ -103,6 +104,9 @@ export default function UsersTable({ businessId }: { businessId: string }) {
         startDate: dateRange.start || undefined,
         endDate: dateRange.end || undefined,
       }),
+    // Keep the previous page visible while a search/filter refetch is in
+    // flight so the table never vanishes mid-typing.
+    { keepPreviousData: true },
   );
 
   const staff: Array<Record<string, any> & { invitePending?: boolean }> =
@@ -207,6 +211,18 @@ export default function UsersTable({ businessId }: { businessId: string }) {
       {isLoading ? (
         <div className="p-5 flex items-center justify-center">
           <Spinner size="lg" />
+        </div>
+      ) : error && staff.length === 0 ? (
+        <div className="flex flex-col items-center justify-center space-y-3 px-6 py-12 text-center">
+          <p className="text-sm text-red-600">
+            Couldn&apos;t load staff. Please try again.
+          </p>
+          <button
+            onClick={() => mutate()}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       ) : (
         <>
@@ -407,7 +423,13 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                         </div>
                         <div className="text-center">
                           <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            No staff members found
+                            {query ||
+                            statusFilter !== "all" ||
+                            departmentFilter !== "all" ||
+                            dateRange.start ||
+                            dateRange.end
+                              ? "No staff match your search"
+                              : "No staff members found"}
                           </h3>
                           <p className="text-gray-500 mb-4">
                             {query ||
