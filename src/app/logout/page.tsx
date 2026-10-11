@@ -122,7 +122,8 @@ export default function LogoutPage() {
             // Using window.location.href instead of router.push to ensure
             // absolutely ALL React state, SWR cache and other memory-based
             // store are wiped clean on logout before redirecting to signin.
-            window.location.href = '/signin';
+            // basePath is explicit: window.location bypasses Next.js routing.
+            window.location.href = '/superadmin/signin';
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Run only once on mount

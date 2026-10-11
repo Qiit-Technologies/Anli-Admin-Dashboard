@@ -358,7 +358,8 @@ export default function BusinessDetailsPage() {
                   ) : (
                     <div className="col-span-full border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center text-gray-500">
                       <Image
-                        src="/sample-company.png"
+                        // basePath is NOT auto-applied to next/image src — prefix it.
+                        src="/superadmin/sample-company.png"
                         alt="No Images"
                         width={60}
                         height={60}

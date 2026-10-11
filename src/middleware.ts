@@ -37,11 +37,26 @@ type CustomJwtPayload = {
     modules?: Array<{ id: number; name: string }>;
 };
 
+// Single source of truth for the basePath (mirrors next.config.ts).
+// Middleware sees the full pathname INCLUDING basePath, so the matcher
+// below and the redirect targets both carry it explicitly.
+const BASE_PATH = '/superadmin';
+
 export function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname;
+    // basePath ('/superadmin') is part of request.nextUrl.pathname in
+    // middleware — strip it so all route checks below keep working on the
+    // logical paths, and prefix it explicitly on redirect targets (the
+    // hotel app owns the bare paths on weareanli.com).
+    const rawPath = request.nextUrl.pathname;
+    const path =
+        rawPath === BASE_PATH
+            ? '/'
+            : rawPath.startsWith(`${BASE_PATH}/`)
+              ? rawPath.slice(BASE_PATH.length)
+              : rawPath;
     const accessToken = request.cookies.get('access_token')?.value;
 
-    const ACCESS_DENIED_PAGE = '/access-denied';
+    const ACCESS_DENIED_PAGE = `${BASE_PATH}/access-denied`;
 
     const needsProtection = PROTECTED_ROUTES.some(
         (route) => path === route || path.startsWith(`${route}/`),
@@ -53,13 +68,15 @@ export function middleware(request: NextRequest) {
 
     try {
         if (!accessToken) {
-            return NextResponse.redirect(new URL('/signin', request.url));
+            return NextResponse.redirect(
+                new URL(`${BASE_PATH}/signin`, request.url),
+            );
         }
 
         const isTokenExpired = checkTokenExpiration(accessToken);
         if (isTokenExpired) {
             const redirectResponse = NextResponse.redirect(
-                new URL('/logout', request.url),
+                new URL(`${BASE_PATH}/logout`, request.url),
             );
             redirectResponse.cookies.delete('access_token');
             if (typeof window !== 'undefined') {
@@ -125,7 +142,9 @@ export function middleware(request: NextRequest) {
         return response;
     } catch (error: any) {
         console.error('Middleware error:', error);
-        const response = NextResponse.redirect(new URL('/logout', request.url));
+        const response = NextResponse.redirect(
+            new URL(`${BASE_PATH}/logout`, request.url),
+        );
         response.cookies.delete('access_token');
         if (typeof window !== 'undefined') {
             localStorage.removeItem('user');
@@ -171,23 +190,27 @@ function checkTokenExpiration(token: string): boolean {
     }
 }
 
+// Matcher runs against the full pathname INCLUDING basePath, so every
+// protected route carries the '/superadmin' prefix explicitly.
+// NOTE: matcher entries must be static string literals — Next.js parses
+// this config at compile time, so no template interpolation here.
 export const config = {
     matcher: [
-        '/dashboard/:path*',
-        '/admin/:path*',
-        '/house-keeping/:path*',
-        '/stock/:path*',
-        '/front-of-house/:path*',
-        '/kitchen/:path*',
-        '/back-of-house/:path*',
-        '/bar/:path*',
-        '/front-office/:path*',
-        '/manager/:path*',
-        '/employee/:path*',
-        '/banquet/:path*',
-        '/account/:path*',
-        '/membership/:path*',
-        '/reservations/:path*',
+        '/superadmin/dashboard/:path*',
+        '/superadmin/admin/:path*',
+        '/superadmin/house-keeping/:path*',
+        '/superadmin/stock/:path*',
+        '/superadmin/front-of-house/:path*',
+        '/superadmin/kitchen/:path*',
+        '/superadmin/back-of-house/:path*',
+        '/superadmin/bar/:path*',
+        '/superadmin/front-office/:path*',
+        '/superadmin/manager/:path*',
+        '/superadmin/employee/:path*',
+        '/superadmin/banquet/:path*',
+        '/superadmin/account/:path*',
+        '/superadmin/membership/:path*',
+        '/superadmin/reservations/:path*',
     ],
 };
 

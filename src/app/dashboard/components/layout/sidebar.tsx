@@ -103,7 +103,8 @@ const Sidebar = ({
 
           <div className="flex relative justify-center items-center mb-8 sm:mb-12">
             <Image
-              src="/logo-white.svg"
+              // basePath is NOT auto-applied to next/image src — prefix it.
+              src="/superadmin/logo-white.svg"
               alt="Logo"
               width={100}
               height={24}

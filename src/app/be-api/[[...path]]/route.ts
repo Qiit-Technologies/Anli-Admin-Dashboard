@@ -12,8 +12,9 @@ async function proxy(req: NextRequest) {
   if (auth) headers.set("authorization", auth);
 
   const url = new URL(req.url);
-  // /be-api/<path> -> BACKEND_URL/<path>, preserving query string
-  const target = `${BACKEND_URL}${url.pathname.replace(/^\/be-api/, "")}${url.search}`;
+  // /superadmin/be-api/<path> -> BACKEND_URL/<path>, preserving query string
+  // (basePath '/superadmin' is part of the incoming pathname in the proxy).
+  const target = `${BACKEND_URL}${url.pathname.replace(/^\/superadmin\/be-api/, "")}${url.search}`;
 
   const body = ["GET", "HEAD"].includes(req.method)
     ? undefined
