@@ -39,7 +39,7 @@ import {
   type ReportResult,
 } from "@/app/actions/hq-reports";
 import { getBillingMetrics } from "@/app/actions/hq-overview";
-import { toCsv, downloadCsv } from "@/lib/csv";
+import { toCsv, downloadCsv, type CsvColumn } from "@/lib/csv";
 
 function fmtNaira(n: number | null | undefined): string {
   if (n === null || n === undefined) return "—";
@@ -65,7 +65,7 @@ function stamp(): string {
 function exportGuarded<T>(
   filename: string,
   rows: T[],
-  columns: Parameters<typeof toCsv<T>>[1],
+  columns: CsvColumn<T>[],
   emptyMessage: string,
 ) {
   if (rows.length === 0) {
