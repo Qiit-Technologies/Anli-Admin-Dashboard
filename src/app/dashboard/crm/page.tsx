@@ -46,6 +46,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import toast from 'react-hot-toast';
@@ -60,6 +61,7 @@ import {
     normalizeStatus,
     stageBadgeClass,
     stageLabel,
+    WON_STAGE,
 } from '@/components/admin/crm/crm-shared';
 
 
@@ -415,7 +417,11 @@ function LeadCard({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {CRM_STAGES.filter(
-                                (s) => s.value !== normalizeStatus(lead.status),
+                                (s) =>
+                                    s.value !== normalizeStatus(lead.status) &&
+                                    // WON is never a direct move: leads become
+                                    // Won only through conversion (backend rule).
+                                    s.value !== WON_STAGE,
                             ).map((stage) => (
                                 <DropdownMenuItem
                                     key={stage.value}
@@ -424,6 +430,14 @@ function LeadCard({
                                     {stage.label}
                                 </DropdownMenuItem>
                             ))}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href={`/dashboard/crm/leads/${lead.id}`}
+                                >
+                                    Convert to client…
+                                </Link>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
