@@ -4,6 +4,10 @@ import {
   GetRolesResponse,
   Permission,
 } from "@/app/actions/types";
+import {
+  getRoleTemplates,
+  type RoleTemplate,
+} from "@/app/actions/hq-roles";
 import { InputField } from "@/components/common/form";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { Role } from "@/types/staff";
@@ -61,6 +65,24 @@ export const StaffDetails = ({
   );
 
   const modules = useMemo(() => modulesData ?? [], [modulesData]);
+
+  // M9: role templates (Admin, Support Agent, Billing Manager, Read-only).
+  // One click fills the permission checkboxes below. Only resolves for
+  // super-admin sessions; otherwise the picker stays hidden and the
+  // granular checkboxes work as before.
+  const { data: templatesRes } = useSWR("hq-role-templates", getRoleTemplates, {
+    revalidateOnFocus: false,
+  });
+  const roleTemplates: RoleTemplate[] = useMemo(
+    () => (templatesRes && templatesRes.ok ? templatesRes.data : []),
+    [templatesRes],
+  );
+
+  const applyRoleTemplate = (key: string) => {
+    const template = roleTemplates.find((t) => t.key === key);
+    if (!template) return;
+    setSelectedPermissions(template.permissions.map((p) => String(p.id)));
+  };
 
   useEffect(() => {
     if (formData.permissions && permissions.length > 0 && modules) {
@@ -158,6 +180,36 @@ export const StaffDetails = ({
         searchPlaceholder="Search modules..."
         maxSelectedDisplay={3}
       />
+
+      {roleTemplates.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="role-template-select"
+            className="text-sm font-medium text-gray-700"
+          >
+            Apply role template
+          </label>
+          <select
+            id="role-template-select"
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            value=""
+            onChange={(e) => {
+              if (e.target.value) applyRoleTemplate(e.target.value);
+            }}
+          >
+            <option value="">One-click fill permissions…</option>
+            {roleTemplates.map((t) => (
+              <option key={t.key} value={t.key}>
+                {t.name} ({t.permissionCount} permissions)
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500">
+            Fills the permission checkboxes below — you can still adjust them
+            individually before saving.
+          </p>
+        </div>
+      )}
 
       <NewMultiSelect
         items={permissions}

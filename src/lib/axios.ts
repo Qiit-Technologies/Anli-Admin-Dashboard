@@ -41,6 +41,7 @@ api.interceptors.response.use(
                       : rawPath;
             const isAuthPage =
                 path.startsWith('/signin') ||
+                path.startsWith('/login') ||
                 path.startsWith('/signup') ||
                 path.startsWith('/verify-email') ||
                 path.startsWith('/logout') ||

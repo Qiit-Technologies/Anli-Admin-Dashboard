@@ -239,6 +239,7 @@ export default function UsersPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Last login</TableHead>
@@ -254,6 +255,9 @@ export default function UsersPage() {
                         {s.fullName || s.username || "—"}
                       </TableCell>
                       <TableCell className="text-sm">{s.email || "—"}</TableCell>
+                      <TableCell className="text-sm">
+                        {s.phoneNumber || "—"}
+                      </TableCell>
                       <TableCell className="text-sm">
                         {s.department?.name || "—"}
                       </TableCell>

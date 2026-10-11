@@ -19,8 +19,20 @@ const Header = ({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) router.push("/login");
+    // M4: only redirect when there is genuinely no session. On a fresh
+    // direct navigation the user context hydrates from localStorage while
+    // the server has already admitted us via the access_token cookie —
+    // redirecting on `!user` alone used to drop valid sessions onto the
+    // (empty) sign-in form. The cookie is readable client-side
+    // (httpOnly: false, see src/app/actions/auth.ts setAuthCookie); if it
+    // exists, the session is alive and we stay put.
+    if (!loading && !user) {
+      const hasSessionCookie =
+        typeof document !== "undefined" &&
+        document.cookie
+          .split(";")
+          .some((c) => c.trim().startsWith("access_token="));
+      if (!hasSessionCookie) router.push("/signin");
     }
   }, [loading, user, router]);
 

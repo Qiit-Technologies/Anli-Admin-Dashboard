@@ -17,8 +17,8 @@ import { setAuthCookie } from "@/app/actions/auth";
 
 /**
  * Shared super-admin sign-in form.
- * Rendered at both /login and /signin (served under basePath as
- * /superadmin/login and /superadmin/signin).
+ * Rendered at /signin (served under basePath as /superadmin/signin).
+ * The legacy /superadmin/login URL permanently redirects here (M4).
  */
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,7 +46,7 @@ export default function LoginForm() {
           password,
         },
         {
-          currentPath: "/login",
+          currentPath: "/signin",
         },
       );
     },

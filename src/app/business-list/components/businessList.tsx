@@ -76,8 +76,8 @@ export default function BusinessList() {
             }`;
             console.warn("401 error - retrying after setting cookie");
           } else {
-            // No token at all - redirect to login
-            router.push("/login");
+            // No token at all - redirect to sign-in (canonical URL, M4)
+            router.push("/signin");
           }
         }
       },
