@@ -18,8 +18,10 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBusiness } from "@/context/businessContext";
 import type { BusinessDTO } from "@/types/business";
-import type { HotelHealth } from "@/app/actions/hq-overview";
+import type { BusinessOverviewRow } from "@/app/actions/hq-overview";
 
+/* Health vocabulary matches the single documented backend definition
+   (Oreon docs/business-health.md): healthy | at_risk | critical | inactive. */
 const HEALTH_META: Record<
   string,
   { label: string; className: string; dot: string }
@@ -29,6 +31,12 @@ const HEALTH_META: Record<
     className:
       "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800",
     dot: "bg-emerald-500",
+  },
+  at_risk: {
+    label: "At Risk",
+    className:
+      "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800",
+    dot: "bg-amber-500",
   },
   warning: {
     label: "Warning",
@@ -41,6 +49,12 @@ const HEALTH_META: Record<
     className:
       "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800",
     dot: "bg-red-500",
+  },
+  inactive: {
+    label: "Inactive",
+    className:
+      "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700",
+    dot: "bg-gray-400",
   },
   unknown: {
     label: "Unknown",
@@ -65,7 +79,7 @@ function HealthBadge({ status, score }: { status: string; score: number | null }
 
 function SubStatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase();
-  const cls = s.includes("active")
+  const cls = s.includes("active") && !s.includes("inactive")
     ? "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800"
     : s.includes("trial")
       ? "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-800"
@@ -74,9 +88,10 @@ function SubStatusBadge({ status }: { status: string }) {
         : s.includes("expir") || s.includes("cancel")
           ? "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800"
           : "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700";
+  const label = s === "no_subscription" ? "No subscription" : status;
   return (
     <Badge variant="outline" className={cn("whitespace-nowrap text-[11px]", cls)}>
-      {status}
+      {label}
     </Badge>
   );
 }
@@ -86,10 +101,12 @@ export function BusinessDirectorySkeleton() {
 }
 
 export default function BusinessDirectory({
-  health,
+  overview,
   hotels,
 }: {
-  health: HotelHealth[] | null;
+  /** Single-payload rows from GET /super-admin/businesses/overview (H7). */
+  overview: BusinessOverviewRow[] | null;
+  /** Business list, used only to resolve the click-through DTO. */
   hotels: BusinessDTO[];
 }) {
   const router = useRouter();
@@ -97,77 +114,32 @@ export default function BusinessDirectory({
   const [search, setSearch] = useState("");
 
   const rows = useMemo(() => {
-    const healthById = new Map<string, HotelHealth>();
-    (health ?? []).forEach((h) => healthById.set(String(h.hotelId), h));
+    const dtoById = new Map<string, BusinessDTO>();
+    hotels.forEach((h) => dtoById.set(String(h.id), h));
 
-    const all: {
-      key: string;
-      hotelId: string | number;
-      hotelName: string;
-      healthStatus: string;
-      healthScore: number | null;
-      planName: string;
-      mrr: number | null;
-      subStatus: string;
-      users: number | null;
-      openTickets: number | null;
-      updated: string | null;
-      dto: BusinessDTO | null;
-    }[] = hotels.map((h) => {
-      const hh = healthById.get(String(h.id));
-      // subscription may be null on health items — stay null-safe
-      const sub = hh?.subscription ?? null;
-      const st = (
-        sub?.status ||
-        h.subscription?.status ||
-        "unknown"
-      ).toLowerCase();
-      return {
-        key: `h-${h.id}`,
-        hotelId: h.id,
-        hotelName: h.name,
-        healthStatus: hh?.healthStatus ?? "unknown",
-        healthScore: hh?.healthScore ?? null,
-        planName: sub?.planName ?? "—",
-        mrr: sub && sub.mrr ? sub.mrr : null,
-        subStatus: st,
-        users: hh?.users?.staffCount ?? null,
-        openTickets: hh?.tickets?.open ?? null,
-        updated: null,
-        dto: h,
-      };
-    });
-
-    // Health-only rows for hotels not in the directory list (shouldn't normally happen)
-    (health ?? []).forEach((hh) => {
-      if (!all.some((r) => String(r.hotelId) === String(hh.hotelId))) {
-        const sub = hh.subscription ?? null;
-        all.push({
-          key: `hh-${hh.hotelId}`,
-          hotelId: hh.hotelId,
-          hotelName: hh.hotelName,
-          healthStatus: hh.healthStatus,
-          healthScore: hh.healthScore,
-          planName: sub?.planName ?? "—",
-          mrr: sub && sub.mrr ? sub.mrr : null,
-          subStatus: (sub?.status ?? "unknown").toLowerCase(),
-          users: hh.users?.staffCount ?? null,
-          openTickets: hh.tickets?.open ?? null,
-          updated: null,
-          dto: null,
-        });
-      }
-    });
+    const all = (overview ?? []).map((o) => ({
+      key: `h-${o.hotelId}`,
+      hotelId: o.hotelId,
+      hotelName: o.hotelName,
+      healthStatus: o.healthStatus,
+      healthScore: o.healthScore,
+      planName: o.subscription?.planName ?? "—",
+      mrr: o.subscription?.mrr ?? null,
+      subStatus: o.subscription?.status ?? "no_subscription",
+      users: o.users,
+      openTickets: o.openTickets,
+      dto: dtoById.get(String(o.hotelId)) ?? null,
+    }));
 
     const q = search.trim().toLowerCase();
     const filtered = q
       ? all.filter((r) => r.hotelName.toLowerCase().includes(q))
       : all;
-    // Critical first, then warning, then the rest
+    // Critical first, then at-risk, then inactive, then the rest
     const rank = (s: string) =>
-      s === "critical" ? 0 : s === "warning" ? 1 : s === "unknown" ? 2 : 3;
+      s === "critical" ? 0 : s === "at_risk" || s === "warning" ? 1 : s === "inactive" ? 2 : 3;
     return filtered.sort((a, b) => rank(a.healthStatus) - rank(b.healthStatus));
-  }, [health, hotels, search]);
+  }, [overview, hotels, search]);
 
   const openBusiness = (hotelId: string | number, dto: BusinessDTO | null) => {
     if (dto) {
@@ -242,10 +214,10 @@ export default function BusinessDirectory({
                     <SubStatusBadge status={r.subStatus} />
                   </TableCell>
                   <TableCell className="text-right text-sm">
-                    {r.users ?? "—"}
+                    {r.users}
                   </TableCell>
                   <TableCell className="text-right text-sm">
-                    {r.openTickets ?? "—"}
+                    {r.openTickets}
                   </TableCell>
                 </TableRow>
               ))

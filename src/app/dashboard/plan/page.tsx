@@ -31,6 +31,8 @@ import {
   cancelWarningTimer,
   startWarningTimer,
   reactivateBusiness,
+  selectPlan,
+  getSubscriptionPlans,
 } from "@/app/actions/plan";
 import { updateHotelServices } from "@/app/actions/business";
 import { FaSpinner } from "react-icons/fa";
@@ -153,8 +155,8 @@ function deriveTierIdFromServices(services: string | null | undefined): string |
   return null;
 }
 
-function formatPrice(n: number | null) {
-  if (n === null) return "Custom";
+function formatPrice(n: number | null | undefined) {
+  if (n === null || n === undefined) return "Custom";
   return `₦${n.toLocaleString("en-NG")}`;
 }
 
@@ -188,9 +190,10 @@ export default function CurrentPlanPage() {
   const [settingPlan, setSettingPlan] = useState<string | null>(null);
   const [confirmPlanTierId, setConfirmPlanTierId] = useState<string | null>(null);
 
-  // Derive current tier from services (filtered)
-  const currentTierId = deriveTierIdFromServices(business?.services);
-  const currentTier = TIERS.find((t) => t.id === currentTierId) ?? null;
+  // Heuristic fallback for the current plan tier; the subscription record
+  // from the backend (billingInfo.plan_tier, resolved below) is the single
+  // source of truth (H6.2).
+  const servicesTierId = deriveTierIdFromServices(business?.services);
   const activeModules = filterServices(business?.services);
 
   const {
@@ -239,13 +242,27 @@ export default function CurrentPlanPage() {
     })
     : "Not available";
 
-  const modulesAllowed = activeModules.length > 0 ? activeModules.length : (() => {
+  // Single source of truth for the current plan (H6.2): the subscription
+  // record from the backend (plan_tier) wins over the services-based
+  // heuristic, so the header card and the pricing-section badge can never
+  // disagree. The heuristic is only a fallback for businesses with no
+  // billing record yet.
+  const currentTierId = billingInfo?.plan_tier ?? servicesTierId;
+  const currentTier = TIERS.find((t) => t.id === currentTierId) ?? null;
+
+  // "Modules Allowed" from the plan's actual modules (H6.4): the backend now
+  // returns the subscription plan's modulesAllowed; fall back to the
+  // business services, then to the raw modules field.
+  const planModules = billingInfo?.plan_modules;
+  const modulesAllowed = planModules && planModules.length > 0 ? planModules.length : activeModules.length > 0 ? activeModules.length : (() => {
     if (!billingInfo?.modules) return 0;
     if (Array.isArray(billingInfo.modules)) return billingInfo.modules.length;
     return billingInfo.modules.split(",").filter(Boolean).length;
   })();
 
-  const benefitsList = activeModules.length > 0
+  const benefitsList = planModules && planModules.length > 0
+    ? planModules.join(", ")
+    : activeModules.length > 0
     ? activeModules.map(m => m.replace(/_/g, " ")).join(", ")
     : (() => {
       if (!billingInfo?.modules) return "—";
@@ -360,9 +377,34 @@ export default function CurrentPlanPage() {
     setConfirmPlanTierId(null);
     try {
       await updateHotelServices(selectedHotelId, services);
+      // Keep the subscription record in sync with the services (H6.2): the
+      // plan page labels the current plan from the subscription (plan_tier),
+      // so a services-only update would re-introduce the contradiction.
+      // The services update above is kept even if the plan-link step fails.
+      let planLinked = false;
+      try {
+        const plansRes = await getSubscriptionPlans();
+        const match = plansRes.ok
+          ? plansRes.data.find((p) => p.tierId === tierId)
+          : undefined;
+        if (match && selectedHotelNumericId) {
+          await selectPlan({ planId: String(match.id) }, selectedHotelNumericId);
+          planLinked = true;
+        }
+      } catch (linkError) {
+        console.warn("Subscription plan link failed:", linkError);
+      }
       // Update business context so current-plan badge refreshes everywhere
       setBusiness({ ...business, services });
-      toast.success(`Plan updated to ${TIERS.find(t => t.id === tierId)?.name ?? tierId}`);
+      await mutatePlan();
+      const tierName = TIERS.find(t => t.id === tierId)?.name ?? tierId;
+      if (planLinked) {
+        toast.success(`Plan updated to ${tierName}`);
+      } else {
+        toast.warning(
+          `Services updated to ${tierName}, but the subscription record could not be linked — verify the plan in the subscription before relying on the label.`,
+        );
+      }
     } catch (error: any) {
       toast.error(error instanceof Error ? error.message : "Failed to update plan");
     } finally {
@@ -488,7 +530,11 @@ export default function CurrentPlanPage() {
                         <p
                           className={`text-[10px] ${isActive ? "text-white/70" : "text-gray-400"}`}
                         >
-                          /month
+                          {/* H6.1: never render a dangling "/month" when the tier
+                              has no monthly price — show "custom pricing" instead. */}
+                          {tier.monthly !== null && tier.monthly !== undefined
+                            ? "/month"
+                            : "custom pricing"}
                         </p>
                       </div>
                     </div>

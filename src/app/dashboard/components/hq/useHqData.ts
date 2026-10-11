@@ -5,9 +5,11 @@ import {
   getHqOverview,
   getHotelHealth,
   getBillingMetrics,
+  getBusinessesOverview,
   type HqOverview,
   type HotelHealth,
   type BillingMetrics,
+  type BusinessOverviewRow,
 } from "@/app/actions/hq-overview";
 import getBusinessList from "@/app/actions/business";
 import {
@@ -175,6 +177,27 @@ export function useBusinessDirectory() {
     async (): Promise<BusinessDTO[]> => {
       const res = await getBusinessList({ page: 1, limit: 100 });
       return (res as any)?.data?.hotels ?? [];
+    },
+    { revalidateOnFocus: false },
+  );
+  return { data, error, isLoading, refresh: mutate };
+}
+
+/**
+ * Single-call HQ business directory data (H7): per business the subscription
+ * status, plan name, MRR contribution, user count, open ticket count and the
+ * health score — one documented health definition, one payload, no
+ * cross-fetch join. Unlike the old directory+health join, a failed fetch
+ * surfaces an error instead of silently rendering "unknown"/"—" rows.
+ */
+export function useBusinessesOverview() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "hq-businesses-overview",
+    async (): Promise<BusinessOverviewRow[]> => {
+      const res = await getBusinessesOverview();
+      if (!res.ok) throw new Error(res.error);
+      if (!Array.isArray(res.data)) throw new Error("Unexpected overview shape");
+      return res.data;
     },
     { revalidateOnFocus: false },
   );

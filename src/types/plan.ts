@@ -19,4 +19,13 @@ export interface BillingInfoDTO {
   isExpired?: boolean;
   hotelActive?: boolean;
   warningInfo?: WarningInfoDTO | null;
+  /**
+   * Canonical tier id from the subscription record ('flex' | 'basic-hotel' |
+   * 'basic-restaurant' | 'advanced' | 'custom') — the single source of truth
+   * the plan page uses to label the current plan (H6.2). Null when the plan
+   * name doesn't map to a known tier.
+   */
+  plan_tier?: string | null;
+  /** The plan's actual modules (subscription_plan.features.modulesAllowed). */
+  plan_modules?: string[];
 }
