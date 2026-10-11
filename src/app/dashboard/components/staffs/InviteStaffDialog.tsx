@@ -122,6 +122,11 @@ export default function InviteStaffDialog({
       // Backend #605: the invite is created best-effort — the email may not
       // have been delivered. Report honestly instead of claiming it was sent.
       const delivered = res?.data?.emailDelivered !== false;
+      // TEMP DEBUG: show the backend's own message text.
+      const backendMessage = (res as any)?.data?.message as string | undefined;
+      if (backendMessage) {
+        toast(backendMessage, { icon: "🔍", duration: 10000 });
+      }
       if (delivered) {
         toast.success(`Invite sent to ${email.trim().toLowerCase()}`);
       } else {
