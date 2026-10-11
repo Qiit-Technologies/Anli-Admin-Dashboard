@@ -13,6 +13,7 @@ import {
     ChevronRight,
     MailCheck,
     LifeBuoy,
+    Plus,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +62,7 @@ import {
     type SupportTicket,
     type TicketStatus,
 } from '@/app/actions/super-admin-support';
+import { NewTicketDialog } from './NewTicketDialog';
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
     { value: 'all', label: 'All statuses' },
@@ -175,6 +177,7 @@ export function SupportTicketsView() {
     const [page, setPage] = useState(1);
     const [selectedId, setSelectedId] = useState<string | number | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
+    const [newTicketOpen, setNewTicketOpen] = useState(false);
 
     // Debounce the search input so we don't hammer the API on every keystroke
     const handleSearchChange = (value: string) => {
@@ -363,6 +366,14 @@ export function SupportTicketsView() {
                                     Clear
                                 </Button>
                             )}
+                            <Button
+                                size="sm"
+                                onClick={() => setNewTicketOpen(true)}
+                                className="gap-1.5"
+                            >
+                                <Plus className="h-4 w-4" />
+                                New ticket
+                            </Button>
                         </div>
                     </div>
                 </Card>
@@ -405,13 +416,22 @@ export function SupportTicketsView() {
                             </p>
                             {(statusFilter !== 'all' ||
                                 priorityFilter !== 'all' ||
-                                debouncedSearch) && (
+                                debouncedSearch) ? (
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={resetFilters}
                                 >
                                     Clear filters
+                                </Button>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    onClick={() => setNewTicketOpen(true)}
+                                    className="gap-1.5"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    New ticket
                                 </Button>
                             )}
                         </div>
@@ -531,6 +551,15 @@ export function SupportTicketsView() {
                 open={detailOpen}
                 onOpenChange={setDetailOpen}
                 onChanged={() => mutateList()}
+            />
+
+            <NewTicketDialog
+                open={newTicketOpen}
+                onOpenChange={setNewTicketOpen}
+                onCreated={() => {
+                    setPage(1);
+                    mutateList();
+                }}
             />
         </div>
     );
