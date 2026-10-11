@@ -4,7 +4,7 @@ import Header from "../components/layout/header";
 import Sidebar from "../components/layout/sidebar";
 import { useBusiness } from "@/context/businessContext";
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, LayoutGrid, MapPin, Phone, Plus, Trash2, Upload, Loader2 } from "lucide-react";
+import { Calendar, LayoutGrid, MapPin, Phone, Plus, Trash2, Upload, Loader2, Pencil } from "lucide-react";
 import {
   capitalize,
   formatDate,
@@ -24,11 +24,13 @@ import {
   getBusinessDetails,
 } from "@/app/actions/business";
 import getModulesList, { Module } from "@/app/actions/modules";
+import EditBusinessDialog from "@/app/business-list/components/EditBusinessDialog";
 import { useRouter } from "next/navigation";
 
 export default function BusinessDetailsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isManageModulesOpen, setIsManageModulesOpen] = useState(false);
+  const [isEditBusinessOpen, setIsEditBusinessOpen] = useState(false);
   const [availableModules, setAvailableModules] = useState<Module[]>([]);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [loadingModules, setLoadingModules] = useState(false);
@@ -110,6 +112,18 @@ export default function BusinessDetailsPage() {
       toast.error(errorMessage);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleBusinessSaved = async () => {
+    if (!business?.id) return;
+    try {
+      const res = await getBusinessDetails(business.id.toString());
+      if (res?.data?.hotel) {
+        setBusiness(res.data.hotel);
+      }
+    } catch (error) {
+      console.error("Failed to refresh business details:", error);
     }
   };
 
@@ -237,12 +251,25 @@ export default function BusinessDetailsPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <Button
+                onClick={() => setIsEditBusinessOpen(true)}
+                className="rounded-[10px] bg-[#007BFF] hover:bg-[#007BFF]/90 text-white w-full sm:w-fit py-3 sm:py-2 px-4 font-semibold cursor-pointer flex items-center justify-center gap-2"
+              >
+                Edit Business <Pencil size={18} />
+              </Button>
+              <Button
                 onClick={() => setIsManageModulesOpen(true)}
                 className="rounded-[10px] bg-[#FF6F00] hover:bg-[#FF6F00]/90 text-white w-full sm:w-fit py-3 sm:py-2 px-4 font-semibold cursor-pointer flex items-center justify-center gap-2"
               >
                 Manage Modules <Plus size={18} />
               </Button>
             </div>
+
+            <EditBusinessDialog
+              business={business}
+              open={isEditBusinessOpen}
+              onOpenChange={setIsEditBusinessOpen}
+              onSaved={handleBusinessSaved}
+            />
 
             {business && (
               <div className="border-t border-gray-100 pt-6 mt-6 flex flex-col gap-4">
@@ -380,8 +407,8 @@ export default function BusinessDetailsPage() {
         open={isManageModulesOpen}
         onOpenChange={setIsManageModulesOpen}
         title="Manage Modules"
-        onSubmit={handleSaveModules}
-        loading={saving}
+        onConfirm={handleSaveModules}
+        isLoading={saving}
         trigger={<></>}
       >
         <div className="space-y-4">
