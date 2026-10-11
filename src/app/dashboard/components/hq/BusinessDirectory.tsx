@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBusiness } from "@/context/businessContext";
 import type { BusinessDTO } from "@/types/business";
@@ -85,6 +85,68 @@ export function BusinessDirectorySkeleton() {
   return <Skeleton className="h-96 rounded-xl" />;
 }
 
+/* ── M3: client-side column sorting ────────────────────────────────────── */
+
+type SortKey =
+  | "hotelName"
+  | "healthStatus"
+  | "planName"
+  | "mrr"
+  | "subStatus"
+  | "users"
+  | "openTickets";
+
+type Dir = 1 | -1;
+
+const HEALTH_RANK = (s: string) =>
+  s === "critical" ? 0 : s === "warning" ? 1 : s === "unknown" ? 2 : 3;
+
+const SUB_RANK = (s: string) =>
+  s.includes("expir") || s.includes("cancel")
+    ? 0
+    : s.includes("trial") || s.includes("grace")
+      ? 1
+      : s.includes("active")
+        ? 2
+        : 3;
+
+function SortHeader({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onSort,
+  className,
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey;
+  dir: Dir;
+  onSort: (k: SortKey) => void;
+  className?: string;
+}) {
+  const active = activeKey === sortKey;
+  const Icon = active ? (dir === 1 ? ArrowUp : ArrowDown) : ArrowUpDown;
+  return (
+    <TableHead className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={cn(
+          "inline-flex items-center gap-1 font-medium hover:text-foreground",
+          active ? "text-foreground" : "text-muted-foreground",
+          className?.includes("text-right") && "flex-row-reverse",
+        )}
+        aria-label={`Sort by ${label} ${active ? (dir === 1 ? "descending" : "ascending") : ""}`}
+        aria-sort={active ? (dir === 1 ? "ascending" : "descending") : undefined}
+      >
+        {label}
+        <Icon className={cn("h-3.5 w-3.5", !active && "opacity-40")} />
+      </button>
+    </TableHead>
+  );
+}
+
 export default function BusinessDirectory({
   health,
   hotels,
@@ -95,6 +157,18 @@ export default function BusinessDirectory({
   const router = useRouter();
   const { setBusiness } = useBusiness();
   const [search, setSearch] = useState("");
+  // Default keeps the previous critical-first ordering.
+  const [sortKey, setSortKey] = useState<SortKey>("healthStatus");
+  const [sortDir, setSortDir] = useState<Dir>(1);
+
+  const onSort = (k: SortKey) => {
+    if (k === sortKey) {
+      setSortDir((d) => (d === 1 ? -1 : 1));
+    } else {
+      setSortKey(k);
+      setSortDir(1);
+    }
+  };
 
   const rows = useMemo(() => {
     const healthById = new Map<string, HotelHealth>();
@@ -163,11 +237,23 @@ export default function BusinessDirectory({
     const filtered = q
       ? all.filter((r) => r.hotelName.toLowerCase().includes(q))
       : all;
-    // Critical first, then warning, then the rest
-    const rank = (s: string) =>
-      s === "critical" ? 0 : s === "warning" ? 1 : s === "unknown" ? 2 : 3;
-    return filtered.sort((a, b) => rank(a.healthStatus) - rank(b.healthStatus));
-  }, [health, hotels, search]);
+
+    const nullsLast = (v: number | null) => (v === null ? Infinity : v);
+    const comparators: Record<SortKey, (a: (typeof all)[number], b: (typeof all)[number]) => number> = {
+      hotelName: (a, b) => a.hotelName.localeCompare(b.hotelName),
+      healthStatus: (a, b) => HEALTH_RANK(a.healthStatus) - HEALTH_RANK(b.healthStatus),
+      planName: (a, b) =>
+        (a.planName === "—" ? "" : a.planName).localeCompare(
+          b.planName === "—" ? "" : b.planName,
+        ),
+      mrr: (a, b) => nullsLast(a.mrr) - nullsLast(b.mrr),
+      subStatus: (a, b) => SUB_RANK(a.subStatus) - SUB_RANK(b.subStatus),
+      users: (a, b) => nullsLast(a.users) - nullsLast(b.users),
+      openTickets: (a, b) => nullsLast(a.openTickets) - nullsLast(b.openTickets),
+    };
+    const cmp = comparators[sortKey];
+    return [...filtered].sort((a, b) => sortDir * cmp(a, b));
+  }, [health, hotels, search, sortKey, sortDir]);
 
   const openBusiness = (hotelId: string | number, dto: BusinessDTO | null) => {
     if (dto) {
@@ -202,13 +288,13 @@ export default function BusinessDirectory({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Business</TableHead>
-              <TableHead>Health</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>MRR</TableHead>
-              <TableHead>Subscription</TableHead>
-              <TableHead className="text-right">Users</TableHead>
-              <TableHead className="text-right">Open tickets</TableHead>
+              <SortHeader label="Business" sortKey="hotelName" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+              <SortHeader label="Health" sortKey="healthStatus" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+              <SortHeader label="Plan" sortKey="planName" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+              <SortHeader label="MRR" sortKey="mrr" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+              <SortHeader label="Subscription" sortKey="subStatus" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+              <SortHeader label="Users" sortKey="users" activeKey={sortKey} dir={sortDir} onSort={onSort} className="text-right" />
+              <SortHeader label="Open tickets" sortKey="openTickets" activeKey={sortKey} dir={sortDir} onSort={onSort} className="text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>
