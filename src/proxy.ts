@@ -38,11 +38,17 @@ type CustomJwtPayload = {
 };
 
 // Single source of truth for the basePath (mirrors next.config.ts).
-// Middleware sees the full pathname INCLUDING basePath, so the matcher
-// below and the redirect targets both carry it explicitly.
+// The proxy strips it before route checks and prefixes it explicitly on
+// redirect targets (the hotel app owns the bare paths on weareanli.com).
 const BASE_PATH = '/superadmin';
 
-export function middleware(request: NextRequest) {
+/**
+ * Next.js 16 renamed the middleware file convention to proxy.ts with an
+ * exported `proxy` function. The old middleware.ts convention is deprecated
+ * and no longer executes reliably (production served protected routes
+ * without auth), so this file uses the new convention.
+ */
+export function proxy(request: NextRequest) {
     // basePath ('/superadmin') is part of request.nextUrl.pathname in
     // middleware — strip it so all route checks below keep working on the
     // logical paths, and prefix it explicitly on redirect targets (the
@@ -190,11 +196,13 @@ function checkTokenExpiration(token: string): boolean {
     }
 }
 
-// Matcher runs against the full pathname INCLUDING basePath, so every
-// protected route carries the '/superadmin' prefix explicitly.
-// NOTE: matcher entries must be static string literals — Next.js parses
-// this config at compile time, so no template interpolation here.
 export const config = {
+    // Both prefixed and unprefixed forms are listed: whether the matcher
+    // evaluates the pathname with or without the basePath is
+    // version-sensitive, and missing it silently disables auth protection.
+    // The strip logic in proxy() normalizes either form before checking.
+    // NOTE: matcher entries must be static string literals — Next.js parses
+    // this config at compile time, so no template interpolation here.
     matcher: [
         '/superadmin/dashboard/:path*',
         '/superadmin/admin/:path*',
@@ -211,6 +219,21 @@ export const config = {
         '/superadmin/account/:path*',
         '/superadmin/membership/:path*',
         '/superadmin/reservations/:path*',
+        '/dashboard/:path*',
+        '/admin/:path*',
+        '/house-keeping/:path*',
+        '/stock/:path*',
+        '/front-of-house/:path*',
+        '/kitchen/:path*',
+        '/back-of-house/:path*',
+        '/bar/:path*',
+        '/front-office/:path*',
+        '/manager/:path*',
+        '/employee/:path*',
+        '/banquet/:path*',
+        '/account/:path*',
+        '/membership/:path*',
+        '/reservations/:path*',
     ],
 };
 

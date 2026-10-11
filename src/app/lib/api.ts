@@ -8,7 +8,12 @@ const instance: AxiosInstance = axios.create({
   baseURL:
     typeof window !== "undefined"
       ? "/superadmin/be-api"
-      : process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+      : // Server-side (Server Actions / Route Handlers): call the backend
+        // directly — server-to-server needs no CORS proxy. Env override
+        // first so deployments can point elsewhere without a code change.
+        process.env.BACKEND_URL ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://be.weareanli.com",
   headers: {
     "Content-Type": "application/json",
   },
@@ -74,8 +79,9 @@ function handleError(error: AxiosError, currentPath?: string) {
     currentPath !== "/dashboard"
   ) {
     if (typeof window === "undefined") {
-      // Server-side: use redirect
-      redirect("/login");
+      // Server-side: use redirect (basePath-prefixed: the hotel app
+      // owns the bare /login on weareanli.com)
+      redirect("/superadmin/login");
     }
     // Client-side: let the component handle it (don't redirect in error handler)
   }

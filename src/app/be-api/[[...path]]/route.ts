@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = "https://be.weareanli.com";
 
-async function proxy(req: NextRequest) {
+type RouteContext = {
+  params: Promise<{ path?: string[] }>;
+};
+
+async function proxy(req: NextRequest, context: RouteContext) {
   // Strip origin/referer/cookie headers that trigger the backend's CORS 500.
   // The proxy is server-to-server, so no CORS is needed.
   const headers = new Headers();
@@ -12,9 +16,16 @@ async function proxy(req: NextRequest) {
   if (auth) headers.set("authorization", auth);
 
   const url = new URL(req.url);
-  // /superadmin/be-api/<path> -> BACKEND_URL/<path>, preserving query string
-  // (basePath '/superadmin' is part of the incoming pathname in the proxy).
-  const target = `${BACKEND_URL}${url.pathname.replace(/^\/superadmin\/be-api/, "")}${url.search}`;
+  // Build the backend path from the catch-all route segments. These are
+  // always basePath-relative, which makes this robust regardless of whether
+  // Next.js includes the basePath ('/superadmin') in request.url — a regex
+  // on url.pathname silently failed to strip it in production, forwarding
+  // '/be-api/...' to the backend and causing 404s on every client-side call
+  // (login, document downloads).
+  const segments = ((await context.params).path ?? []).filter(
+    (s) => s && s !== "." && s !== "..",
+  );
+  const target = `${BACKEND_URL}/${segments.join("/")}${url.search}`;
 
   const body = ["GET", "HEAD"].includes(req.method)
     ? undefined
@@ -38,8 +49,18 @@ async function proxy(req: NextRequest) {
   });
 }
 
-export async function GET(req: NextRequest) { return proxy(req); }
-export async function POST(req: NextRequest) { return proxy(req); }
-export async function PUT(req: NextRequest) { return proxy(req); }
-export async function PATCH(req: NextRequest) { return proxy(req); }
-export async function DELETE(req: NextRequest) { return proxy(req); }
+export async function GET(req: NextRequest, context: RouteContext) {
+  return proxy(req, context);
+}
+export async function POST(req: NextRequest, context: RouteContext) {
+  return proxy(req, context);
+}
+export async function PUT(req: NextRequest, context: RouteContext) {
+  return proxy(req, context);
+}
+export async function PATCH(req: NextRequest, context: RouteContext) {
+  return proxy(req, context);
+}
+export async function DELETE(req: NextRequest, context: RouteContext) {
+  return proxy(req, context);
+}
