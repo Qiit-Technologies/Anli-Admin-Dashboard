@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
+import { useHqSidebarStore } from "@/store/useHqSidebarStore";
 
 /**
  * Shared shell for HQ command-center pages: inner HQ sidebar + header + content.
  * Matches the shell pattern used by the existing dashboard sub-pages.
+ *
+ * M7 — the sidebar open state is persisted (useHqSidebarStore) instead of
+ * HqShell-local useState, so the HQ nav no longer resets/collapses after
+ * navigating to the CRM (or any other HQ page) and back.
  */
 export default function HqShell({
   title,
@@ -15,7 +20,8 @@ export default function HqShell({
   title: string;
   children: ReactNode;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const menuOpen = useHqSidebarStore((s) => s.isOpen);
+  const setMenuOpen = useHqSidebarStore((s) => s.setIsOpen);
 
   return (
     <div className="h-screen w-screen flex flex-col sm:flex-row overflow-hidden">
