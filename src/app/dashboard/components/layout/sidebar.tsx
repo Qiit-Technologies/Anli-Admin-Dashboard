@@ -8,6 +8,7 @@ import {
   Layers,
   LayoutDashboard,
   LifeBuoy,
+  Settings,
   SquareCheckBig,
   Utensils,
   Users,
@@ -28,6 +29,7 @@ const hqNavItems = [
   { name: "Billing", icon: Wallet, href: "/dashboard/billing" },
   { name: "Users", icon: Users, href: "/dashboard/users" },
   { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
+  { name: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];
 
 /* Per-business deep-dive navigation — only meaningful when a business is selected. */

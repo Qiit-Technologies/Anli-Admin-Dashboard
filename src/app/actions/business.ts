@@ -112,6 +112,8 @@ export async function createBusiness(data: {
   name: string;
   address: string;
   businessType: string;
+  country: string;
+  state: string;
   ownerEmail: string;
   ownerFirstName: string;
   ownerLastName: string;
