@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -16,9 +17,9 @@ import BusinessDirectory, {
 } from "./components/hq/BusinessDirectory";
 import {
   useHqOverview,
-  useHotelHealth,
   useBillingMetrics,
   useBusinessDirectory,
+  useBusinessesOverview,
 } from "./components/hq/useHqData";
 
 /* ── Operations dashboard (feature/loyalty-admin branch) ─────────────── */
@@ -29,17 +30,19 @@ import { navigationMap } from "./util/navigationMap";
 function HqCommandCenter() {
   const overview = useHqOverview();
   const directory = useBusinessDirectory();
-  const health = useHotelHealth(directory.data ?? []);
+  // Single-payload directory data (H7): health, plan, MRR, subscription,
+  // users and open tickets per business — no cross-fetch join.
+  const businessesOverview = useBusinessesOverview();
   const billing = useBillingMetrics();
 
   const loading =
-    overview.isLoading || directory.isLoading || health.isLoading;
+    overview.isLoading || directory.isLoading || businessesOverview.isLoading;
 
   const refreshAll = async () => {
     await Promise.all([
       overview.refresh(),
       directory.refresh(),
-      health.refresh(),
+      businessesOverview.refresh(),
       billing.refresh(),
     ]);
     toast.success("Refreshed");
@@ -90,9 +93,30 @@ function HqCommandCenter() {
         <div className="lg:col-span-3">
           {loading ? (
             <BusinessDirectorySkeleton />
+          ) : businessesOverview.error && !businessesOverview.data ? (
+            <Card className="dark:bg-[#151a22] dark:border-white/10">
+              <CardContent className="py-10 text-center">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Couldn&apos;t load the business directory
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {businessesOverview.error instanceof Error
+                    ? businessesOverview.error.message
+                    : "Request failed"}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => businessesOverview.refresh()}
+                >
+                  Retry
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <BusinessDirectory
-              health={health.data ?? null}
+              overview={businessesOverview.data ?? null}
               hotels={directory.data ?? []}
             />
           )}

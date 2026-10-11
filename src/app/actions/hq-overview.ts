@@ -57,7 +57,43 @@ export interface HotelHealth {
   tickets: { open: number | null };
   activity: { activeModules: number | null; lowActivityModules: number | null };
   healthScore: number | null;
-  healthStatus: "healthy" | "warning" | "critical" | "unknown";
+  healthStatus:
+    | "healthy"
+    | "at_risk"
+    | "warning"
+    | "critical"
+    | "inactive"
+    | "unknown";
+}
+
+/**
+ * One row of GET /super-admin/businesses/overview — the single payload that
+ * wires the HQ business directory (H7). Health follows the single documented
+ * definition (docs in the Oreon repo: docs/business-health.md).
+ */
+export interface BusinessOverviewRow {
+  hotelId: number;
+  hotelName: string;
+  isActive: boolean;
+  /** Null when the business has no subscription record. */
+  subscription: {
+    /** Effective status (self-healed against the renewal date) — never contradicts endDate. */
+    status: string;
+    planName: string | null;
+    /** Canonical tier id ('flex' | 'basic-hotel' | 'basic-restaurant' | 'advanced' | 'custom') or null. */
+    planTier: string | null;
+    /** Monthly MRR contribution (0 unless the effective status is active). */
+    mrr: number;
+    billingCycle: string;
+    endDate: string | null;
+  } | null;
+  /** Staff count for the business. */
+  users: number;
+  /** Tickets with status open or in_progress. */
+  openTickets: number;
+  urgentTickets: number;
+  healthScore: number;
+  healthStatus: "healthy" | "at_risk" | "critical" | "inactive";
 }
 
 export interface BillingMetrics {
@@ -122,6 +158,13 @@ export async function getHqOverview(): Promise<HqResult<HqOverview>> {
 /** Per-hotel health rows. May not exist yet on the backend — callers must handle {ok:false}. */
 export async function getHotelHealth(): Promise<HqResult<HotelHealth[]>> {
   return safeGet<HotelHealth[]>("/super-admin/hotels/health");
+}
+
+/** Per-business aggregation for the HQ directory. Callers must handle {ok:false}. */
+export async function getBusinessesOverview(): Promise<
+  HqResult<BusinessOverviewRow[]>
+> {
+  return safeGet<BusinessOverviewRow[]>("/super-admin/businesses/overview");
 }
 
 /** Billing command metrics. May not exist yet on the backend — callers must handle {ok:false}. */
