@@ -6,14 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertTriangle,
+  CheckCheck,
   Clock,
   CreditCard,
   MoonStar,
   Info,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { HqAlert, HqOverview } from "@/app/actions/hq-overview";
+import type { HqOverview } from "@/app/actions/hq-overview";
 import type { DerivedOverview } from "./useHqData";
+import { useHqAlerts } from "./useHqAlerts";
 
 const SEVERITY_META: Record<
   string,
@@ -41,6 +44,8 @@ const SEVERITY_META: Record<
 
 const TYPE_META: Record<string, { icon: React.ElementType; label: string }> = {
   trial_expiring: { icon: Clock, label: "Trial expiring" },
+  subscription_expiring: { icon: Clock, label: "Subscription expiring" },
+  subscription_expired: { icon: AlertTriangle, label: "Subscription expired" },
   grace_period: { icon: MoonStar, label: "Grace period" },
   payment_failed: { icon: CreditCard, label: "Payment failed" },
   inactive_hotel: { icon: MoonStar, label: "Inactive hotel" },
@@ -50,28 +55,42 @@ export function AlertsFeedSkeleton() {
   return <Skeleton className="h-64 rounded-xl" />;
 }
 
+/**
+ * M1 — Alerts feed with real alert variety (subscription expiry/grace,
+ * failed payments, trials ending, inactivity), deep links to the business,
+ * and dismiss/mark-read persisted per admin.
+ *
+ * `api`/`derived` are kept as optional props for backward compatibility;
+ * the feed now builds from the shared useHqAlerts pipeline.
+ */
 export default function AlertsFeed({
-  api,
-  derived,
+  api: _api,
+  derived: _derived,
 }: {
-  api: HqOverview | null;
-  derived: DerivedOverview;
-}) {
-  const alerts: HqAlert[] =
-    api?.alerts ??
-    derived.expiringTrials.map((t) => ({
-      type: "trial_expiring",
-      hotelId: t.hotelId,
-      hotelName: t.hotelName,
-      message: `Trial ends ${t.endDate ? new Date(t.endDate).toLocaleDateString() : "soon"} (${t.daysLeft ?? "?"} days left)`,
-      severity: (t.daysLeft ?? 99) <= 3 ? ("critical" as const) : ("warning" as const),
-    }));
+  api?: HqOverview | null;
+  derived?: DerivedOverview;
+} = {}) {
+  void _api;
+  void _derived;
+  const { alerts, dismiss, markAllRead } = useHqAlerts();
 
   return (
     <Card className="dark:bg-[#151a22] dark:border-white/10">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base sm:text-lg">Alerts</CardTitle>
-        <Badge variant="outline">{alerts.length}</Badge>
+        <div className="flex items-center gap-2">
+          {alerts.length > 0 && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1 text-xs font-medium text-[#FF6F00] hover:underline"
+              title="Dismiss all alerts"
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Mark all read</span>
+            </button>
+          )}
+          <Badge variant="outline">{alerts.length}</Badge>
+        </div>
       </CardHeader>
       <CardContent>
         {alerts.length === 0 ? (
@@ -80,15 +99,15 @@ export default function AlertsFeed({
           </p>
         ) : (
           <ul className="max-h-80 space-y-3 overflow-y-auto pr-1">
-            {alerts.map((a, i) => {
+            {alerts.map((a) => {
               const sev = SEVERITY_META[a.severity] ?? SEVERITY_META.info;
               const typeMeta = TYPE_META[a.type] ?? { icon: Info, label: a.type };
               const SevIcon = sev.icon;
               const TypeIcon = typeMeta.icon;
               return (
                 <li
-                  key={`${a.type}-${a.hotelId}-${i}`}
-                  className="flex items-start gap-3 rounded-lg border p-3 dark:border-white/10"
+                  key={a.key}
+                  className="group flex items-start gap-3 rounded-lg border p-3 dark:border-white/10"
                 >
                   <span
                     className={cn(
@@ -109,13 +128,22 @@ export default function AlertsFeed({
                       </span>
                     </div>
                     <Link
-                      href="/business-list"
+                      href={a.deepLink}
                       className="mt-1 block truncate text-sm font-semibold hover:text-[#FF6F00] hover:underline"
+                      title={`Open ${a.hotelName}`}
                     >
                       {a.hotelName}
                     </Link>
                     <p className="text-xs text-muted-foreground">{a.message}</p>
                   </div>
+                  <button
+                    onClick={() => dismiss(a.key)}
+                    className="rounded p-1 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-gray-600 group-hover:opacity-100 focus:opacity-100"
+                    aria-label={`Dismiss alert for ${a.hotelName}`}
+                    title="Dismiss"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </li>
               );
             })}
