@@ -50,8 +50,18 @@ const nextConfig: NextConfig = {
         serverActions: {
             bodySizeLimit: '10mb',
         },
+        // Build-memory hardening (Render's 8GB build limit): the
+        // "Collecting page data" worker farm defaults to
+        // os.cpus().length - 1 (47 workers on Render's build hosts) and
+        // OOMs on this ~500-route app. Capping the pool at 4 keeps peak
+        // build memory well under the limit. Verified against Next 16.4.0
+        // source: getNumberOfWorkers() in packages/next/src/build/index.ts
+        // honors a user-set experimental.cpus for this phase.
+        cpus: 4,
         // Lower concurrency reduces flaky `createContext is not a function`
         // failures during "Collecting page data" on constrained CI hosts.
+        // Kept at 2 (not 1): the OOM was in the worker farm above, not in
+        // prerendering, so 1 would only slow builds without helping memory.
         staticGenerationMaxConcurrency: 2,
         staticGenerationMinPagesPerWorker: 25,
     },
