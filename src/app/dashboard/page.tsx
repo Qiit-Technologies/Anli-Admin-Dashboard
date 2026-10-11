@@ -26,6 +26,7 @@ import {
 import { HeroUIProvider } from "@heroui/react";
 import { getMe } from "../actions/users";
 import { navigationMap } from "./util/navigationMap";
+import HqOperationsView from "./components/hq/HqOperationsView";
 
 function HqCommandCenter() {
   const overview = useHqOverview();
@@ -128,8 +129,10 @@ function HqCommandCenter() {
 
 function OperationsDashboard() {
   const searchParams = useSearchParams();
+  // M5: the HQ Operations toggle renders the real-data HqOperationsView
+  // instead of the hardcoded mock Main dashboard.
   const [DefaultComponent, setDefaultComponent] = useState<React.ElementType>(
-    () => navigationMap.default.page,
+    () => HqOperationsView,
   );
 
   const firstEntry = Array.from(searchParams.entries())[0];
@@ -142,7 +145,7 @@ function OperationsDashboard() {
 
       if ("error" in response) {
         localStorage.removeItem("user");
-        setDefaultComponent(() => navigationMap.main.dashboard);
+        setDefaultComponent(() => HqOperationsView);
         return;
       }
 
@@ -150,18 +153,20 @@ function OperationsDashboard() {
       const freshUser = response.data;
       localStorage.setItem("user", JSON.stringify(freshUser));
 
-      const userRole = freshUser.roles.name;
+      // M4: roles can be null (e.g. super-admin sessions) — fall back to
+      // the HQ operations view instead of throwing.
+      const userRole = freshUser?.roles?.name;
       const roleDefaults: Record<string, React.ElementType> = {
         // administrator: navigationMap.staffing.dashboard,
         frontoffice: navigationMap.frontoffice.dashboard,
         //  stock: navigationMap.stock.dashboard,
         //  housekeeping: navigationMap.housekeeping.dashboard,
         profile: navigationMap.profile.settings,
-        default: navigationMap.main.dashboard,
+        default: HqOperationsView,
       };
 
       const SelectedComponent =
-        roleDefaults[userRole] || roleDefaults.default;
+        (userRole && roleDefaults[userRole]) || roleDefaults.default;
       setDefaultComponent(() => SelectedComponent);
     };
 
@@ -189,10 +194,10 @@ function OperationsDashboard() {
 
 type DashboardView = "super-admin" | "operations";
 
-// HQ command center is the default super-admin view; the role-based operations
-// dashboard (feature/loyalty-admin) remains one toggle away. Per-business
-// deep dives live under the "Business" sidebar section once a business is
-// selected, plus /business-list.
+// HQ command center is the default super-admin view; the Operations toggle
+// shows live per-business front-office aggregates (M5 — real data, never
+// mock figures). Per-business deep dives live under the "Business" sidebar
+// section once a business is selected, plus /business-list.
 export default function DashboardPage() {
   const [view, setView] = useState<DashboardView>("super-admin");
 

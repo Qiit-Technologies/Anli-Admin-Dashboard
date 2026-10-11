@@ -13,7 +13,16 @@ const nextConfig: NextConfig = {
     basePath: '/superadmin',
 
     async redirects() {
-        return [];
+        return [
+            {
+                // M4: consolidate the two sign-in URLs — /login is legacy,
+                // /signin is canonical. basePath is auto-prefixed by Next,
+                // so this becomes /superadmin/login -> /superadmin/signin.
+                source: '/login',
+                destination: '/signin',
+                permanent: true,
+            },
+        ];
     },
 
 
