@@ -75,13 +75,16 @@ function handleError(error: AxiosError, currentPath?: string) {
   // (cookie might not be set yet)
   if (
     status === 401 &&
-    currentPath !== "/login" &&
+    currentPath !== "/signin" &&
     currentPath !== "/dashboard"
   ) {
     if (typeof window === "undefined") {
-      // Server-side: use redirect (basePath-prefixed: the hotel app
-      // owns the bare /login on weareanli.com)
-      redirect("/superadmin/login");
+      // Server-side: use redirect with the LOGICAL path (no basePath
+      // prefix) — Next prepends the '/superadmin' basePath automatically.
+      // Passing "/superadmin/login" here used to double the prefix and land
+      // on /superadmin/superadmin/login (M4). /signin is the canonical
+      // sign-in URL.
+      redirect("/signin");
     }
     // Client-side: let the component handle it (don't redirect in error handler)
   }

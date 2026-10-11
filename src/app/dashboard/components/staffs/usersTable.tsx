@@ -34,6 +34,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { ViewStaffDetailsBtn } from "./viewStaffDetailsBtn";
 import { toast } from "react-toastify";
 import { ConfirmationModal } from "@/components/common/ConfirmationModal";
+import {
+  getStaffPresence,
+  STAFF_PRESENCE_LABEL,
+  formatLastLogin,
+} from "@/utils/staffPresence";
 
 function generateRandomPassword(length = 12) {
   const charset =
@@ -370,6 +375,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                   <Th withIcon icon={<ArrowDown size={16} color="#667085" />}>
                     Employee Status
                   </Th>
+                  <Th withIcon>Last Login</Th>
                   <Th>Action</Th>
                 </Tr>
               </Thead>
@@ -515,22 +521,32 @@ export default function UsersTable({ businessId }: { businessId: string }) {
                         </div>
                       </Td>
                       <Td>
-                        {row.deletedAt ? (
-                          <StatusBadge
-                            status="deleted"
-                            statusColorMap={{
-                              deleted: "gray",
-                            }}
-                          />
-                        ) : (
-                          <StatusBadge
-                            status={row.status}
-                            statusColorMap={{
-                              online: "green",
-                              offline: "red",
-                            }}
-                          />
-                        )}
+                        {(() => {
+                          // M10: derive presence honestly from status +
+                          // lastLoginAt; staff with no login record show
+                          // "Unknown" instead of a hardcoded "offline".
+                          const presence = getStaffPresence(row);
+                          return row.deletedAt ? (
+                            <StatusBadge
+                              status="deleted"
+                              statusColorMap={{
+                                deleted: "gray",
+                              }}
+                            />
+                          ) : (
+                            <StatusBadge
+                              status={STAFF_PRESENCE_LABEL[presence]}
+                              statusColorMap={{
+                                Online: "green",
+                                Offline: "gray",
+                                Unknown: "yellow",
+                              }}
+                            />
+                          );
+                        })()}
+                      </Td>
+                      <Td title={row.lastLoginAt || undefined}>
+                        {formatLastLogin(row.lastLoginAt)}
                       </Td>
                       <ViewStaffDetailsBtn
                         staffInfo={row}
