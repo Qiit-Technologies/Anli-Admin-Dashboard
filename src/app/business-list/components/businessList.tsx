@@ -2,7 +2,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Pagination } from "@/components/common/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -22,8 +22,31 @@ import {
   Menu,
   X,
   UtensilsCrossed,
+  MoreVertical,
+  Eye,
+  Pencil,
+  Ban,
+  Play,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
-import { createBusiness, reactivateBusiness } from "@/app/actions/business";
+import {
+  createBusiness,
+  reactivateBusiness,
+  suspendBusiness,
+  unsuspendBusiness,
+  archiveBusiness,
+  unarchiveBusiness,
+} from "@/app/actions/business";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ConfirmationModal } from "@/components/common/ConfirmationModal";
+import EditBusinessDialog from "./EditBusinessDialog";
 import { CustomDialog } from "@/components/common/CustomDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,8 +59,22 @@ export default function BusinessList() {
   const limit = 6;
   const { setBusiness, loading } = useBusiness();
   const router = useRouter();
-  const [reactivatingId, setReactivatingId] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  // H3/H4: pending lifecycle confirmations
+  const [confirmTarget, setConfirmTarget] = useState<{
+    business: BusinessDTO;
+    action: "reactivate" | "suspend" | "unsuspend";
+  } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [archiveTarget, setArchiveTarget] = useState<BusinessDTO | null>(null);
+  const [archiveConfirmText, setArchiveConfirmText] = useState("");
+  const [archiving, setArchiving] = useState(false);
+  const [unarchiveTarget, setUnarchiveTarget] = useState<BusinessDTO | null>(
+    null
+  );
+  const [editingBusiness, setEditingBusiness] = useState<BusinessDTO | null>(
+    null
+  );
   const [isAddBusinessOpen, setIsAddBusinessOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -58,13 +95,19 @@ export default function BusinessList() {
   };
 
   // Always call hooks first
+  // H1: search now filters client-side over the full list (same pattern as
+  // the HQ dashboard BusinessDirectory), instead of the unreliable
+  // server-side search endpoint.
+  const searchTerm = debouncedQuery.trim();
+  const isSearching = searchTerm.length > 0;
+
   const {
     data: response,
     isLoading,
     mutate,
   } = useSWR(
-    [`/super-admin/hotels`, page, limit, debouncedQuery],
-    () => getBusinessList({ page, limit, searchTerm: debouncedQuery }),
+    isSearching ? null : [`/super-admin/hotels`, page, limit],
+    () => getBusinessList({ page, limit }),
     {
       onError: (error) => {
         // Handle 401 errors - token might not be in cookies yet
@@ -94,8 +137,36 @@ export default function BusinessList() {
         return status !== 401;
       },
       errorRetryCount: 1, // Only retry once
-    },
+    }
   );
+
+  // Full list used only while searching; filtered client-side below.
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+    mutate: mutateSearch,
+  } = useSWR(
+    isSearching ? [`/super-admin/hotels`, "all-for-search"] : null,
+    () => getBusinessList({ page: 1, limit: 500 }),
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+
+  const refreshLists = async () => {
+    await mutate();
+    await mutateSearch();
+  };
+
+  const searchableBusinesses = useMemo<BusinessDTO[]>(
+    () => searchData?.data?.hotels ?? [],
+    [searchData]
+  );
+
+  const filteredBusinesses = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return searchableBusinesses.filter((b) =>
+      (b.name ?? "").toLowerCase().includes(q)
+    );
+  }, [searchableBusinesses, searchTerm]);
 
   const handleBusinessClick = (item: BusinessDTO) => {
     setBusiness(item);
@@ -104,20 +175,90 @@ export default function BusinessList() {
     }
   };
 
-  const handleReactivate = async (e: React.MouseEvent, hotelId: number) => {
-    e.stopPropagation(); // Prevent card click
-    setReactivatingId(hotelId);
+  // H3: reactivate / suspend / unsuspend all go through a confirmation dialog.
+  const handleLifecycleConfirm = async () => {
+    if (!confirmTarget) return;
+    const { business, action } = confirmTarget;
+    setActionLoading(true);
     try {
-      await reactivateBusiness(hotelId);
-      toast.success("Business reactivated successfully!");
-      // Refresh the list
-      await mutate();
-    } catch (error: any) {
-      toast.error(
-        error?.message || "Failed to reactivate business. Please try again.",
-      );
+      if (action === "reactivate") {
+        await reactivateBusiness(business.id);
+        toast.success("Business reactivated successfully!");
+      } else if (action === "suspend") {
+        await suspendBusiness(business.id);
+        toast.success("Business suspended successfully!");
+      } else {
+        await unsuspendBusiness(business.id);
+        toast.success("Business re-activated successfully!");
+      }
+      setConfirmTarget(null);
+      await refreshLists();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Action failed. Please try again.";
+      toast.error(message);
     } finally {
-      setReactivatingId(null);
+      setActionLoading(false);
+    }
+  };
+
+  const lifecycleCopy = confirmTarget
+    ? {
+        reactivate: {
+          title: "Reactivate Business",
+          description: `Are you sure you want to reactivate ${confirmTarget.business.name}?`,
+          confirmLabel: "Reactivate",
+        },
+        suspend: {
+          title: "Suspend Business",
+          description: `Are you sure you want to suspend ${confirmTarget.business.name}? The business will be deactivated immediately.`,
+          confirmLabel: "Suspend",
+        },
+        unsuspend: {
+          title: "Re-activate Business",
+          description: `Are you sure you want to re-activate ${confirmTarget.business.name}?`,
+          confirmLabel: "Re-activate",
+        },
+      }[confirmTarget.action]
+    : null;
+
+  // H4: archive requires typing the business name; unarchive is a confirm.
+  const handleArchiveConfirm = async () => {
+    if (!archiveTarget) return;
+    setArchiving(true);
+    try {
+      await archiveBusiness(archiveTarget.id);
+      toast.success(`"${archiveTarget.name}" archived.`);
+      setArchiveTarget(null);
+      setArchiveConfirmText("");
+      await refreshLists();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to archive business.";
+      toast.error(message);
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const handleUnarchiveConfirm = async () => {
+    if (!unarchiveTarget) return;
+    setActionLoading(true);
+    try {
+      await unarchiveBusiness(unarchiveTarget.id);
+      toast.success(`"${unarchiveTarget.name}" restored from archive.`);
+      setUnarchiveTarget(null);
+      await refreshLists();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to restore business from archive.";
+      toast.error(message);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -183,8 +324,11 @@ export default function BusinessList() {
     }
   };
 
-  const businesses = response?.data?.hotels ?? [];
+  const businesses: BusinessDTO[] = isSearching
+    ? filteredBusinesses
+    : (response?.data?.hotels ?? []);
   const totalPages = response?.totalPages ?? 1;
+  const listLoading = isSearching ? isSearchLoading : isLoading;
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden overflow-y-auto px-4 py-6">
@@ -310,7 +454,7 @@ export default function BusinessList() {
               b.subscription?.status === "expired" ||
               b.subscription?.isExpired ||
               false;
-            const isReactivating = reactivatingId === b.id;
+            const isArchived = b.isArchived === true;
 
             return (
               <div
@@ -326,35 +470,111 @@ export default function BusinessList() {
                 }}
                 onClick={() => handleBusinessClick(b)}
               >
+                {/* H4: per-business action menu */}
+                <div
+                  className="absolute top-2 right-2 z-10"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-gray-800"
+                        aria-label={`Actions for ${b.name}`}
+                      >
+                        <MoreVertical size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/businesses/${b.id}`)}
+                      >
+                        <Eye size={14} className="mr-2" />
+                        View details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setEditingBusiness(b)}
+                      >
+                        <Pencil size={14} className="mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {!b.isActive ? (
+                        <DropdownMenuItem
+                          className="text-green-700 focus:text-green-700"
+                          onClick={() =>
+                            setConfirmTarget({
+                              business: b,
+                              action: isExpired ? "reactivate" : "unsuspend",
+                            })
+                          }
+                        >
+                          <Play size={14} className="mr-2" />
+                          Activate
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          className="text-amber-700 focus:text-amber-700"
+                          onClick={() =>
+                            setConfirmTarget({ business: b, action: "suspend" })
+                          }
+                        >
+                          <Ban size={14} className="mr-2" />
+                          Suspend
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      {isArchived ? (
+                        <DropdownMenuItem
+                          className="text-green-700 focus:text-green-700"
+                          onClick={() => setUnarchiveTarget(b)}
+                        >
+                          <ArchiveRestore size={14} className="mr-2" />
+                          Restore from archive
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600"
+                          onClick={() => {
+                            setArchiveTarget(b);
+                            setArchiveConfirmText("");
+                          }}
+                        >
+                          <Archive size={14} className="mr-2" />
+                          Archive
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 {isExpired && (
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-12 right-2">
                     <Button
                       size="sm"
-                      onClick={(e) => handleReactivate(e, b.id)}
-                      disabled={isReactivating}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click
+                        setConfirmTarget({ business: b, action: "reactivate" });
+                      }}
                       className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-auto"
                     >
-                      {isReactivating ? (
-                        <>
-                          <Spinner size="sm" className="mr-1" />
-                          Reactivating...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw size={12} className="mr-1" />
-                          Reactivate
-                        </>
-                      )}
+                      <RefreshCw size={12} className="mr-1" />
+                      Reactivate
                     </Button>
                   </div>
                 )}
-                {isExpired && (
-                  <div className="absolute top-2 left-2">
+                <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                  {isExpired && (
                     <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
                       Expired
                     </span>
-                  </div>
-                )}
+                  )}
+                  {isArchived && (
+                    <span className="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-1 rounded">
+                      Archived
+                    </span>
+                  )}
+                </div>
                 <Image
                   src={b?.coverImage || "/sample-company.png"}
                   alt={b.name}
@@ -374,19 +594,23 @@ export default function BusinessList() {
         </div>
       ) : (
         <div className="text-center text-gray-500 z-20 relative">
-          {isLoading ? (
+          {listLoading ? (
             <div className="flex items-center justify-center gap-2">
               <Spinner size="md" />
               <span>Loading businesses...</span>
             </div>
           ) : (
-            <p>No businesses found</p>
+            <p>
+              {isSearching
+                ? "No businesses match your search."
+                : "No businesses found"}
+            </p>
           )}
         </div>
       )}
 
-      {/* Pagination */}
-      {businesses.length > 0 && (
+      {/* Pagination (hidden while searching — search filters the full list) */}
+      {businesses.length > 0 && !isSearching && (
         <>
           <Pagination
             page={page}
@@ -545,6 +769,80 @@ export default function BusinessList() {
           </div>
         </div>
       </CustomDialog>
+
+      {/* H3: activate / suspend / unsuspend confirmation */}
+      {lifecycleCopy && (
+        <ConfirmationModal
+          isOpen={!!confirmTarget}
+          onClose={() => setConfirmTarget(null)}
+          onConfirm={handleLifecycleConfirm}
+          title={lifecycleCopy.title}
+          description={lifecycleCopy.description}
+          confirmLabel={lifecycleCopy.confirmLabel}
+          cancelLabel="Cancel"
+          variant={confirmTarget?.action === "suspend" ? "danger" : "primary"}
+          isLoading={actionLoading}
+        />
+      )}
+
+      {/* H4: archive — typed confirmation (reversible, no data deleted) */}
+      <CustomDialog
+        open={!!archiveTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setArchiveTarget(null);
+            setArchiveConfirmText("");
+          }
+        }}
+        title="Archive Business"
+        description={
+          archiveTarget
+            ? `This will archive "${archiveTarget.name}". The business and all of its data are kept and can be restored at any time. Type the business name below to confirm.`
+            : undefined
+        }
+        onConfirm={handleArchiveConfirm}
+        isLoading={archiving}
+        confirmText="Archive"
+        confirmDisabled={
+          archiveTarget ? archiveConfirmText !== archiveTarget.name : true
+        }
+      >
+        <div className="space-y-2">
+          <Label htmlFor="archiveConfirmName">Business name</Label>
+          <Input
+            id="archiveConfirmName"
+            placeholder={archiveTarget?.name ?? ""}
+            value={archiveConfirmText}
+            onChange={(e) => setArchiveConfirmText(e.target.value)}
+          />
+        </div>
+      </CustomDialog>
+
+      {/* H4: restore-from-archive confirmation */}
+      <ConfirmationModal
+        isOpen={!!unarchiveTarget}
+        onClose={() => setUnarchiveTarget(null)}
+        onConfirm={handleUnarchiveConfirm}
+        title="Restore from Archive"
+        description={
+          unarchiveTarget
+            ? `Are you sure you want to restore ${unarchiveTarget.name} from the archive?`
+            : ""
+        }
+        confirmLabel="Restore"
+        cancelLabel="Cancel"
+        isLoading={actionLoading}
+      />
+
+      {/* H2/H4: edit business details */}
+      <EditBusinessDialog
+        business={editingBusiness}
+        open={!!editingBusiness}
+        onOpenChange={(open) => {
+          if (!open) setEditingBusiness(null);
+        }}
+        onSaved={() => refreshLists()}
+      />
     </div>
   );
 }

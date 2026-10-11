@@ -237,3 +237,95 @@ export async function getBusinessDetails(hotelId: string): Promise<{ success: bo
 
 
 
+
+export async function suspendBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/suspend`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to suspend business";
+    throw new Error(message);
+  }
+}
+
+export async function unsuspendBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/unsuspend`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to re-activate business";
+    throw new Error(message);
+  }
+}
+
+export async function archiveBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/archive`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to archive business";
+    throw new Error(message);
+  }
+}
+
+export async function unarchiveBusiness(hotelId: number) {
+  try {
+    const url = `/super-admin/hotels/${hotelId}/unarchive`;
+    const response = await axiosPost(
+      url,
+      {},
+      {
+        currentPath: "/business-list",
+      }
+    );
+
+    return response;
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
+
+    const axiosError = error as AxiosError;
+    const message =
+      (axiosError.response?.data as ErrorResponseData)?.message ||
+      "Failed to restore business from archive";
+    throw new Error(message);
+  }
+}
