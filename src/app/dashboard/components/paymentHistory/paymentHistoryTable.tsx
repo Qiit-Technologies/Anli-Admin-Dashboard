@@ -55,7 +55,14 @@ export default function PaymentHistoryTable() {
   );
 
   const payments = paymentResponse?.data?.payments ?? [];
-  const errorMessage = error?.message || paymentResponse?.message || null;
+  // NOTE: never render paymentResponse.message as an error — the backend
+  // always returns a success message (e.g. "Payment history retrieved
+  // successfully.") alongside the payload. Only genuine fetch errors
+  // surface here.
+  const errorMessage =
+    error != null
+      ? error.message || "Failed to load payment history."
+      : null;
 
   const filteredPayments = useMemo(() => {
     const q = query.trim().toLowerCase();

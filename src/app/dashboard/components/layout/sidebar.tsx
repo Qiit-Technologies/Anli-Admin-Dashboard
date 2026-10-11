@@ -3,6 +3,7 @@ import {
   Building2,
   ChartNoAxesColumn,
   CreditCard,
+  FileBarChart,
   Handshake,
   Landmark,
   Layers,
@@ -26,6 +27,7 @@ const hqNavItems = [
   { name: "Businesses", icon: Building2, href: "/business-list" },
   { name: "Support Tickets", icon: LifeBuoy, href: "/dashboard/support" },
   { name: "Billing", icon: Wallet, href: "/dashboard/billing" },
+  { name: "Reports", icon: FileBarChart, href: "/dashboard/reports" },
   { name: "Users", icon: Users, href: "/dashboard/users" },
   { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
 ];

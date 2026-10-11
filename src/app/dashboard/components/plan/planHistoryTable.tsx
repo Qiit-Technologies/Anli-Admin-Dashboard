@@ -8,6 +8,8 @@ import useSWR from "swr";
 import fetcher from "@/app/actions/fetcher";
 import { useBusiness } from "@/context/businessContext";
 import { FaSpinner } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { toCsv, downloadCsv, slugifyFilename } from "@/lib/csv";
 import {
   Thead,
   Table,
@@ -64,6 +66,40 @@ export default function PlanHistoryTable() {
     );
   });
 
+  const formatRowDate = (value: string) => {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? value : d.toISOString();
+  };
+
+  const handleExport = () => {
+    if (filteredPayments.length === 0) {
+      toast.error("No payment history to export for this business.");
+      return;
+    }
+    const csv = toCsv(filteredPayments, [
+      { header: "Date", value: (r) => formatRowDate(r.createdAt) },
+      {
+        header: "Description",
+        value: (r) =>
+          r.description ||
+          (r.paymentFor ? `Payment for ${r.paymentFor}` : "Subscription Renewal"),
+      },
+      { header: "Amount (NGN)", value: (r) => r.amount ?? 0 },
+      { header: "Initiated by", value: (r) => r.initiatedBy || "System" },
+      { header: "Method", value: (r) => r.method || "" },
+      { header: "Status", value: (r) => r.status },
+      { header: "Notes", value: (r) => r.notes || "" },
+    ]);
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(
+      `plan-payment-history-${slugifyFilename(business?.name || "business")}-${stamp}.csv`,
+      csv,
+    );
+    toast.success(
+      `Exported ${filteredPayments.length} payment record${filteredPayments.length === 1 ? "" : "s"}.`,
+    );
+  };
+
   // const getStatusColor = (status: string) => {
   //   switch (status.toLowerCase()) {
   //     case "successful":
@@ -99,7 +135,11 @@ export default function PlanHistoryTable() {
             <ListFilterIcon size={16} />
             Filters
           </button>
-          <button className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto">
+          <button
+            onClick={handleExport}
+            className="flex items-center justify-center gap-2 border rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
+            aria-label="Export payment history as CSV"
+          >
             <CloudUpload size={16} />
             Export
           </button>
