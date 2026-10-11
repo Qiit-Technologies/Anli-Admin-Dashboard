@@ -3,6 +3,7 @@ import {
   Building2,
   ChartNoAxesColumn,
   CreditCard,
+  Handshake,
   Landmark,
   Layers,
   LayoutDashboard,
@@ -26,6 +27,7 @@ const hqNavItems = [
   { name: "Support Tickets", icon: LifeBuoy, href: "/dashboard/support" },
   { name: "Billing", icon: Wallet, href: "/dashboard/billing" },
   { name: "Users", icon: Users, href: "/dashboard/users" },
+  { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
 ];
 
 /* Per-business deep-dive navigation — only meaningful when a business is selected. */
