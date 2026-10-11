@@ -2,9 +2,10 @@
 
 import { useUser } from "@/context/userContext";
 import { getInitials } from "@/utils/utils";
-import { Bell, Menu, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import HqAlertsBell from "../hq/HqAlertsBell";
 
 const Header = ({
   title,
@@ -40,9 +41,15 @@ const Header = ({
         </button>
 
         {/* Icons (only on larger screens) */}
-        <div className="hidden gap-4 sm:flex">
-          <Search size={20} className="text-gray-500" />
-          <Bell size={20} className="text-gray-500" />
+<<<<<<< HEAD
+        <div className="hidden gap-3 sm:flex">
+          <button
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            aria-label="Search"
+          >
+            <Search size={20} className="text-gray-500" />
+          </button>
+          <HqAlertsBell />
         </div>
 
         {/* Profile Avatar (hide text on small screens) */}
