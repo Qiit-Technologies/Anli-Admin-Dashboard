@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { AxiosError } from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,6 +137,7 @@ export default function UsersPage() {
     [directory.data],
   );
   const [hotelId, setHotelId] = useState<string>("");
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [resetTarget, setResetTarget] = useState<StaffRow | null>(null);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
@@ -145,21 +146,28 @@ export default function UsersPage() {
   const selectedHotelId = hotelId ? Number(hotelId) : null;
   const selectedHotel = hotels.find((h) => h.id === selectedHotelId) ?? null;
 
-  const { data, isLoading, mutate } = useSWR(
+  // Debounce the search input so we don't fire a request per keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const { data, isLoading, isValidating, error, mutate } = useSWR(
     selectedHotelId ? ["hq-staff", selectedHotelId, search] : null,
     async () => {
       const res = await getStaffByOptions({
         businessId: selectedHotelId as number,
         page: 1,
         limit: 100,
-        searchTerm: search.trim() || undefined,
+        searchTerm: search || undefined,
       } as any);
       return (res as any)?.data?.staffs ?? [];
     },
-    { revalidateOnFocus: false },
+    { revalidateOnFocus: false, keepPreviousData: true },
   );
 
   const staff: StaffRow[] = data ?? [];
+  const searching = isValidating && !isLoading;
 
   const businesses: InviteBusiness[] = useMemo(
     () => hotels.map((h) => ({ id: h.id, name: h.name })),
@@ -222,13 +230,16 @@ export default function UsersPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search staff…"
-                className="pl-9 sm:w-56"
+                className="pl-9 pr-9 sm:w-56"
                 aria-label="Search staff"
                 disabled={!selectedHotelId}
               />
+              {searching && (
+                <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+              )}
             </div>
             <Button
               className="gap-1.5"
@@ -245,16 +256,29 @@ export default function UsersPage() {
             <p className="px-6 py-12 text-center text-sm text-muted-foreground">
               Select a business above to list its staff accounts.
             </p>
-          ) : isLoading ? (
+          ) : error && staff.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+              <p className="text-sm text-red-600 dark:text-red-400">
+                Couldn&apos;t load staff for this business. Please try again.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => mutate()}>
+                Retry
+              </Button>
+            </div>
+          ) : isLoading && staff.length === 0 ? (
             <div className="space-y-2 p-6">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-12 rounded-lg" />
               ))}
             </div>
           ) : staff.length === 0 ? (
-            <p className="px-6 py-12 text-center text-sm text-muted-foreground">
-              {search ? "No staff match your search." : "No staff accounts found for this business."}
-            </p>
+            <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+              <p className="text-sm text-muted-foreground">
+                {search
+                  ? "No staff match your search."
+                  : "No staff accounts found for this business."}
+              </p>
+            </div>
           ) : (
             <Table>
               <TableHeader>
