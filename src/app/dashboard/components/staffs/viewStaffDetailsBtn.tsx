@@ -8,8 +8,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { StaffPasswordModal } from "./StaffPasswordModal";
 import { ConfirmationModal } from "@/components/common/ConfirmationModal";
+import { requestStaffPasswordReset } from "@/app/actions/staff";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
+import { ErrorResponseData } from "@/hooks/types";
 
 export const ViewStaffDetailsBtn = ({
   staffInfo,
@@ -30,10 +33,10 @@ export const ViewStaffDetailsBtn = ({
   businessId: string;
 }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const openSheetMenu = () => setIsSheetOpen(true);
   const closeSheetMenu = () => setIsSheetOpen(false);
@@ -62,9 +65,27 @@ export const ViewStaffDetailsBtn = ({
     }
   };
 
-  const handleResetConfirm = () => {
-    setIsResetPasswordOpen(true);
-    setShowResetConfirm(false);
+  // C3: resets now email a single-use link — no password is typed,
+  // generated, or displayed anywhere in the HQ.
+  const handleResetConfirm = async () => {
+    setIsResetting(true);
+    try {
+      await requestStaffPasswordReset(staffInfo.id);
+      toast.success(`Password reset link sent to ${staffInfo.email}`);
+      setShowResetConfirm(false);
+    } catch (error: unknown) {
+      const message =
+        error instanceof AxiosError
+          ? (error.response?.data as ErrorResponseData)?.message
+          : undefined;
+      toast.error(
+        typeof message === "string" && message
+          ? message
+          : "Failed to send reset link",
+      );
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   const handleRestoreConfirm = async () => {
@@ -118,10 +139,17 @@ export const ViewStaffDetailsBtn = ({
         </DropdownMenu>
       </Td>
 
-      <StaffPasswordModal
-        isOpen={isResetPasswordOpen}
-        setIsOpen={setIsResetPasswordOpen} // Pass the setter function
-        staffInfo={staffInfo}
+      {/* Reset Password Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={handleResetConfirm}
+        title="Reset Password"
+        description={`Are you sure you want to reset the password for ${staffInfo.fullName}? A single-use reset link will be emailed to ${staffInfo.email}.`}
+        confirmLabel="Send reset link"
+        cancelLabel="Cancel"
+        variant="primary"
+        isLoading={isResetting}
       />
 
       {isSheetOpen && (
@@ -142,23 +170,10 @@ export const ViewStaffDetailsBtn = ({
         onConfirm={handleDeleteConfirm}
         title="Delete Staff Member"
         description={`Are you sure you want to delete ${staffInfo.fullName}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        confirmVariant="destructive"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
         isLoading={isDeleting}
-      />
-
-      {/* Reset Password Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={handleResetConfirm}
-        title="Reset Password"
-        description={`Are you sure you want to reset the password for ${staffInfo.fullName}? A new password will be generated and shown to you.`}
-        confirmText="Reset Password"
-        cancelText="Cancel"
-        confirmVariant="default"
-        isLoading={false}
       />
 
       {/* Restore Staff Confirmation Modal */}
@@ -168,9 +183,9 @@ export const ViewStaffDetailsBtn = ({
         onConfirm={handleRestoreConfirm}
         title="Restore Staff Member"
         description={`Are you sure you want to restore ${staffInfo.fullName}? This will make the staff member active again.`}
-        confirmText="Restore"
-        cancelText="Cancel"
-        confirmVariant="default"
+        confirmLabel="Restore"
+        cancelLabel="Cancel"
+        variant="primary"
         isLoading={isUndeleting}
       />
     </>
