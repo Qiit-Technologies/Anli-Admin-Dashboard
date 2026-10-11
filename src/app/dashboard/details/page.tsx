@@ -407,8 +407,8 @@ export default function BusinessDetailsPage() {
         open={isManageModulesOpen}
         onOpenChange={setIsManageModulesOpen}
         title="Manage Modules"
-        onSubmit={handleSaveModules}
-        loading={saving}
+        onConfirm={handleSaveModules}
+        isLoading={saving}
         trigger={<></>}
       >
         <div className="space-y-4">

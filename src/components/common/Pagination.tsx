@@ -9,6 +9,12 @@ interface PaginationProps {
     itemsPerPage: number;
     totalItems: number;
     onItemsPerPageChange?: (itemsPerPage: number) => void;
+    /**
+     * M12 — while the list data is loading, the "Showing X to Y of Z entries"
+     * text flashed stale counts in the search area. Pass loading so the range
+     * renders a placeholder until the figures are real.
+     */
+    loading?: boolean;
 }
 
 export function Pagination({
@@ -18,6 +24,7 @@ export function Pagination({
     itemsPerPage,
     totalItems,
     onItemsPerPageChange,
+    loading = false,
 }: PaginationProps) {
     const generatePaginationButtons = () => {
         const createPageButton = (pageNumber: number) => (
@@ -92,8 +99,14 @@ export function Pagination({
 
     return (
         <div className="flex items-center justify-between px-2 py-4 w-full">
-            <div className="text-sm text-gray-600">
-                Showing {startItem} to {endItem} of {totalItems} entries
+            <div className="text-sm text-gray-600" aria-live="polite">
+                {loading ? (
+                    <span className="inline-block h-4 w-40 animate-pulse rounded bg-gray-200 align-middle" />
+                ) : (
+                    <>
+                        Showing {startItem} to {endItem} of {totalItems} entries
+                    </>
+                )}
             </div>
             
             <div className="flex items-center space-x-4">
