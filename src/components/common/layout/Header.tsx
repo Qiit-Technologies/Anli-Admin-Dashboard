@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { GlobalMenuSearchSlot } from '@/components/layout/HospitalityModuleChrome';
 import NotificationsPopup from '@/components/NotificationDropdown';
 import { useUser } from '@/context/useUser';
+import { useUser as useHqUser } from '@/context/userContext';
 import { isMenuSearchModulePath } from '@/lib/global-menu-search/modules';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Search, Settings } from 'lucide-react';
@@ -98,7 +99,19 @@ export const PageHeadertitle = ({
 };
 
 export const HeaderActions = ({ children }: { children?: React.ReactNode }) => {
-    const { user } = useUser();
+    const { user: opsUser } = useUser();
+    // M7 — the CRM pages run under the HQ userContext; the operations
+    // useUser context is never populated there, which rendered the
+    // stray "Guest" / "GU" fallbacks. Prefer whichever is populated.
+    const { user: hqUser, loading: hqLoading } = useHqUser();
+    // userContext's UserDTO isn't exported from @/types/user (pre-existing
+    // TS2305), so type the shape we actually read here.
+    const hq = hqUser as
+        | { fullName?: string | null; profileImage?: string | null }
+        | null
+        | undefined;
+    const user = hq ?? opsUser;
+    const showPlaceholder = !user && hqLoading;
     return (
         <div className="flex items-center gap-3">
             {children}
@@ -123,15 +136,17 @@ export const HeaderActions = ({ children }: { children?: React.ReactNode }) => {
                         src={user?.profileImage || '/avatar-placeholder.png'}
                     />
                     <AvatarFallback className="bg-[#FEF0C7] text-[#DC6803] font-medium text-xs">
-                        {user?.fullName
-                            ?.split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase() || 'GU'}
+                        {showPlaceholder
+                            ? '…'
+                            : user?.fullName
+                                  ?.split(' ')
+                                  .map((n) => n[0])
+                                  .join('')
+                                  .toUpperCase() || '–'}
                     </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-[#101828]">
-                    {user?.fullName || 'Guest'}
+                    {showPlaceholder ? '…' : user?.fullName || '–'}
                 </span>
             </div>
         </div>

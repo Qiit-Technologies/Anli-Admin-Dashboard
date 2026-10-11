@@ -168,6 +168,33 @@ const Sidebar: React.FC<{ role: string }> = ({ role }: { role: string }) => {
                     </button>
                 </Tooltip>
             )}
+            {/* M7 — the Log out link lives inside the sidebar, which is w-0 /
+                overflow-hidden when collapsed, so it had zero clickable area.
+                Keep an icon button reachable while collapsed. */}
+            {isCollapsed && (
+                <Tooltip content="Log out" placement="right">
+                    <Link
+                        href="/logout"
+                        className="hidden md:flex fixed bottom-4 left-0 z-40 h-10 w-10 items-center justify-center rounded-r-md bg-white border border-l-0 text-red-500 shadow-sm hover:bg-red-50 transition-colors"
+                        aria-label="Log out"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-9A2.25 2.25 0 002.25 5.25v13.5A2.25 2.25 0 004.5 21h9a2.25 2.25 0 002.25-2.25V15M9 15l6-6m0 0l-6-6m6 6H3"
+                            />
+                        </svg>
+                    </Link>
+                </Tooltip>
+            )}
         </>
     );
 };
