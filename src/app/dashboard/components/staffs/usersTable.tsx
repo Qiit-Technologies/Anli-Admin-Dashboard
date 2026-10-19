@@ -123,8 +123,14 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const handleResetPassword = async (staffId: number, email: string) => {
     setResettingPasswords((prev) => ({ ...prev, [staffId]: true }));
     try {
-      await requestStaffPasswordReset(staffId);
-      toast.success(`Password reset link sent to ${email}`);
+      const res = await requestStaffPasswordReset(staffId);
+      if (res?.data?.emailDelivered === false) {
+        toast.warning(
+          "Reset link created, but the email could not be delivered. Please try again.",
+        );
+      } else {
+        toast.success(`Password reset link sent to ${email}`);
+      }
       mutate();
     } catch (error: unknown) {
       console.error("Failed to request password reset:", error);
@@ -148,8 +154,14 @@ export default function UsersTable({ businessId }: { businessId: string }) {
   const handleResendInvite = async (staffId: number, email: string) => {
     setBusyInvite((prev) => ({ ...prev, [staffId]: true }));
     try {
-      await resendStaffInvite(staffId);
-      toast.success(`Invite re-sent to ${email}`);
+      const res = await resendStaffInvite(staffId);
+      if (res?.data?.emailDelivered === false) {
+        toast.warning(
+          "Invite renewed, but the email could not be delivered. Try resending again.",
+        );
+      } else {
+        toast.success(`Invite re-sent to ${email}`);
+      }
       mutate();
     } catch (error: unknown) {
       toast.error(apiErrorMessage(error, "Failed to re-send invite."));

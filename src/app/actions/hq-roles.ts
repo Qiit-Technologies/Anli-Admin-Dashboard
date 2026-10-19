@@ -7,7 +7,7 @@ import {
   axiosPatch,
   axiosPost,
   isRedirectError,
-} from "../lib/api";
+} from "../lib/server-api";
 
 /* ── Types matching the /super-admin/* role-template contract ─────────── */
 

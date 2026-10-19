@@ -70,8 +70,14 @@ export const ViewStaffDetailsBtn = ({
   const handleResetConfirm = async () => {
     setIsResetting(true);
     try {
-      await requestStaffPasswordReset(staffInfo.id);
-      toast.success(`Password reset link sent to ${staffInfo.email}`);
+      const res = await requestStaffPasswordReset(staffInfo.id);
+      if (res?.data?.emailDelivered === false) {
+        toast.warn(
+          "Reset link created, but the email could not be delivered. Please try again.",
+        );
+      } else {
+        toast.success(`Password reset link sent to ${staffInfo.email}`);
+      }
       setShowResetConfirm(false);
     } catch (error: unknown) {
       const message =

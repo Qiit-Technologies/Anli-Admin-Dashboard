@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import {
   Archive,
   ArchiveRestore,
+  ArrowLeft,
   Ban,
   Eye,
   Gift,
@@ -59,7 +60,7 @@ export default function BusinessList() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 400);
   const limit = 6;
-  const { setBusiness, loading } = useBusiness();
+  const { setBusiness } = useBusiness();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   // H3/H4: pending lifecycle confirmations
@@ -123,7 +124,7 @@ export default function BusinessList() {
           if (token) {
             // Cookie might not be set yet - try to set it and retry
             document.cookie = `access_token=${token}; path=/; secure; samesite=lax; max-age=${
-              60 * 60 * 24 * 7
+              60 * 60 * 2
             }`;
             console.warn("401 error - retrying after setting cookie");
           } else {
@@ -175,9 +176,7 @@ export default function BusinessList() {
 
   const handleBusinessClick = (item: BusinessDTO) => {
     setBusiness(item);
-    if (!loading) {
-      router.push("/dashboard");
-    }
+    router.push("/dashboard/details");
   };
 
   // H3: reactivate / suspend / unsuspend all go through a confirmation dialog.
@@ -351,85 +350,98 @@ export default function BusinessList() {
 
       {/* Header */}
       <div className="text-center mb-8 z-20 relative px-4">
-        <div className="flex justify-end mb-6 gap-2">
+        <div className="flex flex-wrap items-center justify-between mb-6 gap-2">
           <Button
-            onClick={() => setIsAddBusinessOpen(true)}
-            className="bg-[#007BFF] hover:bg-[#007BFF]/90 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+            onClick={() => {
+              setBusiness(null);
+              router.push("/dashboard");
+            }}
+            variant="outline"
+            className="flex items-center gap-2"
           >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Add Business</span>
+            <ArrowLeft size={18} />
+            Back to Command Center
           </Button>
-          <div className="relative">
+          <div className="flex items-center gap-2">
             <Button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+              onClick={() => setIsAddBusinessOpen(true)}
+              className="bg-[#007BFF] hover:bg-[#007BFF]/90 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
             >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-              <span className="hidden sm:inline">Menu</span>
+              <Plus size={20} />
+              <span className="hidden sm:inline">Add Business</span>
             </Button>
+            <div className="relative">
+              <Button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="bg-[#F47411] hover:bg-[#F47411]/90 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+              >
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+                <span className="hidden sm:inline">Menu</span>
+              </Button>
 
-            {menuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-30 sm:hidden"
-                  onClick={() => setMenuOpen(false)}
-                />
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-40 py-2">
+              {menuOpen && (
+                <>
                   <button
-                    onClick={() => {
-                      router.push("/subscriptions");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <Gift size={18} className="text-[#F47411]" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Subscriptions
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      router.push("/modules");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <Layers size={18} className="text-[#F47411]" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Manage Modules
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      router.push("/permissions");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <Shield size={18} className="text-[#F47411]" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Manage Permissions
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      router.push("/restaurants");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <UtensilsCrossed size={18} className="text-[#F47411]" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Restaurant Catalog
-                    </span>
-                  </button>
-                </div>
-              </>
-            )}
+                    className="fixed inset-0 z-30 sm:hidden"
+                    onClick={() => setMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-40 py-2">
+                    <button
+                      onClick={() => {
+                        router.push("/subscriptions");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <Gift size={18} className="text-[#F47411]" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Subscriptions
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        router.push("/modules");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <Layers size={18} className="text-[#F47411]" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Manage Modules
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        router.push("/permissions");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <Shield size={18} className="text-[#F47411]" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Manage Permissions
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        router.push("/restaurants");
+                        setMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <UtensilsCrossed size={18} className="text-[#F47411]" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Restaurant Catalog
+                      </span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
         <Image
-          src="/logo.svg"
+          src="/superadmin/logo.svg"
           alt="Anli logo"
           width={120}
           height={70}
@@ -592,7 +604,7 @@ export default function BusinessList() {
                   )}
                 </div>
                 <Image
-                  src={b?.coverImage || "/sample-company.png"}
+                  src={b?.coverImage || "/superadmin/sample-company.png"}
                   alt={b.name}
                   width={70}
                   height={70}

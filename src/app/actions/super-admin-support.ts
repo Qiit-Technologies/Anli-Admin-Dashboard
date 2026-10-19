@@ -7,7 +7,8 @@ import {
   axiosPatch,
   axiosPost,
   isRedirectError,
-} from "../lib/api";
+} from "../lib/server-api";
+import { getAuthHeaders } from "../lib/auth";
 import { ErrorResponseData } from "../lib/types";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
@@ -77,7 +78,11 @@ export async function getSupportTickets(
 
     const response = await axiosGet<TicketListResponse>(
       "/super-admin/support/tickets",
-      { params, currentPath: "/admin/support" },
+      {
+        params,
+        config: { headers: await getAuthHeaders() },
+        currentPath: "/admin/support",
+      },
     );
 
     if (!response) {
@@ -101,7 +106,10 @@ export async function getSupportTicket(
   try {
     const response = await axiosGet<SupportTicket>(
       `/super-admin/support/tickets/${id}`,
-      { currentPath: "/admin/support" },
+      {
+        config: { headers: await getAuthHeaders() },
+        currentPath: "/admin/support",
+      },
     );
 
     if (!response) {
@@ -148,7 +156,10 @@ export async function createSupportTicket(
         description: input.description,
         hotelId: Number(input.hotelId),
       },
-      { currentPath: "/admin/support" },
+      {
+        config: { headers: await getAuthHeaders() },
+        currentPath: "/admin/support",
+      },
     );
 
     if (!response?.data) {
@@ -174,7 +185,10 @@ export async function updateTicketStatus(
     const response = await axiosPatch<SupportTicket>(
       `/super-admin/support/tickets/${id}/status`,
       { status },
-      { currentPath: "/admin/support" },
+      {
+        config: { headers: await getAuthHeaders() },
+        currentPath: "/admin/support",
+      },
     );
 
     return response;
@@ -196,7 +210,10 @@ export async function replyToTicket(
     const response = await axiosPost<TicketMessage>(
       `/super-admin/support/tickets/${id}/messages`,
       { message },
-      { currentPath: "/admin/support" },
+      {
+        config: { headers: await getAuthHeaders() },
+        currentPath: "/admin/support",
+      },
     );
 
     return response;

@@ -357,7 +357,7 @@ export default function PermissionPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Image
-            src="/logo.svg"
+            src="/superadmin/logo.svg"
             alt="Anli logo"
             width={120}
             height={70}

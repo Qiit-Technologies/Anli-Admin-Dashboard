@@ -18,6 +18,9 @@ interface ConfirmationModalProps {
   description: string;
   confirmText?: string;
   cancelText?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "danger" | "primary";
   confirmVariant?:
     | "default"
     | "destructive"
@@ -37,8 +40,20 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   confirmVariant = "default",
+  confirmLabel,
+  cancelLabel,
+  variant,
   isLoading = false,
 }) => {
+  const buttonVariant =
+    confirmVariant !== "default"
+      ? confirmVariant
+      : variant === "danger"
+        ? "destructive"
+        : variant === "primary"
+          ? "default"
+          : variant ?? "default";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -48,10 +63,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         </DialogHeader>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {cancelText}
+            {cancelLabel ?? cancelText}
           </Button>
           <Button
-            variant={confirmVariant}
+            variant={buttonVariant}
             onClick={onConfirm}
             disabled={isLoading}
           >
@@ -61,7 +76,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 Processing...
               </div>
             ) : (
-              confirmText
+              confirmLabel ?? confirmText
             )}
           </Button>
         </DialogFooter>

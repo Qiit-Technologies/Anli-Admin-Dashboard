@@ -6,4 +6,28 @@ export type PlanCardProps = {
   modulesAllowed: number;
   billingCycle: string;
   benefits: string; // comma‑separated list
+  status?: string;
+  isExpired?: boolean;
+  hotelActive?: boolean;
+  warningInfo?: {
+    isActive?: boolean;
+    warningStartedAt?: string;
+    warningExpiresAt?: string;
+    reason?: string | null;
+    setBy?: string | null;
+  };
+  canStartWarning?: boolean;
+  canCancelWarning?: boolean;
+  warningActionLoading?: boolean;
+  warningCancelLoading?: boolean;
+  onStartWarning?: (options: {
+    reason?: string;
+    warningStartedAt?: string;
+    warningExpiresAt?: string;
+  }) => Promise<void> | void;
+  onCancelWarning?: () => Promise<void> | void;
+  onUpgrade?: () => void;
+  onMakePayment?: () => void;
+  onReactivate?: () => Promise<void> | void;
+  reactivating?: boolean;
 };

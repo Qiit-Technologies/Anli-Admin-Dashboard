@@ -9,6 +9,7 @@ import {
 import { cn } from "@/utils/utils";
 import { LucideIcon, LucideProps } from "lucide-react";
 import React, { ReactNode } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormFieldProps {
   label: string | ReactNode;
@@ -205,3 +206,46 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     </FormField>
   );
 };
+
+interface TextAreaFieldProps {
+  id: string;
+  name: string;
+  label: string | ReactNode;
+  value?: string;
+  defaultValue?: string;
+  placeholder?: string;
+  rows?: number;
+  required?: boolean;
+  className?: string;
+  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}
+
+export const TextAreaField: React.FC<TextAreaFieldProps> = ({
+  id,
+  name,
+  label,
+  value,
+  defaultValue,
+  placeholder = "",
+  rows = 3,
+  required = false,
+  className = "",
+  onChange,
+}) => (
+  <FormField label={label} htmlFor={id}>
+    <Textarea
+      id={id}
+      name={name}
+      value={value}
+      defaultValue={defaultValue}
+      placeholder={placeholder}
+      rows={rows}
+      required={required}
+      onChange={onChange}
+      className={cn(
+        "w-full rounded-md bg-gray-100 shadow-sm focus-visible:ring-brand",
+        className,
+      )}
+    />
+  </FormField>
+);

@@ -14,15 +14,15 @@ export type StaffPresence = "online" | "offline" | "unknown";
 
 const SESSION_FRESH_HOURS = 24;
 
-export function getStaffPresence(staff: {
-  status?: string | null;
-  lastLoginAt?: string | null;
-}): StaffPresence {
-  const status = (staff.status ?? "").toLowerCase();
+export function getStaffPresence(staff: Record<string, unknown>): StaffPresence {
+  const status =
+    typeof staff.status === "string" ? staff.status.toLowerCase() : "";
+  const lastLoginAt =
+    typeof staff.lastLoginAt === "string" ? staff.lastLoginAt : null;
   if (status === "online") {
-    if (staff.lastLoginAt) {
+    if (lastLoginAt) {
       const ageHours =
-        (Date.now() - new Date(staff.lastLoginAt).getTime()) / 3_600_000;
+        (Date.now() - new Date(lastLoginAt).getTime()) / 3_600_000;
       if (Number.isFinite(ageHours) && ageHours <= SESSION_FRESH_HOURS) {
         return "online";
       }
@@ -30,7 +30,7 @@ export function getStaffPresence(staff: {
     }
     return "online";
   }
-  if (staff.lastLoginAt) return "offline";
+  if (lastLoginAt) return "offline";
   return "unknown";
 }
 

@@ -7,8 +7,13 @@ import { useBusiness } from "@/context/businessContext";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import useSWR, { useSWRConfig } from "swr";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-export const SelectPlanBtn = () => {
+export const SelectPlanBtn = ({
+  asMenuItem = false,
+}: {
+  asMenuItem?: boolean;
+}) => {
   const { mutate } = useSWRConfig();
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -52,6 +57,22 @@ export const SelectPlanBtn = () => {
       label: `${plan.name} - ${"₦" + Number(plan.price).toLocaleString()}`,
     })) || [];
 
+  const trigger = asMenuItem ? (
+    <DropdownMenuItem
+      onSelect={(event) => {
+        event.preventDefault();
+        setIsDialogOpen(true);
+      }}
+      className="cursor-pointer"
+    >
+      Select Plan
+    </DropdownMenuItem>
+  ) : (
+    <button className="rounded-lg bg-[#007BFF] px-4 py-2 font-semibold text-sm text-white hover:bg-blue-700 w-full sm:w-auto">
+      Select Plan
+    </button>
+  );
+
   return (
     <CustomDialog
       open={isDialogOpen}
@@ -59,11 +80,7 @@ export const SelectPlanBtn = () => {
       onOpenChange={setIsDialogOpen}
       title="Select Subscription Plan"
       loading={loading || businessLoading || planLoading}
-      trigger={
-        <button className="rounded-lg bg-[#007BFF] px-4 py-2 font-semibold text-sm text-white hover:bg-blue-700 w-full sm:w-auto">
-          Select Plan
-        </button>
-      }
+      trigger={trigger}
     >
       <SearchSelect
         id="plans"

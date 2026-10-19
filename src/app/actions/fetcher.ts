@@ -1,6 +1,6 @@
 "use server";
 
-import { axiosGet } from "../lib/api";
+import { axiosGet } from "../lib/server-api";
 import { getAuthToken } from "../lib/auth";
 
 export default async function fetcher<T>(url: string): Promise<T | undefined> {

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { axiosGet, axiosPost, isRedirectError } from "../lib/api";
+import { axiosGet, axiosPost, isRedirectError } from "../lib/server-api";
+import { getAuthHeaders } from "../lib/auth";
 
 /* ── Types matching the /super-admin/* HQ contract ─────────────────────── */
 
@@ -129,7 +130,10 @@ export type HqResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 async function safeGet<T>(url: string): Promise<HqResult<T>> {
   try {
-    const body = await axiosGet<any>(url, { currentPath: "/dashboard" });
+    const body = await axiosGet<any>(url, {
+      config: { headers: await getAuthHeaders() },
+      currentPath: "/dashboard",
+    });
     // New HQ endpoints wrap payloads in { success, data, message } (backend PR #557).
     // Unwrap defensively so both wrapped and unwrapped shapes work.
     const data =
@@ -181,7 +185,10 @@ export async function resetOwnerPassword(
     const body = await axiosPost<any>(
       `/super-admin/users/${userId}/reset-password`,
       { password },
-      { currentPath: "/dashboard/users" },
+      {
+        config: { headers: await getAuthHeaders() },
+        currentPath: "/dashboard/users",
+      },
     );
     // Unwrap { success, data, message } like the other HQ endpoints
     const data =

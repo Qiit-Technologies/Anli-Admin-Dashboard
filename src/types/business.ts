@@ -20,5 +20,11 @@ export interface BusinessDTO {
   incorporationCert: string | null;
   boardingToken: string | null;
   services: string | null; // Replace 'any' with proper type if services structure is known
+  images?: string[] | null;
   disbursementType: DisbursementType;
+  subscription?: {
+    status?: string | null;
+    endDate?: string | null;
+    isExpired?: boolean;
+  } | null;
 }

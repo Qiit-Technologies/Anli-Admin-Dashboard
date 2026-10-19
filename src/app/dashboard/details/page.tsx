@@ -23,7 +23,7 @@ export default function BusinessDetailsPage() {
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col sm:ml-60">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
@@ -34,7 +34,7 @@ export default function BusinessDetailsPage() {
             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-8">
               <div className="border-4 border-white rounded-full flex-shrink-0">
                 <Image
-                  src="/sample-company.png"
+                  src="/superadmin/sample-company.png"
                   alt="Company Logo"
                   width={120}
                   height={120}

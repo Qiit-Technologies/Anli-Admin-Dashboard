@@ -28,7 +28,7 @@ export default function BusinessOverviewPage() {
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col sm:ml-60">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}
@@ -39,7 +39,7 @@ export default function BusinessOverviewPage() {
             <div className="bg-[#F5EFEB] p-6 rounded-xl shadow-sm text-center w-full flex flex-col gap-2">
               <div className="mx-auto rounded-full flex items-center justify-center">
                 <Image
-                  src="/sample-company.png"
+                  src="/superadmin/sample-company.png"
                   alt="Company Logo"
                   width={180}
                   height={180}

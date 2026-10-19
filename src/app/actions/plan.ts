@@ -1,7 +1,7 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosDelete, axiosGet, axiosPost, isRedirectError } from "../lib/api";
+import { axiosDelete, axiosGet, axiosPost, isRedirectError } from "../lib/server-api";
 import { ErrorResponseData } from "../lib/types";
 
 export interface SubscriptionPlanSummary {

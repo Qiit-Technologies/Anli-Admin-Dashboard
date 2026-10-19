@@ -36,7 +36,7 @@ export default function AuthCallbackPage() {
             } catch {
                 // Fallback: set the cookie client-side (same pattern as /login)
                 document.cookie = `access_token=${token}; path=/; secure; samesite=lax; max-age=${
-                    60 * 60 * 24 * 7
+                    60 * 60 * 2
                 }`;
             }
 

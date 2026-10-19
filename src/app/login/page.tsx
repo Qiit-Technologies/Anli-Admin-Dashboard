@@ -13,10 +13,13 @@ import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
 import { axiosPost } from "../lib/api";
 import { useUser } from "@/context/userContext";
+import { useBusiness } from "@/context/businessContext";
+import { setAuthCookie } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { setUser } = useUser();
+  const { setBusiness } = useBusiness();
 
   const router = useRouter();
 
@@ -44,14 +47,20 @@ export default function LoginPage() {
         }
       );
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log(response);
       if (response?.data && response?.access_token) {
         toast.success(response?.message || "Login successful");
         // Store token in localStorage
         localStorage.setItem("access_token", response.access_token);
-        // Store token in cookie for SSR
-        document.cookie = `access_token=${response.access_token}; path=/; secure; samesite=lax`;
+        try {
+          await setAuthCookie(response.access_token);
+        } catch (error: unknown) {
+          console.error("Failed to set auth cookie:", error);
+          document.cookie = `access_token=${response.access_token}; path=/; ${
+            window.location.protocol === "https:" ? "secure; " : ""
+          }samesite=lax; max-age=${60 * 60 * 2}`;
+        }
         setUser({
           id: response.data.id,
           email: response.data.email,
@@ -60,7 +69,8 @@ export default function LoginPage() {
           status: response.data.status,
           roleId: response.data.roleId,
         });
-        router.push("/business-list");
+        setBusiness(null);
+        router.push("/dashboard");
       } else {
         toast.error(
           response?.message || "Login failed. Please check your credentials."
@@ -125,7 +135,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="mb-8">
           <Image
-            src="/logo.svg"
+            src="/superadmin/logo.svg"
             width={140}
             height={80}
             alt="Anli Logo"

@@ -1,7 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  basePath: "/superadmin",
+  async redirects() {
+    return [
+      {
+        source: "/login",
+        destination: "/signin",
+        permanent: true,
+      },
+    ];
+  },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

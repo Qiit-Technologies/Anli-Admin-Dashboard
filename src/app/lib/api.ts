@@ -2,7 +2,12 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { redirect } from "next/navigation";
 
 const instance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  baseURL:
+    typeof window !== "undefined"
+      ? "/superadmin/be-api"
+      : process.env.BACKEND_URL ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
   },
@@ -84,6 +89,26 @@ export async function axiosPost<T = unknown>(
   }
 }
 
+export async function axiosPut<T = unknown>(
+  url: string,
+  data?: unknown,
+  {
+    config,
+    currentPath,
+  }: {
+    config?: AxiosRequestConfig;
+    currentPath?: string;
+  } = {}
+): Promise<T | undefined> {
+  try {
+    const response = await instance.put<T>(url, data, { ...config });
+    return response.data;
+  } catch (error) {
+    handleError(error as AxiosError, currentPath);
+    throw error;
+  }
+}
+
 export async function axiosPatch<T = unknown>(
   url: string,
   data?: unknown,
@@ -132,3 +157,5 @@ export function isRedirectError(error: unknown): boolean {
     (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
   );
 }
+
+export default instance;

@@ -23,7 +23,7 @@ export default function IssuesPage() {
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col sm:ml-60">
         <Header isOpen={menuOpen} setIsOpen={setMenuOpen} title="Issues Logs" />
         <main className="px-4 sm:px-8 md:px-12 py-10 space-y-6 bg-white">
           <IssuesTable businessId={business.id?.toString()} />

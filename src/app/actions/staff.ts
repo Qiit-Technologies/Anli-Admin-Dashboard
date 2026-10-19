@@ -8,7 +8,7 @@ import {
   axiosPost,
   axiosDelete,
   isRedirectError,
-} from "../lib/api";
+} from "../lib/server-api";
 import { getAuthToken } from "../lib/auth";
 import { GetStaffOptions, getStaffResponse } from "./types";
 import { ApiResponse, ErrorResponseData } from "../lib/types";

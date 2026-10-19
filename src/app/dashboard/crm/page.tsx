@@ -23,14 +23,13 @@ import {
 import PageWrapper from '@/components/common/PageWrapper';
 import {
     PageHeader,
-    PageHeadertitle,
     HeaderActions,
 } from '@/components/common/layout/Header';
 import {
     InputField,
     SelectField,
     TextAreaField,
-} from '@/components/common/Form';
+} from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -111,8 +110,8 @@ function NewLeadDialog({
             return;
         }
         if (
-            !form.email.trim() ||
-            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
+            !(form.email ?? "").trim() ||
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((form.email ?? "").trim())
         ) {
             setError('A valid email address is required.');
             return;
@@ -126,7 +125,7 @@ function NewLeadDialog({
             const payload: CreateLeadInput = {
                 contactName: form.contactName.trim(),
                 companyName: form.companyName.trim(),
-                email: form.email.trim(),
+                email: (form.email ?? "").trim(),
                 ...(form.phone?.trim()
                     ? { phone: form.phone.trim() }
                     : {}),
@@ -575,12 +574,11 @@ export default function CrmPipelinePage() {
     };
 
     return (
-        <>
+        <PageWrapper title="CRM">
             <PageHeader>
-                <PageHeadertitle
-                    title="CRM"
-                    subtitle="Sales pipeline — leads, follow-ups and conversions"
-                />
+                <p className="text-sm text-gray-500">
+                    Sales pipeline — leads, follow-ups and conversions
+                </p>
                 <HeaderActions>
                     <Button
                         variant="outline"
@@ -597,7 +595,6 @@ export default function CrmPipelinePage() {
                 </HeaderActions>
             </PageHeader>
 
-            <PageWrapper>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -677,13 +674,11 @@ export default function CrmPipelinePage() {
                         })}
                     </div>
                 )}
-            </PageWrapper>
-
             <NewLeadDialog
                 open={newLeadOpen}
                 onOpenChange={setNewLeadOpen}
                 onCreated={load}
             />
-        </>
+        </PageWrapper>
     );
 }

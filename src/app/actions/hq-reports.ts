@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { axiosGet, isRedirectError } from "../lib/api";
+import { axiosGet, isRedirectError } from "../lib/server-api";
 
 /* ── Types matching the /super-admin/reports/* HQ contract ─────────────── */
 

@@ -112,14 +112,21 @@ export default function InviteStaffDialog({
     }
     setSaving(true);
     try {
-      await inviteStaffByEmail({
+      const res = await inviteStaffByEmail({
         email: email.trim().toLowerCase(),
         fullName: fullName.trim(),
         businessId: effectiveBusinessId,
         moduleIds: selectedModules.map((m) => Number(m.id)),
         permissionIds: selectedPermissions.map((p) => Number(p.id)),
       });
-      toast.success(`Invite sent to ${email.trim().toLowerCase()}`);
+      if (res?.data?.emailDelivered === false) {
+        toast(
+          "Invite created, but the email could not be delivered. Resend it from the staff list.",
+          { icon: "⚠️" },
+        );
+      } else {
+        toast.success(`Invite sent to ${email.trim().toLowerCase()}`);
+      }
       onInvited();
       close();
     } catch (e) {

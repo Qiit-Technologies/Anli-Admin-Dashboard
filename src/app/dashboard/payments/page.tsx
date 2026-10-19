@@ -11,7 +11,7 @@ export default function PaymentHistoryPage() {
   return (
     <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col sm:ml-60">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}

@@ -1,7 +1,7 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, axiosPost, axiosPatch, axiosDelete } from "../lib/api";
+import { axiosGet, axiosPost, axiosPatch, axiosDelete } from "../lib/server-api";
 import { getAuthToken } from "../lib/auth";
 import { ErrorResponseData } from "../lib/types";
 

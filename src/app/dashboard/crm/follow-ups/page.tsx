@@ -20,7 +20,7 @@ import {
     PageHeader,
     PageHeadertitle,
 } from '@/components/common/layout/Header';
-import { InputField, TextAreaField } from '@/components/common/Form';
+import { InputField, TextAreaField } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -254,7 +254,7 @@ export default function CrmFollowUpsPage() {
     );
 
     return (
-        <>
+        <PageWrapper title="CRM">
             <PageHeader>
                 <PageHeadertitle
                     title="Follow-ups"
@@ -263,7 +263,6 @@ export default function CrmFollowUpsPage() {
                 />
             </PageHeader>
 
-            <PageWrapper>
                 {loading ? (
                     <div className="space-y-3">
                         {[0, 1, 2].map((i) => (
@@ -372,8 +371,6 @@ export default function CrmFollowUpsPage() {
                         })}
                     </div>
                 )}
-            </PageWrapper>
-
             <LogActivityDialog
                 lead={logLead}
                 open={!!logLead}
@@ -390,6 +387,6 @@ export default function CrmFollowUpsPage() {
                 }}
                 onSaved={load}
             />
-        </>
+        </PageWrapper>
     );
 }

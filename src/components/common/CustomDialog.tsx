@@ -17,34 +17,49 @@ export function CustomDialog({
   open,
   onOpenChange,
   onSubmit,
+  onConfirm,
   loading = false,
+  isLoading = false,
+  description,
+  confirmText = "Submit",
+  confirmDisabled = false,
 }: {
   title: string;
   open?: boolean;
   subTitle?: string;
+  description?: string;
   trigger?: React.ReactNode;
   children: React.ReactNode;
-  onSubmit: () => void;
+  onSubmit?: () => void | Promise<void>;
+  onConfirm?: () => void | Promise<void>;
   onOpenChange?: (open: boolean) => void;
   loading?: boolean;
+  isLoading?: boolean;
+  confirmText?: string;
+  confirmDisabled?: boolean;
 }) {
+  const submit = onSubmit ?? onConfirm;
+  const isBusy = loading || isLoading;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{subTitle}</DialogDescription>
+          <DialogDescription>{description ?? subTitle}</DialogDescription>
         </DialogHeader>
         <div className="w-full my-2">{children}</div>
-        <DialogFooter>
-          <Button
-            className={`bg-orion-blue hover:bg-orion-blue hover:opacity-70 ${loading && "opacity-60 cursor-not-allowed"}`}
-            onClick={onSubmit}
-          >
-            {loading ? "..loading" : "Submit"}
-          </Button>
-        </DialogFooter>
+        {submit && (
+          <DialogFooter>
+            <Button
+              disabled={isBusy || confirmDisabled}
+              onClick={submit}
+            >
+              {isBusy ? "Loading..." : confirmText}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

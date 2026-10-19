@@ -6,7 +6,7 @@ import {
     axiosPost,
     axiosPatch,
     isRedirectError,
-} from '../lib/api';
+} from '../lib/server-api';
 
 /**
  * CRM server actions — admin-app half of the Anli CRM module.

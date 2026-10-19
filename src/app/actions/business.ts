@@ -7,7 +7,8 @@ import {
   axiosPatch,
   axiosPost,
   isRedirectError,
-} from "../lib/api";
+} from "../lib/server-api";
+import { getAuthHeaders } from "../lib/auth";
 import { getBusinessListResponse, GetBusinessListOptions } from "./types";
 import { ErrorResponseData } from "../lib/types";
 import { BusinessDTO } from "@/types/business";
@@ -25,6 +26,7 @@ export default async function getBusinessList(
     const url = `${baseUrl}?page=${page}&limit=${limit}`;
 
     const response = await axiosGet<getBusinessListResponse>(url, {
+      config: { headers: await getAuthHeaders() },
       currentPath: "/business-list",
     });
 

@@ -6,7 +6,7 @@ import {
   axiosPost,
   axiosPatch,
   isRedirectError,
-} from '../lib/api';
+} from '../lib/server-api';
 import { AxiosError } from 'axios';
 import { ErrorResponseData } from '../lib/types';
 

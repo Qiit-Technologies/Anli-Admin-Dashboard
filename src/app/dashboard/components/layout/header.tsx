@@ -1,8 +1,9 @@
 "use client";
 
 import { useUser } from "@/context/userContext";
+import { useBusiness } from "@/context/businessContext";
 import { getInitials } from "@/utils/utils";
-import { Menu, Search, X } from "lucide-react";
+import { ArrowLeft, Menu, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import HqAlertsBell from "../hq/HqAlertsBell";
@@ -17,6 +18,7 @@ const Header = ({
   setIsOpen: (val: boolean) => void;
 }) => {
   const { user, loading } = useUser();
+  const { business } = useBusiness();
   const router = useRouter();
 
   useEffect(() => {
@@ -38,9 +40,21 @@ const Header = ({
   }, [loading, user, router]);
 
   return (
-    <header className="flex sm:flex-row justify-between items-center p-4 gap-4 sm:gap-0 border-b border-[#B5B5B5] bg-white top-0 z-10 relative">
+    <header className="sticky top-0 z-30 flex sm:flex-row justify-between items-center p-4 gap-4 sm:gap-0 border-b border-[#B5B5B5] bg-white">
       {/* Page title */}
-      <h2 className="text-xl font-bold sm:text-2xl">{title}</h2>
+      <div className="flex min-w-0 items-center gap-3">
+        {business && (
+          <button
+            type="button"
+            onClick={() => router.push("/business-list")}
+            className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-2 text-sm font-medium text-[#F47411] hover:bg-orange-50"
+          >
+            <ArrowLeft size={18} />
+            <span className="hidden sm:inline">Businesses</span>
+          </button>
+        )}
+        <h2 className="truncate text-xl font-bold sm:text-2xl">{title}</h2>
+      </div>
 
       {/* Right Section (icons + avatar) */}
       <div className="flex gap-4 items-center">
@@ -53,7 +67,6 @@ const Header = ({
         </button>
 
         {/* Icons (only on larger screens) */}
-<<<<<<< HEAD
         <div className="hidden gap-3 sm:flex">
           <button
             className="p-2 hover:bg-gray-100 rounded-md transition-colors"

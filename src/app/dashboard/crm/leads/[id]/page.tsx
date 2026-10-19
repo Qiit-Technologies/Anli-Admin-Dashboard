@@ -39,7 +39,7 @@ import {
     InputField,
     SelectField,
     TextAreaField,
-} from '@/components/common/Form';
+} from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -1009,9 +1009,23 @@ export default function LeadDetailPage() {
         }
     };
 
+    if (loading) {
+        return (
+            <PageWrapper title="CRM">
+                <Card>
+                    <CardContent className="space-y-3 p-8">
+                        <Skeleton className="h-7 w-1/3" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-24 w-full" />
+                    </CardContent>
+                </Card>
+            </PageWrapper>
+        );
+    }
+
     if (!lead) {
         return (
-            <PageWrapper>
+            <PageWrapper title="CRM">
                 <Card>
                     <CardContent className="p-8 text-center text-sm text-muted-foreground">
                         Lead not found.
@@ -1032,7 +1046,7 @@ export default function LeadDetailPage() {
     const overdue = isOverdue(lead.nextFollowUpAt);
 
     return (
-        <>
+        <PageWrapper title="CRM">
             <PageHeader>
                 <PageHeadertitle
                     title={lead.companyName}
@@ -1077,7 +1091,6 @@ export default function LeadDetailPage() {
                 </HeaderActions>
             </PageHeader>
 
-            <PageWrapper>
                 {/* Actions row */}
                 <div className="flex flex-wrap gap-2">
                     <Button
@@ -1337,8 +1350,6 @@ export default function LeadDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
-            </PageWrapper>
-
             <EditLeadDialog
                 lead={lead}
                 open={editOpen}
@@ -1366,6 +1377,6 @@ export default function LeadDetailPage() {
                     onClose={() => setConverted(null)}
                 />
             )}
-        </>
+        </PageWrapper>
     );
 }

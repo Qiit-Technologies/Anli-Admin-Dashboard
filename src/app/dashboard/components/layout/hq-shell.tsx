@@ -18,9 +18,9 @@ export default function HqShell({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col sm:flex-row overflow-hidden">
+    <div className="min-h-screen flex flex-col sm:flex-row">
       <Sidebar isOpen={menuOpen} setIsOpen={setMenuOpen} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 sm:ml-60">
         <Header
           isOpen={menuOpen}
           setIsOpen={setMenuOpen}

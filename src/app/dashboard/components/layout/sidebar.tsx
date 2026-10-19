@@ -4,6 +4,7 @@ import {
   Building2,
   ChartNoAxesColumn,
   CreditCard,
+  LogOut,
   FileBarChart,
   Handshake,
   Layers,
@@ -11,13 +12,19 @@ import {
   LifeBuoy,
   Settings,
   SquareCheckBig,
+  Utensils,
+  Landmark,
   Users,
   Wallet,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useBusiness } from "@/context/businessContext";
+import { useUser } from "@/context/userContext";
+import { clearAuthCookie } from "@/app/actions/auth";
+import { toast } from "sonner";
 
 const navItems = [
   { name: "Command Center", icon: LayoutDashboard, href: "/dashboard" },
@@ -28,14 +35,23 @@ const navItems = [
   { name: "Users", icon: Users, href: "/dashboard/users" },
   { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
   { name: "Settings", icon: Settings, href: "/dashboard/settings" },
+];
+
+const businessNavItems = [
+  { name: "General Info", icon: ChartNoAxesColumn, href: "/dashboard/details" },
   {
-    name: "Business Overview",
-    icon: ChartNoAxesColumn,
-    href: "/dashboard/business-overview",
+    name: "Restaurant Details",
+    icon: Utensils,
+    href: "/dashboard/restaurant-details",
   },
   { name: "Issues", icon: Layers, href: "/dashboard/issues" },
   { name: "Current Plan", icon: SquareCheckBig, href: "/dashboard/plan" },
   { name: "Payment History", icon: CreditCard, href: "/dashboard/payments" },
+  {
+    name: "Booking Payment",
+    icon: Landmark,
+    href: "/dashboard/booking-payments",
+  },
   { name: "Staffs", icon: Users, href: "/dashboard/staffs" },
 ];
 
@@ -47,6 +63,26 @@ const Sidebar = ({
   setIsOpen: (val: boolean) => void;
 }) => {
   const pathname = usePathname();
+  const { business, setBusiness } = useBusiness();
+  const { setUser } = useUser();
+  const router = useRouter();
+  const hasSelectedBusiness = Boolean(business && Object.keys(business).length);
+  const visibleNavItems = hasSelectedBusiness ? businessNavItems : navItems;
+
+  const handleLogout = async () => {
+    try {
+      await clearAuthCookie();
+    } catch (error: unknown) {
+      console.error("Failed to clear authentication cookie:", error);
+      toast.error("Could not complete logout. Please try again.");
+      return;
+    }
+
+    localStorage.removeItem("access_token");
+    setUser(null);
+    setBusiness(null);
+    router.replace("/signin");
+  };
 
   return (
     <>
@@ -58,13 +94,13 @@ const Sidebar = ({
       )}
 
       <aside
-        className={`fixed sm:static inset-y-0 left-0 bg-black text-white z-50 sm:z-auto transition-transform transform sm:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 flex h-screen flex-col bg-black text-white z-50 transition-transform transform sm:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } w-full sm:w-60 px-4 py-6`}
       >
         <div className="flex relative justify-center items-center mb-8">
           <Image
-            src="/logo-white.svg"
+            src="/superadmin/logo-white.svg"
             alt="Logo"
             width={100}
             height={24}
@@ -79,13 +115,16 @@ const Sidebar = ({
           </button>
         </div>
 
-        <nav className="space-y-2 overflow-y-auto">
-          {navItems.map(({ name, icon: Icon, href }) => {
+        {hasSelectedBusiness && (
+          <p className="mb-3 px-3 text-sm font-semibold text-gray-300 truncate" title={business?.name}>
+            {business?.name}
+          </p>
+        )}
+        <nav className="flex-1 min-h-0 space-y-2 overflow-y-auto">
+          {visibleNavItems.map(({ name, icon: Icon, href }) => {
             const isActive =
               pathname === href ||
-              (href !== "/dashboard" && pathname.startsWith(`${href}/`)) ||
-              (name === "Business Overview" &&
-                pathname === "/dashboard/details");
+              (href !== "/dashboard" && pathname.startsWith(`${href}/`));
             return (
               <Link
                 key={name}
@@ -103,6 +142,14 @@ const Sidebar = ({
             );
           })}
         </nav>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-4 flex shrink-0 items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-gray-300 transition-colors hover:bg-red-950 hover:text-white"
+        >
+          <LogOut size={20} />
+          Log out
+        </button>
       </aside>
     </>
   );

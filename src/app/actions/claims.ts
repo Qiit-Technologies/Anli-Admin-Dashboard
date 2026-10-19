@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
-import api from '@/lib/axios';
-import { getAuthToken } from './auth/auth-token';
+import api from '@/app/lib/api';
+import { getAuthToken } from '@/app/lib/auth';
 
 interface ApiResponse<T> {
     data?: T;
