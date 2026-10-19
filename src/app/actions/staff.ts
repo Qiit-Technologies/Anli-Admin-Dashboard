@@ -93,14 +93,14 @@ export default async function getStaff(
   }
 }
 
-export async function updateStaff(
+export async function updateStaff<T extends object>(
   businessId: number,
-  staffPayload: any,
+  staffPayload: T,
   staffId: number,
 ) {
   const authToken = await getAuthToken();
 
-  const response = await axiosPatch<ApiResponse<any>>(
+  await axiosPatch<ApiResponse<any>>(
     `/super-admin/${businessId}/staff/${staffId}`,
     staffPayload,
     {

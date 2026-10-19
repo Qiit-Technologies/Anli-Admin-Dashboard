@@ -4,12 +4,13 @@ import { AxiosError } from "axios";
 import { axiosPatch, axiosPost, isRedirectError } from "../lib/server-api";
 import { ErrorResponseData } from "../lib/types";
 import { getAuthToken } from "../lib/auth";
+import type { SubscriptionPlanFeatures } from "@/types/subscriptions";
 
 export async function createSubscriptionPlan(payload: {
   name: string;
   price: string;
   description: string;
-  features: any;
+  features: SubscriptionPlanFeatures;
 }) {
   try {
     const authToken = await getAuthToken();
@@ -43,7 +44,7 @@ export async function updateSubscriptionPlan(
     name: string;
     price: string;
     description: string;
-    features: any;
+    features: SubscriptionPlanFeatures;
   },
 ) {
   try {

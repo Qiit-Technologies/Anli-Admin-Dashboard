@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Calendar, CloudUpload, ListFilterIcon } from "lucide-react";
+import { Calendar, ListFilterIcon } from "lucide-react";
 import { Divider } from "../divider";
 import {
   StatusBadge,
@@ -13,11 +13,9 @@ import {
 } from "@/components/common/customTable";
 import SearchWithIcon from "@/components/common/searchWithIcon";
 import { useState } from "react";
-import LoggedIssueModal from "./issueModal";
 import useSWR from "swr";
 import { Spinner } from "@/components/ui/spinner";
 import { Pagination } from "@/components/common/pagination";
-import { useBusiness } from "@/context/businessContext";
 import fetcher from "@/app/actions/fetcher";
 import { getReportsResponse2 } from "@/app/actions/types";
 import { AddIssueBtn } from "./AddIssueBtn";

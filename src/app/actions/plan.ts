@@ -21,7 +21,7 @@ export type SubscriptionPlansResult =
 /** Subscription plans with canonical tier ids (GET /super-admin/plans). */
 export async function getSubscriptionPlans(): Promise<SubscriptionPlansResult> {
   try {
-    const body = await axiosGet<any>("/super-admin/plans", {
+    const body = await axiosGet<unknown>("/super-admin/plans", {
       currentPath: "/dashboard/plan",
     });
     // HQ endpoints wrap payloads in { success, data, message } — unwrap defensively.
@@ -47,11 +47,11 @@ export async function selectPlan(payload: { planId: string }, hotelId: number) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
-    const axiosError = error as AxiosError;
+    const axiosError = error instanceof AxiosError ? error : undefined;
     const message =
-      (axiosError.response?.data as ErrorResponseData)?.message ||
+      (axiosError?.response?.data as ErrorResponseData)?.message ||
       "An unexpected error occurred";
     throw new Error(message);
   }
@@ -73,11 +73,11 @@ export async function startWarningTimer(
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
-    const axiosError = error as AxiosError;
+    const axiosError = error instanceof AxiosError ? error : undefined;
     const message =
-      (axiosError.response?.data as ErrorResponseData)?.message ||
+      (axiosError?.response?.data as ErrorResponseData)?.message ||
       "Failed to start warning timer";
     throw new Error(message);
   }
@@ -91,11 +91,11 @@ export async function cancelWarningTimer(hotelId: number) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
-    const axiosError = error as AxiosError;
+    const axiosError = error instanceof AxiosError ? error : undefined;
     const message =
-      (axiosError.response?.data as ErrorResponseData)?.message ||
+      (axiosError?.response?.data as ErrorResponseData)?.message ||
       "Failed to clear warning timer";
     throw new Error(message);
   }
@@ -116,11 +116,11 @@ export async function switchBillingCycle(
     );
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
-    const axiosError = error as AxiosError;
+    const axiosError = error instanceof AxiosError ? error : undefined;
     const message =
-      (axiosError.response?.data as ErrorResponseData)?.message ||
+      (axiosError?.response?.data as ErrorResponseData)?.message ||
       "Failed to switch billing cycle";
     throw new Error(message);
   }
@@ -138,11 +138,11 @@ export async function sendPaymentReminder(hotelId: number) {
     );
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
-    const axiosError = error as AxiosError;
+    const axiosError = error instanceof AxiosError ? error : undefined;
     const message =
-      (axiosError.response?.data as ErrorResponseData)?.message ||
+      (axiosError?.response?.data as ErrorResponseData)?.message ||
       "Failed to send payment reminder";
     throw new Error(message);
   }
@@ -160,11 +160,11 @@ export async function reactivateBusiness(hotelId: number) {
     );
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
-    const axiosError = error as AxiosError;
+    const axiosError = error instanceof AxiosError ? error : undefined;
     const message =
-      (axiosError.response?.data as ErrorResponseData)?.message ||
+      (axiosError?.response?.data as ErrorResponseData)?.message ||
       "Failed to reactivate business";
     throw new Error(message);
   }

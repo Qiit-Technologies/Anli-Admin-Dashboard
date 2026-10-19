@@ -37,6 +37,20 @@ import {
 import { updateHotelServices } from "@/app/actions/business";
 import { FaSpinner } from "react-icons/fa";
 import { AlertTriangle } from "lucide-react";
+import { isAxiosError } from "axios";
+
+function getErrorStatus(error: unknown): number | undefined {
+  if (isAxiosError(error)) return error.response?.status;
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof error.status === "number"
+  ) {
+    return error.status;
+  }
+  return undefined;
+}
 
 /* ── Filter out unwanted non-module services ──────────────────────────── */
 function filterServices(services: string | null | undefined): string[] {
@@ -208,9 +222,8 @@ export default function CurrentPlanPage() {
     async (url: string) => {
       try {
         return await fetcher<getPlanResponse>(url);
-      } catch (error: any) {
-        const axiosError = error as { response?: { status?: number }; status?: number };
-        const status = axiosError?.response?.status || axiosError?.status;
+      } catch (error: unknown) {
+        const status = getErrorStatus(error);
         if (status === 404) { console.warn("Subscription not found"); return undefined; }
         throw error;
       }
@@ -325,7 +338,7 @@ export default function CurrentPlanPage() {
       await startWarningTimer(selectedHotelNumericId, payload);
       toast.success("Warning timer started");
       await mutatePlan();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to start warning timer");
     } finally {
       setWarningActionLoading(false);
@@ -339,7 +352,7 @@ export default function CurrentPlanPage() {
       await cancelWarningTimer(selectedHotelNumericId);
       toast.success("Warning timer cleared");
       await mutatePlan();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to clear warning timer");
     } finally {
       setWarningCancelLoading(false);
@@ -353,7 +366,7 @@ export default function CurrentPlanPage() {
       await reactivateBusiness(selectedHotelNumericId);
       toast.success("Business reactivated successfully");
       await mutatePlan();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to reactivate business");
     } finally {
       setReactivating(false);
@@ -405,7 +418,7 @@ export default function CurrentPlanPage() {
           `Services updated to ${tierName}, but the subscription record could not be linked — verify the plan in the subscription before relying on the label.`,
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to update plan");
     } finally {
       setSettingPlan(null);

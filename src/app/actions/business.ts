@@ -145,7 +145,10 @@ export async function createBusiness(data: {
   }
 }
 
-export async function updateBusiness(hotelId: string, data: any) {
+export async function updateBusiness<T extends object>(
+  hotelId: string,
+  data: T,
+) {
   try {
     const url = `/super-admin/hotels/${hotelId}`;
     const response = await axiosPatch(

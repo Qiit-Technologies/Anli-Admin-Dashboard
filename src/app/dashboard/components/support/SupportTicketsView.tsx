@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -178,16 +178,24 @@ export function SupportTicketsView() {
     const [selectedId, setSelectedId] = useState<string | number | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [newTicketOpen, setNewTicketOpen] = useState(false);
+    const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Debounce the search input so we don't hammer the API on every keystroke
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
         setPage(1);
-        window.clearTimeout((handleSearchChange as any)._t);
-        (handleSearchChange as any)._t = window.setTimeout(() => {
+        if (searchTimeout.current) clearTimeout(searchTimeout.current);
+        searchTimeout.current = setTimeout(() => {
             setDebouncedSearch(value.trim());
         }, 400);
     };
+
+    useEffect(
+        () => () => {
+            if (searchTimeout.current) clearTimeout(searchTimeout.current);
+        },
+        [],
+    );
 
     const listKey = useMemo(
         () => [

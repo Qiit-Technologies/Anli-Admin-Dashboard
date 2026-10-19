@@ -9,7 +9,6 @@ import {
   type RoleTemplate,
 } from "@/app/actions/hq-roles";
 import { InputField } from "@/components/common/form";
-import { MultiSelect } from "@/components/common/MultiSelect";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { Role } from "@/types/staff";
 import { Dispatch, SetStateAction, useEffect, useMemo } from "react";

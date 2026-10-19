@@ -156,12 +156,12 @@ export default function UsersPage() {
     selectedHotelId ? ["hq-staff", selectedHotelId, search] : null,
     async () => {
       const res = await getStaffByOptions({
-        businessId: selectedHotelId as number,
+        businessId: String(selectedHotelId),
         page: 1,
         limit: 100,
         searchTerm: search || undefined,
-      } as any);
-      return (res as any)?.data?.staffs ?? [];
+      });
+      return res.data?.staffs ?? [];
     },
     { revalidateOnFocus: false, keepPreviousData: true },
   );

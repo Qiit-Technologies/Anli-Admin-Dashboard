@@ -37,6 +37,7 @@ import { ShieldCheck, Pencil, Copy, Trash2, Plus, ChevronDown } from "lucide-rea
 import fetcher from "@/app/actions/fetcher";
 import type { GetPermissionsResponse } from "@/app/actions/types";
 import getStaffByOptions from "@/app/actions/staff";
+import type { StaffDTO } from "@/types/staff";
 import {
   getRoleTemplates,
   listHotelRoles,
@@ -225,7 +226,7 @@ function ApplyTemplateDialog({
     () => getStaffByOptions({ businessId, page: 1, limit: 100 }),
     { revalidateOnFocus: false },
   );
-  const staffList = (staffRes as any)?.data?.staffs ?? [];
+  const staffList: StaffDTO[] = staffRes?.data?.staffs ?? [];
 
   const apply = async () => {
     if (!template || !staffId) return;
@@ -265,7 +266,7 @@ function ApplyTemplateDialog({
               <SelectValue placeholder="Select staff member" />
             </SelectTrigger>
             <SelectContent>
-              {staffList.map((s: any) => (
+              {staffList.map((s) => (
                 <SelectItem key={s.id} value={String(s.id)}>
                   {s.fullName || s.username || s.email}
                 </SelectItem>

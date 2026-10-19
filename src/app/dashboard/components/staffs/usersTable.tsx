@@ -44,6 +44,7 @@ import {
 import { AxiosError } from "axios";
 import { ErrorResponseData } from "@/hooks/types";
 import InviteStaffDialog from "./InviteStaffDialog";
+import type { StaffDTO } from "@/types/staff";
 
 function apiErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof AxiosError) {
@@ -114,7 +115,7 @@ export default function UsersTable({ businessId }: { businessId: string }) {
     { keepPreviousData: true },
   );
 
-  const staff: Array<Record<string, any> & { invitePending?: boolean }> =
+  const staff: Array<StaffDTO & { invitePending?: boolean }> =
     response?.data?.staffs ?? [];
   const totalPages = response?.data?.totalPages ?? 1;
 

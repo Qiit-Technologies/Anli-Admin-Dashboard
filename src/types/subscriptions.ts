@@ -6,9 +6,9 @@ export interface SubscriptionPlan {
   price: number;
 }
 
-interface SubscriptionPlanFeatures {
+export interface SubscriptionPlanFeatures {
   maxRooms: number;
   maxStaff: number;
   moduleAllowed: string[];
-  supportLevel: "basic" | "premium" | null;
+  supportLevel: "none" | "basic" | "premium" | null;
 }

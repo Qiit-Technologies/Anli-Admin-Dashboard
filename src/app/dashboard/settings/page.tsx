@@ -44,6 +44,10 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
 function SettingsContent() {
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get("tab") as TabId) || "profile";
@@ -111,8 +115,8 @@ function ProfileTab() {
       } catch {
         // Fall back to the session user stored at sign-in.
         setMe({
-          fullName: (user as any)?.fullName,
-          email: (user as any)?.email,
+          fullName: user?.fullName,
+          email: user?.email,
         });
       } finally {
         setLoading(false);
@@ -140,8 +144,8 @@ function ProfileTab() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to change password");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to change password"));
     } finally {
       setSaving(false);
     }
@@ -232,8 +236,8 @@ function CompanyTab() {
     setLoading(true);
     try {
       setProfile(await getCompanyProfile());
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to load company profile");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to load company profile"));
     } finally {
       setLoading(false);
     }
@@ -250,8 +254,8 @@ function CompanyTab() {
       const updated = await updateCompanyProfile(profile);
       setProfile(updated);
       toast.success("Company profile saved");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save company profile");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to save company profile"));
     } finally {
       setSaving(false);
     }
@@ -324,8 +328,8 @@ function EmailTemplatesTab() {
         setSubject(list[0].subject);
         setBody(list[0].body);
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to load email templates");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to load email templates"));
     } finally {
       setLoading(false);
     }
@@ -354,8 +358,8 @@ function EmailTemplatesTab() {
       );
       setSelected(updated);
       toast.success("Email template saved");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save template");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to save template"));
     } finally {
       setSaving(false);
     }
@@ -444,8 +448,8 @@ function SmsTemplatesTab() {
         setSelected(list[0]);
         setBody(list[0].body);
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to load SMS templates");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to load SMS templates"));
     } finally {
       setLoading(false);
     }
@@ -470,8 +474,8 @@ function SmsTemplatesTab() {
       );
       setSelected(updated);
       toast.success("SMS template saved");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save template");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to save template"));
     } finally {
       setSaving(false);
     }
@@ -548,8 +552,8 @@ function NotificationsTab() {
     setLoading(true);
     try {
       setToggles(await getNotificationToggles());
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to load notification settings");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to load notification settings"));
     } finally {
       setLoading(false);
     }
@@ -567,8 +571,8 @@ function NotificationsTab() {
     try {
       await updateNotificationToggles({ [key]: value });
       toast.success("Notification setting saved");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save setting");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to save setting"));
       setToggles(toggles);
     } finally {
       setSaving(false);
@@ -635,8 +639,8 @@ function IntegrationsTab() {
     setLoading(true);
     try {
       setItems(await listIntegrations());
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to load integrations");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to load integrations"));
     } finally {
       setLoading(false);
     }
@@ -657,8 +661,8 @@ function IntegrationsTab() {
       setItems((prev) => [created, ...prev]);
       setForm({ name: "", provider: "", keyName: "", secretValue: "" });
       toast.success("Integration added");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to add integration");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to add integration"));
     } finally {
       setAdding(false);
     }
@@ -670,8 +674,8 @@ function IntegrationsTab() {
       const updated = await revokeIntegration(id);
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
       toast.success("Integration revoked");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to revoke integration");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to revoke integration"));
     } finally {
       setRevoking(null);
     }

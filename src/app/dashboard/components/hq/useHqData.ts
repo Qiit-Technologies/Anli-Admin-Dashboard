@@ -43,7 +43,7 @@ async function deriveOverview(): Promise<DerivedOverview> {
     getSupportTickets({ status: "in_progress", page: 1, limit: 1 }).catch(() => null),
   ]);
 
-  const hotels: BusinessDTO[] = (bizRes as any)?.data?.hotels ?? [];
+  const hotels: BusinessDTO[] = bizRes.data?.hotels ?? [];
   const counts = {
     hotels: hotels.length,
     activeHotels: 0,
@@ -81,8 +81,8 @@ async function deriveOverview(): Promise<DerivedOverview> {
 
   return {
     ...counts,
-    openTickets: (openRes as any)?.total ?? 0,
-    inProgressTickets: (progRes as any)?.total ?? 0,
+    openTickets: openRes?.total ?? 0,
+    inProgressTickets: progRes?.total ?? 0,
     expiringTrials,
     source: "derived",
   };
@@ -176,7 +176,7 @@ export function useBusinessDirectory() {
     "hq-business-directory",
     async (): Promise<BusinessDTO[]> => {
       const res = await getBusinessList({ page: 1, limit: 100 });
-      return (res as any)?.data?.hotels ?? [];
+      return res.data?.hotels ?? [];
     },
     { revalidateOnFocus: false },
   );

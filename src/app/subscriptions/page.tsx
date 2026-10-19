@@ -6,7 +6,6 @@ import Image from "next/image";
 import useSWR from "swr";
 import fetcher from "../actions/fetcher";
 import { getSubscriptionPlansResponse } from "../actions/types";
-import SearchWithIcon from "@/components/common/searchWithIcon";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,

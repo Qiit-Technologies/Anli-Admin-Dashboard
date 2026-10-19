@@ -1,6 +1,6 @@
 import { CustomSheet } from "@/components/common/CustomSheet";
 import { ViewIssueDetails } from "./ViewIssueDetails";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { ReportDTO } from "@/types/report";
 import { updateReport } from "@/app/actions/report";
 import { toast } from "react-toastify";

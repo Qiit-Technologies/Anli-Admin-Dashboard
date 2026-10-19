@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { CustomDialog } from "./common/CustomDialog";
 import { InputField } from "./common/form";
 import { Button } from "./ui/button";
 import { TextAreaInput } from "./common/TextAreaInput";
@@ -11,6 +10,13 @@ import { NewMultiSelect } from "./common/NewMultiSelect";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { toast } from "react-toastify";
 import { createSubscriptionPlan } from "@/app/actions/subscriptions";
+import type { SubscriptionPlanFeatures } from "@/types/subscriptions";
+
+function isSupportLevel(
+  value: string,
+): value is Exclude<SubscriptionPlanFeatures["supportLevel"], null> {
+  return value === "none" || value === "basic" || value === "premium";
+}
 
 export const AddSubscriptionPlan = ({ refetch }: { refetch: () => void }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -53,6 +59,10 @@ export const AddSubscriptionPlan = ({ refetch }: { refetch: () => void }) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      if (!isSupportLevel(formData.supportLevel)) {
+        toast.error("Please select a valid support level");
+        return;
+      }
       if (
         formData.name == "" ||
         formData.description == "" ||

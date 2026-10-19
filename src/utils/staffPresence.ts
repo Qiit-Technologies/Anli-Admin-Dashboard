@@ -10,11 +10,15 @@
  *   hardcoded "offline".
  */
 
+import type { StaffDTO } from "@/types/staff";
+
 export type StaffPresence = "online" | "offline" | "unknown";
 
 const SESSION_FRESH_HOURS = 24;
 
-export function getStaffPresence(staff: Record<string, unknown>): StaffPresence {
+export function getStaffPresence(
+  staff: Pick<StaffDTO, "status" | "lastLoginAt">,
+): StaffPresence {
   const status =
     typeof staff.status === "string" ? staff.status.toLowerCase() : "";
   const lastLoginAt =

@@ -1,9 +1,8 @@
 "use server";
 
 import { AxiosError } from "axios";
-import { axiosGet, isRedirectError, axiosPatch, axiosPost } from "../lib/server-api";
+import { isRedirectError, axiosPatch, axiosPost } from "../lib/server-api";
 import { getAuthToken } from "../lib/auth";
-import { GetReportsOptions, getReportsResponse } from "./types";
 import { ErrorResponseData } from "../lib/types";
 
 export async function updateReport(
