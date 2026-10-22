@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Briefcase,
   Building2,
   ChartNoAxesColumn,
   CreditCard,
@@ -34,6 +35,7 @@ const navItems = [
   { name: "Reports", icon: FileBarChart, href: "/dashboard/reports" },
   { name: "Users", icon: Users, href: "/dashboard/users" },
   { name: "CRM", icon: Handshake, href: "/dashboard/crm" },
+  { name: "Career Applications", icon: Briefcase, href: "/dashboard/careers" },
   { name: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];
 
